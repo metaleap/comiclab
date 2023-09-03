@@ -1,0 +1,15 @@
+:root {
+    --color-litest: #efe8e7;
+    --color-lite: #dfd8d7;
+    --color-normal: #cfc8c7;
+    --color-dark: #bfb8b7;
+    --color-darker: #9f9897;
+    --color-darkest: #3f3b38;
+}
+
+body {
+    font-family: "Yanone Kaffeesatz";
+    font-size: 1.44em;
+    background-color: var(--color-normal);
+    color: var(--color-darkest);
+}

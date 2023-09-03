@@ -20,13 +20,29 @@ func httpListenAndServe(port int) {
 }
 
 func httpHandle(httpResp http.ResponseWriter, httpReq *http.Request) {
-	println(httpReq.URL.Path)
-	switch ext := path.Ext(httpReq.URL.Path); ext {
-	case "":
-		http.ServeFile(httpResp, httpReq, filepath.Join(DistDirPath, "app.html"))
-	case ".css", ".js":
-		http.ServeFile(httpResp, httpReq, filepath.Join(DistDirPath, httpReq.URL.Path))
+	switch httpReq.Method {
+	case "GET":
+		switch ext := path.Ext(httpReq.URL.Path); ext {
+		case "":
+			http.ServeFile(httpResp, httpReq, filepath.Join(DistDirPath, "app.html"))
+		case ".css", ".js":
+			http.ServeFile(httpResp, httpReq, filepath.Join(DistDirPath, httpReq.URL.Path))
+		default:
+			switch httpReq.URL.Path {
+			case "/proj":
+			default:
+				http.Error(httpResp, "Not found: "+httpReq.Method+" "+httpReq.URL.Path, 404)
+			}
+		}
+
+	case "POST":
+		switch httpReq.URL.Path {
+		case "/proj":
+		default:
+			http.Error(httpResp, "Not found: "+httpReq.Method+" "+httpReq.URL.Path, 404)
+		}
+
 	default:
-		http.Error(httpResp, "Not found: "+httpReq.URL.Path, 404)
+		http.Error(httpResp, "Not found: "+httpReq.Method+" "+httpReq.URL.Path, 404)
 	}
 }
