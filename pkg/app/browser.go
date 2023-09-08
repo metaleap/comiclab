@@ -15,6 +15,7 @@ var browserCmd = []string{
 	"--user-data-dir=" + browserTmpDirPath,
 	"--disable-extensions",
 	"--allow-file-access-from-files",
+	// "--auto-open-devtools-for-tabs",
 
 	"--disable-client-side-phishing-detection",
 	"--disable-component-extensions-with-background-pages",

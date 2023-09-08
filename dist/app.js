@@ -1,4 +1,4 @@
 import van from "/vanjs/van-1.1.3.debug.js";
-import * as foo from "/gui/appframe.js";
+import GuiAppMain from "/gui/appmain.js";
 
-van.add(document.body, foo.GuiAppFrame());
+van.add(document.body, GuiAppMain());

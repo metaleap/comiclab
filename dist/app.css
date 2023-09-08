@@ -13,3 +13,43 @@ body {
     background-color: var(--color-normal);
     color: var(--color-darkest);
 }
+
+.sidebar {
+    background-color: gold;
+    opacity: 0.88;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    display: block;
+    float: left;
+}
+
+.sidebar_tabs {
+    background-color: red;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.sidebar_tab {
+    display: block;
+}
+
+.sidebar_tab_active {
+    background-color: lightskyblue;
+}
+
+.sidebar_panes {
+    background-color: aquamarine;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.sidebar_pane {
+    display: none;
+    background-color: magenta;
+}
+
+.sidebar_pane_active {
+    display: block;
+}
