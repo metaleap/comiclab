@@ -14,15 +14,16 @@ const activeIdx = van.state(0);
 
 van.derive(() => {
     const idx = activeIdx.val;
-    console.log(idx);
-    setTimeout(() => {
-        for (var i = 0; i < panes.length; i++) {
-            const panetag = document.getElementById('sidebarpane_' + i);
-            const tabtag = document.getElementById('sidebartab_' + i);
-            setTagClass(panetag, 'sidebar_pane_active', idx === i);
-            setTagClass(tabtag, 'sidebar_tab_active', idx === i);
+    for (var i = 0; i < panes.length; i++)
+        if (panes[i].cssClassPane && panes[i].cssClassTab) {
+            if (i === idx) {
+                panes[i].cssClassPane.val = 'sidebar_pane sidebar_pane_active';
+                panes[i].cssClassTab.val = 'sidebar_tab sidebar_tab_active';
+            } else {
+                panes[i].cssClassPane.val = 'sidebar_pane';
+                panes[i].cssClassTab.val = 'sidebar_tab';
+            }
         }
-    }, 100);
 });
 
 export default function GuiSideBar() {
@@ -33,23 +34,16 @@ export default function GuiSideBar() {
 }
 
 function SideBarTab(pane, idx) {
+    pane.cssClassTab = van.state('sidebar_tab');
     return html.span({
-        id: 'sidebartab_' + idx, class: 'sidebar_tab',
+        class: pane.cssClassTab,
         title: pane.title, onclick: () => activeIdx.val = idx,
     }, pane.icon)
 }
 
 function SideBarPane(pane, idx) {
+    pane.cssClassPane = van.state('sidebar_pane');
     return html.span({
-        id: 'sidebarpane_' + idx, class: 'sidebar_pane',
+        class: pane.cssClassPane,
     }, pane._)
-}
-
-function setTagClass(tag, className, isToExist) {
-    if (!tag)
-        return;
-    if (isToExist && !tag.classList.contains(className))
-        tag.classList.add(className);
-    else if (tag.classList.contains(className) && !isToExist)
-        tag.classList.remove(className);
 }
