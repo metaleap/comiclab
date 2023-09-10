@@ -1,83 +1,9 @@
-:root {
-    --color-litest: #efe8e7;
-    --color-lite: #dfd8d7;
-    --color-normal: #cfc8c7;
-    --color-dark: #bfb8b7;
-    --color-darker: #9f9897;
-    --color-darkest: #3f3b38;
-}
-
 body {
     font-family: "Yanone Kaffeesatz";
     font-size: 1.44em;
-    background-color: var(--color-normal);
-    color: var(--color-darkest);
 }
 
-.sidebar {
-    background-color: gold;
-    opacity: 0.88;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    display: block;
-    float: left;
-}
-
-.sidebar_tabs {
-    background-color: red;
-    display: inline-block;
-    vertical-align: top;
-}
-
-.sidebar_tab {
-    display: block;
-}
-
-.sidebar_tab_active {
-    background-color: lightskyblue;
-}
-
-.sidebar_panes {
-    background-color: aquamarine;
-    display: inline-block;
-    vertical-align: top;
-}
-
-.sidebar_pane {
-    display: none;
-    background-color: magenta;
-}
-
-.sidebar_pane_active {
-    display: block;
-}
-
-.tabs {
-    position: relative;
-}
-
-.tabs input[type="radio"] {
-    display: none;
-}
-
-.tabs input[type="radio"]+div.tab-contents>label {
-    background-color: grey;
-    float: left;
-}
-
-.tabs input[type="radio"]+div.tab-contents>div {
-    position: absolute;
-    width: 100%;
-    top: 1em;
-    display: none;
-}
-
-.tabs input[type="radio"]:checked+div.tab-contents>div {
-    display: block;
-}
-
-.tabs input[type="radio"]:checked+div.tab-contents>label {
-    background-color: gold;
+#main {
+    width: 96vw;
+    height: 96vh;
 }
