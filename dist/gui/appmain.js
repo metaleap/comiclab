@@ -7,10 +7,15 @@ export default function GuiAppMain() {
     return html.div({},
         GuiSideBar(),
         html.p({ style: "padding-left: 22em" }, "Main Content"),
-        GuiCtlTabs([
-            { title: 'Foo Tab', _: html.p('Foo Content') },
-            { title: 'Bar Tab', _: html.p('Bar Content') },
-            { title: 'Baz Tab', _: html.p('Baz Content') },
+        GuiCtlTabs('test', [
+            { title: 'Foo1', _: html.p('Foo1 Content') },
+            { title: 'Bar1', _: html.p('Bar1 Content') },
+            { title: 'Baz1', _: html.p('Baz1 Content') },
+        ]),
+        GuiCtlTabs('test2', [
+            { title: 'Foo2', _: html.p('Foo2 Content') },
+            { title: 'Bar2', _: html.p('Bar2 Content') },
+            { title: 'Baz2', _: html.p('Baz2 Content') },
         ]),
     );
 }
