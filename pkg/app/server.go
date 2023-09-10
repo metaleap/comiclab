@@ -20,13 +20,13 @@ func httpListenAndServe(port int) {
 }
 
 func httpHandle(httpResp http.ResponseWriter, httpReq *http.Request) {
+	println(httpReq.RequestURI)
 	switch httpReq.Method {
 	case "GET":
 		switch ext := path.Ext(httpReq.URL.Path); ext {
 		case "":
 			http.ServeFile(httpResp, httpReq, filepath.Join(DistDirPath, "app.html"))
 		default:
-			println(filepath.Join(DistDirPath, httpReq.URL.Path))
 			http.ServeFile(httpResp, httpReq, filepath.Join(DistDirPath, httpReq.URL.Path))
 		}
 

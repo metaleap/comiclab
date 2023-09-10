@@ -2,7 +2,6 @@ package app
 
 import (
 	"math/rand"
-	"os"
 	"time"
 )
 
@@ -20,5 +19,5 @@ func Main() {
 }
 
 func onExit() {
-	_ = os.RemoveAll(browserTmpDirPath)
+	// _ = os.RemoveAll(browserTmpDirPath)
 }

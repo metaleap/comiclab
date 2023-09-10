@@ -18,6 +18,7 @@ var browserCmd = []string{
 	// "--auto-open-devtools-for-tabs",
 
 	"--disable-client-side-phishing-detection",
+	"--force-device-scale-factor=2",
 	"--disable-component-extensions-with-background-pages",
 	"--disable-default-apps",
 	"--mute-audio",
