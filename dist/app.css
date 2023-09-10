@@ -3,6 +3,11 @@ body {
     font-size: 1.44em;
 }
 
+.w2ui-reset {
+    zoom: 1.77;
+    font-family: "Yanone Kaffeesatz";
+}
+
 #main {
     width: 96vw;
     height: 96vh;
