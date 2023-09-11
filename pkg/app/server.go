@@ -13,7 +13,7 @@ var tmplMain *template.Template
 
 func init() {
 	var err error
-	tmpl_file_path := filepath.Join(DistDirPath, "app.html")
+	tmpl_file_path := filepath.Join(DistDirPath, "app.tmpl")
 	if tmplMain, err = template.New(filepath.Base(tmpl_file_path)).ParseFiles(tmpl_file_path); err != nil {
 		panic(err)
 	}
@@ -30,6 +30,8 @@ func httpListenAndServe(port int) {
 
 func httpHandle(httpResp http.ResponseWriter, httpReq *http.Request) {
 	println(httpReq.Method, "\t", httpReq.RequestURI)
+	// custom semantics: all GETs are static-file requests,
+	// all POSTs are API reqs (so API "gets" are body-less POSTs)
 	switch httpReq.Method {
 	case "GET":
 		if httpReq.RequestURI == "" || httpReq.RequestURI == "/" {
@@ -41,6 +43,10 @@ func httpHandle(httpResp http.ResponseWriter, httpReq *http.Request) {
 		}
 
 	case "POST":
+		switch httpReq.URL.Path {
+		case "/appState":
+
+		}
 
 	default:
 		http.Error(httpResp, "Not found: "+httpReq.Method+" "+httpReq.URL.Path, 404)

@@ -9,8 +9,8 @@
             #main { width: 96vw; height: 96vh; }
         </style>
         <script>
-            const appCfg = {{.Config}}
-            const proj = {{.Proj}}
+            const uiProjPath = '{{ .Proj.Name }}/*.json'
+            const uiCfgPath = '~/.config/{{ .Config.FileName }}'
         </script>
     </head>
     <body>

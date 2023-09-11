@@ -2,14 +2,18 @@ package app
 
 import (
 	"math/rand"
+	"os"
 	"time"
 )
 
-var Exiting = false
-var State struct {
-	Config
-	Proj
-}
+var (
+	Exiting     = false
+	userHomeDir = os.Getenv("HOME")
+	State       struct {
+		Config
+		Proj
+	}
+)
 
 func Main() {
 	port := 1024 + rand.Intn(64000)
