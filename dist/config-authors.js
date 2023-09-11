@@ -33,3 +33,9 @@ config_authors.on('add', (evt) => {
     config_authors.scrollIntoView(initialID)
     config_authors.editField(initialID, 0)
 })
+
+config_authors.onGuiMainInited = (gui_main) => {
+    gui_main.div.on('reloaded', (evt) => {
+        console.log('EVTRELOADED', evt)
+    })
+}

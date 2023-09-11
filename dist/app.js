@@ -5,9 +5,9 @@ const appState = {
     proj: {},
     config: {},
 }
-const mainDiv = query('#main');
 
-const gui_main = {
+export const gui_main = {
+    div: query('#main'),
     layout: new w2layout({
         name: 'main_layout',
         padding: 4,
@@ -66,7 +66,7 @@ const gui_main = {
         nodes: [
             {
                 id: 'project', text: 'Project', icon: 'fa fa-sitemap', group: true, expanded: true, groupShowHide: false, nodes: [
-                    { id: 'proj_series', text: 'Series', icon: 'fa fa-sitemap', count: 2, selected: true },
+                    { id: 'proj_series', text: 'Series', icon: 'fa fa-sitemap', count: 0, selected: true },
                     { id: 'proj_ebooks', text: 'eBooks', count: 0, icon: 'fa fa-tablet' },
                     { id: 'proj_sitegen', text: 'SiteGen', icon: 'fa fa-globe' },
                     { id: 'proj_settings', text: 'Settings', icon: 'fa fa-wrench' }
@@ -74,7 +74,7 @@ const gui_main = {
             },
             {
                 id: 'config', text: 'Config', group: true, expanded: true, groupShowHide: false, nodes: [
-                    { id: 'cfg_authors', text: 'Authors', icon: 'fa fa-vcard', count: 11 }
+                    { id: 'cfg_authors', text: 'Authors', icon: 'fa fa-vcard', count: 0 }
                 ],
             },
             {
@@ -90,9 +90,7 @@ export function logMsg(isErr, msg) {
     const now = new Date()
     logMsg.mostRecentItem = gui_main.sidebar.insert('log', logMsg.mostRecentItem,
         {
-            id: 'log_item_' + now.getTime(), count: now.toLocaleTimeString(undefined, {
-                hour12: false,
-            }), text: msg, tooltip: msg, icon: 'fa ' + (isErr ? 'fa-info-circle' : 'fa-exclamation-triangle'),
+            id: 'log_item_' + now.getTime(), count: now.toLocaleTimeString(undefined, { hour12: false }), text: msg, tooltip: msg, icon: 'fa ' + (isErr ? 'fa-info-circle' : 'fa-exclamation-triangle'),
             onClick(evt) {
                 w2popup.open({ title: now.toTimeString(), text: msg })
             }
@@ -103,9 +101,9 @@ export function logMsg(isErr, msg) {
 
 function lockUnlock(locked) {
     if (locked)
-        w2utils.lock(mainDiv, { spinner: true })
+        w2utils.lock(gui_main.div, { spinner: true })
     else
-        w2utils.unlock(mainDiv)
+        w2utils.unlock(gui_main.div)
 }
 
 function appStateReload(proj, cfg) {
@@ -118,17 +116,21 @@ function appStateReload(proj, cfg) {
                 throw (resp.statusText)
             return resp.json().catch(logErr)
         }).then((latestAppState) => {
-            if (proj && latestAppState)
+            if (latestAppState && proj)
                 appState.proj = latestAppState.proj
-            if (cfg && latestAppState)
+            if (latestAppState && cfg)
                 appState.config = latestAppState.config
-            if ((proj || cfg) && latestAppState)
-                mainDiv.trigger('reloaded', { 'proj': proj, 'cfg': cfg })
+            if (latestAppState && (proj || cfg))
+                gui_main.div.trigger('reloaded', { 'proj': proj, 'cfg': cfg })
         })
 }
 
 function appStateSave(proj, cfg) {
     lockUnlock(true)
+}
+
+export function on(evtName, handlerFunc) {
+    gui_main.div.on(evtName, handlerFunc)
 }
 
 // gui_main.sidebar.on('*', (evt) => { console.log('gui_main.sidebar', evt) })
@@ -143,3 +145,8 @@ gui_main.sidebar.on('click', (evt) => {
 gui_main.layout.render('#main')
 gui_main.layout.html('left', gui_main.sidebar)
 gui_main.layout.html('main', 'Welcome')
+
+for (const ctl of [
+    config_authors,
+])
+    ctl.onGuiMainInited(gui_main)
