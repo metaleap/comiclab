@@ -30,7 +30,7 @@ const gui_main = {
     })
 }
 
-gui_main.sidebar.on('*', console.log)
+// gui_main.sidebar.on('*', (evt) => { console.log('gui_main.sidebar', evt) })
 gui_main.sidebar.on('click', (evt) => {
     switch (evt.target) {
         case 'cfg_authors':
