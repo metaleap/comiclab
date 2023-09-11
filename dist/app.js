@@ -85,13 +85,19 @@ export function logMsg(isErr, msg) {
     const now = new Date()
     logMsg.mostRecentItem = gui_main.sidebar.insert('log', logMsg.mostRecentItem,
         {
-            id: 'log_item_' + now.getTime(), count: now.toLocaleTimeString(undefined, { hour12: false }), text: msg, tooltip: msg, icon: 'fa ' + (isErr ? 'fa-info-circle' : 'fa-exclamation-triangle'),
+            id: 'log_item_' + now.getTime(), count: strTime(now), text: msg, tooltip: msg, icon: 'fa ' + (isErr ? 'fa-exclamation-triangle' : 'fa-info-circle'),
             onClick(evt) {
-                w2popup.open({ title: now.toTimeString(), text: msg })
+                w2popup.open({ title: strTime(now), text: msg })
             }
         },
     ).id
     gui_main.sidebar.expand('log')
+    if (isErr)
+        w2popup.open({ title: strTime(now), text: msg })
+}
+
+function strTime(t) {
+    return t.toLocaleTimeString(undefined, { hour12: false })
 }
 
 function lockUnlock(locked) {
@@ -101,7 +107,7 @@ function lockUnlock(locked) {
         w2utils.unlock(gui_main.div)
 }
 
-function onPreReq(proj, cfg) {
+function prepReq(proj, cfg) {
     if (proj)
         setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_proj', 'fa fa-spinner')
     if (cfg)
@@ -109,50 +115,71 @@ function onPreReq(proj, cfg) {
     lockUnlock(true)
     let failed = false
     return {
-        onErr: (err) => {
-            failed = true
-            logErr(err)
-        },
         onDone: () => {
             lockUnlock(false)
             const icon = 'fa ' + (failed ? 'fa-exclamation-triangle' : 'fa-check-circle')
             if (proj) {
-                setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_proj', icon)
                 onDirtyProj(failed)
+                setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_proj', icon)
             }
             if (cfg) {
-                setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_cfg', icon)
                 onDirtyCfg(failed)
+                setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_cfg', icon)
             }
+        },
+        onErr: (err) => {
+            failed = true
+            const on_err = logErr
+            if (err.statusText && err.statusText.length && err.text && err.json && err.blob)
+                err.text().
+                    catch(_ => on_err(err.statusText)).
+                    then(s => on_err((s && s.length) ? s : err.statusText))
+            else
+                on_err(err)
         },
     }
 }
 
-function appStateReload(proj, cfg) {
-    const req = onPreReq(proj, cfg)
-    fetch('/appState', { method: 'POST', priority: 'high' })
-        .finally(req.onDone)
-        .catch(req.onErr)
+function appStateSave(proj, cfg) {
+    const req = prepReq(proj, cfg)
+    const postBody = {}
+    if (proj)
+        postBody.proj = appState.proj;
+    if (cfg)
+        postBody.config = appState.config;
+    fetch('/appState', { method: 'POST', priority: 'high', body: JSON.stringify(postBody), headers: { "Content-Type": "application/json" }, })
         .then((resp) => {
-            if (!resp.ok)
-                throw (resp.statusText)
-            return resp.json().catch(req.onErr)
-        }).then((latestAppState) => {
-            console.log(latestAppState)
-            if (latestAppState && proj) {
-                appState.proj = latestAppState.Proj
-                gui_main.div.trigger(new Event('reloadedproj', { 'proj': proj, 'cfg': cfg }))
-            }
-            if (latestAppState && cfg) {
-                appState.config = latestAppState.Config
-                gui_main.div.trigger(new Event('reloadedcfg', { 'proj': proj, 'cfg': cfg }))
-            }
+            if (resp.ok) {
+                if (proj) gui_main.div.trigger(new Event('savedproj'))
+                if (cfg) gui_main.div.trigger(new Event('savedcfg'))
+            } else
+                req.onErr(resp)
         })
+        .catch(req.onErr)
+        .finally(req.onDone)
 }
 
-function appStateSave(proj, cfg) {
-    const req = onPreReq(proj, cfg)
-    req.onDone()
+function appStateReload(proj, cfg) {
+    const req = prepReq(proj, cfg)
+    fetch('/appState', { method: 'POST', priority: 'high' })
+        .then((resp) => {
+            if (!resp.ok)
+                return req.onErr(resp)
+            return resp.json()
+                .then((latestAppState) => {
+                    if (latestAppState && proj) {
+                        appState.proj = latestAppState.proj
+                        gui_main.div.trigger(new Event('reloadedproj'))
+                    }
+                    if (latestAppState && cfg) {
+                        appState.config = latestAppState.config
+                        gui_main.div.trigger(new Event('reloadedcfg'))
+                    }
+                })
+                .catch(req.onErr)
+        })
+        .catch(req.onErr)
+        .finally(req.onDone)
 }
 
 export function on(evtName, handlerFunc) {
@@ -166,10 +193,12 @@ export function onDirtyChanged() {
     toolbar[neither_dirty ? 'disable' : 'enable']('both_save')
 }
 export function onDirtyProj(dirty) {
+    setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_proj', 'fa ' + (dirty ? 'fa-save' : 'fa-check-circle'))
     gui_main.layout.panels[0].toolbar[dirty ? 'enable' : 'disable']('menu_proj:menu_proj_save')
     onDirtyChanged()
 }
 export function onDirtyCfg(dirty) {
+    setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_cfg', 'fa ' + (dirty ? 'fa-save' : 'fa-check-circle'))
     gui_main.layout.panels[0].toolbar[dirty ? 'enable' : 'disable']('menu_cfg:menu_cfg_save')
     onDirtyChanged()
 }
@@ -197,10 +226,13 @@ gui_main.layout.html('main', 'Welcome')
 
 
 
+const appViews = {
+    "cfg_authors": config_authors,
+}
 
-for (const ctl of [
-    config_authors,
-])
-    ctl.onGuiMainInited(gui_main, onDirtyProj, onDirtyCfg)
+for (const id in appViews)
+    appViews[id].onGuiMainInited(gui_main, onDirtyProj, onDirtyCfg, (newCount) => {
+        gui_main.sidebar.setCount(id, newCount)
+    })
 
 appStateReload(true, true)

@@ -6,16 +6,26 @@ import (
 	"time"
 )
 
+type state = struct {
+	Config *Config `json:"config,omitempty"`
+	Proj   *Proj   `json:"proj,omitempty"`
+}
+
 var (
 	Exiting     = false
 	userHomeDir = os.Getenv("HOME")
-	State       struct {
-		Config Config
-		Proj   Proj
-	}
+	State       state
 )
 
 func Main() {
+	var err error
+	if State.Config, err = readJSONFile(State.Config.FilePath(), &Config{Authors: map[string]string{}}); err != nil {
+		panic(err)
+	}
+	if State.Proj, err = readJSONFile(State.Proj.FilePath(), &Proj{}); err != nil {
+		panic(err)
+	}
+
 	port := 1024 + rand.Intn(64000)
 	go httpListenAndServe(port)
 	go browserLaunch(port)

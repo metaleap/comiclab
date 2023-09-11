@@ -8,20 +8,21 @@ import (
 
 const projFileName = "comiclab.json"
 
+var projDirPath string
+
 func init() {
 	var err error
-	if State.Proj.dirPath, err = os.Getwd(); err != nil {
+	if projDirPath, err = os.Getwd(); err != nil {
 		panic(err)
 	}
 }
 
 type Proj struct {
-	dirPath string
 }
 
-func (me *Proj) FilePath() string { return filepath.Join(me.dirPath, projFileName) }
+func (me *Proj) FilePath() string { return filepath.Join(projDirPath, projFileName) }
 func (me Proj) Name() (ret string) {
-	ret = me.dirPath
+	ret = projDirPath
 	if userHomeDir != "" && strings.HasPrefix(ret, userHomeDir) {
 		ret = "~" + ret[len(userHomeDir):]
 	}

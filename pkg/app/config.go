@@ -7,13 +7,7 @@ import (
 const configFileName = "comiclab.json"
 
 type Config struct {
-	Authors map[string]string
-}
-
-func init() {
-	State.Config.Authors = map[string]string{
-		"foo": "Bar Baz",
-	}
+	Authors map[string]string `json:"authors,omitempty"`
 }
 
 func (me Config) FileName() string  { return configFileName }

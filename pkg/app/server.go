@@ -1,7 +1,6 @@
 package app
 
 import (
-	"errors"
 	"html/template"
 	"io"
 	"net/http"
@@ -35,7 +34,6 @@ func httpHandle(httpResp http.ResponseWriter, httpReq *http.Request) {
 	defer func() {
 		if err != nil {
 			http.Error(httpResp, err.Error(), 500)
-			panic(err)
 		}
 	}()
 	println(httpReq.Method, "\t", httpReq.RequestURI)
@@ -47,12 +45,10 @@ func httpHandle(httpResp http.ResponseWriter, httpReq *http.Request) {
 		http.Error(httpResp, "Not found: "+httpReq.Method+" "+httpReq.URL.Path, 404)
 
 	case "GET":
-		if httpReq.RequestURI == "" || httpReq.RequestURI == "/" {
-			if err = tmplMain.Execute(httpResp, State); err != nil {
-				panic(err)
-			}
-		} else {
+		if httpReq.RequestURI != "" && httpReq.RequestURI != "/" {
 			http.ServeFile(httpResp, httpReq, filepath.Join(DistDirPath, httpReq.URL.Path))
+		} else if err = tmplMain.Execute(httpResp, State); err != nil {
+			panic(err)
 		}
 
 	case "POST":
@@ -61,14 +57,29 @@ func httpHandle(httpResp http.ResponseWriter, httpReq *http.Request) {
 			var body []byte
 			if httpReq.Body != nil {
 				defer httpReq.Body.Close()
-				body, err = io.ReadAll(httpReq.Body)
+				if body, err = io.ReadAll(httpReq.Body); err != nil {
+					return
+				}
 			}
 			if len(body) == 0 {
-				json_data := JSON(State)
-				println(string(json_data))
-				_, err = httpResp.Write(json_data)
+				var json_bytes []byte
+				if json_bytes, err = JSON(State); err == nil {
+					_, err = httpResp.Write(json_bytes)
+				}
 			} else {
-				err = errors.New("TODO")
+				var postedState state
+				postedState, err = FromJSON[state](body)
+				println(string(body))
+				if err == nil && postedState.Config != nil {
+					if postedState.Config, err = writeJSONFile(State.Config.FilePath(), postedState.Config); err == nil {
+						State.Config = postedState.Config
+					}
+				}
+				if err == nil && postedState.Proj != nil {
+					if postedState.Proj, err = writeJSONFile(State.Proj.FilePath(), postedState.Proj); err == nil {
+						State.Proj = postedState.Proj
+					}
+				}
 			}
 		}
 	}
