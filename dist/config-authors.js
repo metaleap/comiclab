@@ -21,21 +21,32 @@ export const config_authors = new w2grid({
         { field: "author_name", text: "Full Name", sortable: true, editable: { type: 'text' } },
     ],
     records: [
-        { author_id: "rsheckley", author_name: "Robert Sheckley" },
-        { author_id: "aweir", author_name: "Andy Weir" },
     ],
 })
 
 // config_authors.on('*', (evt) => { console.log('config_authors', evt) })
+config_authors.on('change', (evt) => {
+    if (!evt.detail.value.new) {
+        evt.detail.value.new = evt.detail.value.previous
+        evt.isCancelled = true
+        evt.preventDefault()
+    } else
+        config_authors.onDirtyCfg()
+})
 config_authors.on('add', (evt) => {
     const initialID = 'newAuthorID' + new Date().getTime()
     config_authors.add({ author_id: initialID, author_name: 'New Author Full Name' })
     config_authors.scrollIntoView(initialID)
     config_authors.editField(initialID, 0)
+    config_authors.onDirtyCfg()
 })
 
-config_authors.onGuiMainInited = (gui_main) => {
-    gui_main.div.on('reloaded', (evt) => {
-        console.log('EVTRELOADED', evt)
+config_authors.onGuiMainInited = (gui_main, onDirtyProj, onDirtyCfg) => {
+    config_authors.onDirtyCfg = onDirtyCfg
+    gui_main.div.on('reloadedcfg', (evt) => {
+        config_authors.records = []
+        for (const id in appState.config.Authors)
+            config_authors.records.push({ author_id: id, author_name: appState.config.Authors[id] })
+        config_authors.refresh()
     })
 }

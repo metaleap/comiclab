@@ -11,6 +11,11 @@
         <script>
             const uiProjPath = '{{ .Proj.Name }}/*.json'
             const uiCfgPath = '~/.config/{{ .Config.FileName }}'
+
+            const appState = {
+                proj: {},
+                config: {},
+            }
         </script>
     </head>
     <body>

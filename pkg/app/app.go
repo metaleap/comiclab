@@ -10,8 +10,8 @@ var (
 	Exiting     = false
 	userHomeDir = os.Getenv("HOME")
 	State       struct {
-		Config
-		Proj
+		Config Config
+		Proj   Proj
 	}
 )
 

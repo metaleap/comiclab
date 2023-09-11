@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"html/template"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -31,10 +32,20 @@ func httpListenAndServe(port int) {
 
 func httpHandle(httpResp http.ResponseWriter, httpReq *http.Request) {
 	var err error
+	defer func() {
+		if err != nil {
+			http.Error(httpResp, err.Error(), 500)
+			panic(err)
+		}
+	}()
 	println(httpReq.Method, "\t", httpReq.RequestURI)
+
 	// custom semantics: all GETs are static-file requests,
 	// all POSTs are API reqs (so API "gets" are body-less POSTs)
 	switch httpReq.Method {
+	default:
+		http.Error(httpResp, "Not found: "+httpReq.Method+" "+httpReq.URL.Path, 404)
+
 	case "GET":
 		if httpReq.RequestURI == "" || httpReq.RequestURI == "/" {
 			if err = tmplMain.Execute(httpResp, State); err != nil {
@@ -47,18 +58,18 @@ func httpHandle(httpResp http.ResponseWriter, httpReq *http.Request) {
 	case "POST":
 		switch httpReq.URL.Path {
 		case "/appState":
-			if httpReq.ContentLength <= 0 {
-				_, err = httpResp.Write(JSON(State))
+			var body []byte
+			if httpReq.Body != nil {
+				defer httpReq.Body.Close()
+				body, err = io.ReadAll(httpReq.Body)
+			}
+			if len(body) == 0 {
+				json_data := JSON(State)
+				println(string(json_data))
+				_, err = httpResp.Write(json_data)
 			} else {
 				err = errors.New("TODO")
 			}
 		}
-
-	default:
-		http.Error(httpResp, "Not found: "+httpReq.Method+" "+httpReq.URL.Path, 404)
-	}
-
-	if err != nil {
-		http.Error(httpResp, err.Error(), 500)
 	}
 }

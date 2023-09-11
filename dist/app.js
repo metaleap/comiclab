@@ -1,11 +1,6 @@
 import { w2layout, w2sidebar, w2toolbar, w2utils, w2popup, query } from '/w2ui/w2ui-2.0.es6.js'
 import { config_authors } from '/config-authors.js'
 
-const appState = {
-    proj: {},
-    config: {},
-}
-
 export const gui_main = {
     div: query('#main'),
     layout: new w2layout({
@@ -106,34 +101,72 @@ function lockUnlock(locked) {
         w2utils.unlock(gui_main.div)
 }
 
-function appStateReload(proj, cfg) {
+function onPreReq() {
+    setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_proj', 'fa fa-spinner')
+    setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_cfg', 'fa fa-spinner')
     lockUnlock(true)
+    let failed = false
+    return {
+        onErr: (err) => {
+            failed = true
+            logErr(err)
+        },
+        onDone: () => {
+            lockUnlock(false)
+            const icon = 'fa ' + (failed ? 'fa-exclamation-triangle' : 'fa-check-circle')
+            setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_proj', icon)
+            setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_cfg', icon)
+        },
+    }
+}
+
+function appStateReload(proj, cfg) {
+    const req = onPreReq()
     fetch('/appState', { method: 'POST', priority: 'high' })
-        .finally(lockUnlock(false))
-        .catch(logErr)
+        .finally(req.onDone)
+        .catch(req.onErr)
         .then((resp) => {
             if (!resp.ok)
                 throw (resp.statusText)
-            return resp.json().catch(logErr)
+            return resp.json().catch(req.onErr)
         }).then((latestAppState) => {
-            if (latestAppState && proj)
-                appState.proj = latestAppState.proj
-            if (latestAppState && cfg)
-                appState.config = latestAppState.config
-            if (latestAppState && (proj || cfg)) {
-                const evt = new Event('reloaded', { 'proj': proj, 'cfg': cfg })
-                console.log(evt)
-                gui_main.div.trigger(evt)
+            console.log(latestAppState)
+            if (latestAppState && proj) {
+                appState.proj = latestAppState.Proj
+                gui_main.div.trigger(new Event('reloadedproj', { 'proj': proj, 'cfg': cfg }))
+            }
+            if (latestAppState && cfg) {
+                appState.config = latestAppState.Config
+                gui_main.div.trigger(new Event('reloadedcfg', { 'proj': proj, 'cfg': cfg }))
             }
         })
 }
 
 function appStateSave(proj, cfg) {
     lockUnlock(true)
+    { // finally
+        lockUnlock(false)
+        gui_main.layout.panels[0].toolbar.disable('menu_cfg:menu_cfg_save', 'menu_proj:menu_proj_save', 'both_save')
+    }
 }
 
 export function on(evtName, handlerFunc) {
     gui_main.div.on(evtName, handlerFunc)
+}
+
+export function onDirtyProj() {
+    gui_main.layout.panels[0].toolbar.enable('menu_proj:menu_proj_save', 'both_save')
+}
+export function onDirtyCfg() {
+    gui_main.layout.panels[0].toolbar.enable('menu_cfg:menu_cfg_save', 'both_save')
+}
+
+function setToolbarIcon(toolbar, id, icon) {
+    const item = toolbar.get(id)
+    if (item) {
+        item.icon = icon
+        toolbar.refresh()
+    }
 }
 
 // gui_main.sidebar.on('*', (evt) => { console.log('gui_main.sidebar', evt) })
@@ -152,10 +185,9 @@ gui_main.layout.html('main', 'Welcome')
 
 
 
-
 for (const ctl of [
     config_authors,
 ])
-    ctl.onGuiMainInited(gui_main)
+    ctl.onGuiMainInited(gui_main, onDirtyProj, onDirtyCfg)
 
 appStateReload(true, true)
