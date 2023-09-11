@@ -31,14 +31,14 @@ config_authors.on('change', (evt) => {
         evt.isCancelled = true
         evt.preventDefault()
     } else
-        config_authors.onDirtyCfg()
+        config_authors.onDirtyCfg(true)
 })
 config_authors.on('add', (evt) => {
     const initialID = 'newAuthorID' + new Date().getTime()
     config_authors.add({ author_id: initialID, author_name: 'New Author Full Name' })
     config_authors.scrollIntoView(initialID)
     config_authors.editField(initialID, 0)
-    config_authors.onDirtyCfg()
+    config_authors.onDirtyCfg(true)
 })
 
 config_authors.onGuiMainInited = (gui_main, onDirtyProj, onDirtyCfg) => {

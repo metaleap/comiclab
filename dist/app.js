@@ -101,9 +101,11 @@ function lockUnlock(locked) {
         w2utils.unlock(gui_main.div)
 }
 
-function onPreReq() {
-    setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_proj', 'fa fa-spinner')
-    setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_cfg', 'fa fa-spinner')
+function onPreReq(proj, cfg) {
+    if (proj)
+        setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_proj', 'fa fa-spinner')
+    if (cfg)
+        setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_cfg', 'fa fa-spinner')
     lockUnlock(true)
     let failed = false
     return {
@@ -114,14 +116,20 @@ function onPreReq() {
         onDone: () => {
             lockUnlock(false)
             const icon = 'fa ' + (failed ? 'fa-exclamation-triangle' : 'fa-check-circle')
-            setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_proj', icon)
-            setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_cfg', icon)
+            if (proj) {
+                setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_proj', icon)
+                onDirtyProj(failed)
+            }
+            if (cfg) {
+                setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_cfg', icon)
+                onDirtyCfg(failed)
+            }
         },
     }
 }
 
 function appStateReload(proj, cfg) {
-    const req = onPreReq()
+    const req = onPreReq(proj, cfg)
     fetch('/appState', { method: 'POST', priority: 'high' })
         .finally(req.onDone)
         .catch(req.onErr)
@@ -143,22 +151,27 @@ function appStateReload(proj, cfg) {
 }
 
 function appStateSave(proj, cfg) {
-    lockUnlock(true)
-    { // finally
-        lockUnlock(false)
-        gui_main.layout.panels[0].toolbar.disable('menu_cfg:menu_cfg_save', 'menu_proj:menu_proj_save', 'both_save')
-    }
+    const req = onPreReq(proj, cfg)
+    req.onDone()
 }
 
 export function on(evtName, handlerFunc) {
     gui_main.div.on(evtName, handlerFunc)
 }
 
-export function onDirtyProj() {
-    gui_main.layout.panels[0].toolbar.enable('menu_proj:menu_proj_save', 'both_save')
+export function onDirtyChanged() {
+    const toolbar = gui_main.layout.panels[0].toolbar;
+    toolbar.refresh()
+    const neither_dirty = toolbar.get('menu_proj:menu_proj_save').disabled && toolbar.get('menu_cfg:menu_cfg_save').disabled
+    toolbar[neither_dirty ? 'disable' : 'enable']('both_save')
 }
-export function onDirtyCfg() {
-    gui_main.layout.panels[0].toolbar.enable('menu_cfg:menu_cfg_save', 'both_save')
+export function onDirtyProj(dirty) {
+    gui_main.layout.panels[0].toolbar[dirty ? 'enable' : 'disable']('menu_proj:menu_proj_save')
+    onDirtyChanged()
+}
+export function onDirtyCfg(dirty) {
+    gui_main.layout.panels[0].toolbar[dirty ? 'enable' : 'disable']('menu_cfg:menu_cfg_save')
+    onDirtyChanged()
 }
 
 function setToolbarIcon(toolbar, id, icon) {
