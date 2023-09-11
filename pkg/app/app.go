@@ -6,6 +6,10 @@ import (
 )
 
 var Exiting = false
+var State struct {
+	Config
+	Proj
+}
 
 func Main() {
 	port := 1024 + rand.Intn(64000)

@@ -1,3 +1,5 @@
 package app
 
-var Config struct{}
+type Config struct {
+	Authors map[string]string
+}
