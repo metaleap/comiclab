@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"html/template"
 	"net/http"
 	"os"
@@ -29,13 +30,14 @@ func httpListenAndServe(port int) {
 }
 
 func httpHandle(httpResp http.ResponseWriter, httpReq *http.Request) {
+	var err error
 	println(httpReq.Method, "\t", httpReq.RequestURI)
 	// custom semantics: all GETs are static-file requests,
 	// all POSTs are API reqs (so API "gets" are body-less POSTs)
 	switch httpReq.Method {
 	case "GET":
 		if httpReq.RequestURI == "" || httpReq.RequestURI == "/" {
-			if err := tmplMain.Execute(httpResp, State); err != nil {
+			if err = tmplMain.Execute(httpResp, State); err != nil {
 				panic(err)
 			}
 		} else {
@@ -45,10 +47,18 @@ func httpHandle(httpResp http.ResponseWriter, httpReq *http.Request) {
 	case "POST":
 		switch httpReq.URL.Path {
 		case "/appState":
-
+			if httpReq.ContentLength <= 0 {
+				_, err = httpResp.Write(JSON(State))
+			} else {
+				err = errors.New("TODO")
+			}
 		}
 
 	default:
 		http.Error(httpResp, "Not found: "+httpReq.Method+" "+httpReq.URL.Path, 404)
+	}
+
+	if err != nil {
+		http.Error(httpResp, err.Error(), 500)
 	}
 }

@@ -120,8 +120,11 @@ function appStateReload(proj, cfg) {
                 appState.proj = latestAppState.proj
             if (latestAppState && cfg)
                 appState.config = latestAppState.config
-            if (latestAppState && (proj || cfg))
-                gui_main.div.trigger('reloaded', { 'proj': proj, 'cfg': cfg })
+            if (latestAppState && (proj || cfg)) {
+                const evt = new Event('reloaded', { 'proj': proj, 'cfg': cfg })
+                console.log(evt)
+                gui_main.div.trigger(evt)
+            }
         })
 }
 
@@ -146,7 +149,13 @@ gui_main.layout.render('#main')
 gui_main.layout.html('left', gui_main.sidebar)
 gui_main.layout.html('main', 'Welcome')
 
+
+
+
+
 for (const ctl of [
     config_authors,
 ])
     ctl.onGuiMainInited(gui_main)
+
+appStateReload(true, true)
