@@ -6,5 +6,9 @@ type Series struct {
 }
 
 type Episode struct {
-	ID string `json:"id"`
+	ID    string        `json:"id"`
+	Pages []*PageLayout `json:"pages,omitempty"`
+}
+
+type PageLayout struct {
 }

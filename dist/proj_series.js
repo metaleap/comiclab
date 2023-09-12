@@ -4,7 +4,7 @@ export const proj_series = new w2form({
     name: 'proj_series',
     record: null,
     fields: [
-        { field: 'id', type: 'text', required: true, html: { label: 'ID' } }
+        { field: 'id', type: 'text', required: true, html: { label: 'Series ID' } }
     ],
     onChange(evt) {
         const errs = proj_series.validate()

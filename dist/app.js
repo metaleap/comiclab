@@ -2,11 +2,13 @@ import { query, w2layout, w2sidebar, w2utils, w2confirm } from '/w2ui/w2ui.es6.j
 import { arrayMoveItem, setToolbarIcon, logErr, logInfo, newObjName } from './util.js'
 
 import { proj_series } from './proj_series.js'
+import { proj_episode } from './proj_episode.js'
 import { config_authors } from './config_authors.js'
 
 const appViews = [
+    config_authors,
     proj_series,
-    config_authors
+    proj_episode,
 ]
 
 let appViewActive = null
@@ -21,7 +23,7 @@ let sideBarLists = {
         subList: (series) => {
             const ret = {}
             ret['proj_series_' + series.id] = {
-                appView: proj_series, name: 'Episode', itemIcon: 'fa fa-cube', deletePrompt: id => 'Remove the "' + id + '" episode from the project files, including all its page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+                appView: proj_episode, name: 'Episode', itemIcon: 'fa fa-cube', deletePrompt: id => 'Remove the "' + id + '" episode from the project files, including all its page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
                 binding: (set) => {
                     if (set)
                         series.episodes = set
