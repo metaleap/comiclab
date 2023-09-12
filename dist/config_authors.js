@@ -1,4 +1,5 @@
 import { w2grid } from '/w2ui/w2ui.js'
+import { newObjName } from './util.js'
 
 export const config_authors = new w2grid({
     name: "config_authors",
@@ -23,6 +24,9 @@ export const config_authors = new w2grid({
         { field: "author_name", text: "Full Name", sortable: true, editable: { type: 'text' } },
     ],
     records: [],
+    dataCount: () => {
+        return config_authors.records.length
+    },
     dataToUI: () => {
         config_authors.records = []
         if (appState.config && appState.config.authors)
@@ -38,11 +42,17 @@ export const config_authors = new w2grid({
 })
 
 // config_authors.on('*', (evt) => { console.log('config_authors', evt) })
+config_authors.on('keydown', (evt) => {
+    if (evt.detail && evt.detail.originalEvent && (evt.detail.originalEvent.key == 'Meta' || evt.detail.originalEvent.key == 'ContextMenu')) {
+        evt.isCancelled = true
+        evt.preventDefault()
+    }
+})
 config_authors.on('delete', (evt) => {
     setTimeout(() => { if (evt.phase == 'after') config_authors.onDirtyCfg(true) }, 1)
 })
 config_authors.on('add', (evt) => {
-    const initialID = 'newAuthorID' + new Date().getTime()
+    const initialID = newObjName('Author', config_authors.records.map(_ => _.author_id))
     config_authors.add({ author_id: initialID, author_name: 'New Author Full Name' })
     config_authors.scrollIntoView(initialID)
     config_authors.editField(initialID, 0)
@@ -63,16 +73,14 @@ config_authors.on('change', (evt) => {
     }
 })
 
-config_authors.onGuiMainInited = (onDirtyProj, onDirtyCfg, setCount) => {
+config_authors.onGuiMainInited = (onDirtyProj, onDirtyCfg) => {
     config_authors.onDirtyCfg = (dirty) => {
         if (dirty)
             config_authors.dataFromUI()
-        setCount(config_authors.records.length)
         onDirtyCfg(dirty)
     }
     guiMain.div.on('reloadedcfg', (evt) => {
         config_authors.dataToUI()
-        setCount(config_authors.records.length)
     })
     guiMain.div.on('savedcfg', (evt) => {
         config_authors.refresh()

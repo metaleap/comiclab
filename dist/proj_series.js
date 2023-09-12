@@ -8,6 +8,6 @@ export const proj_series = new w2form({
     ],
 })
 
-proj_series.onGuiMainInited = (onDirtyProj, onDirtyCfg, setCount) => {
+proj_series.onGuiMainInited = (onDirtyProj, onDirtyCfg) => {
 
 }

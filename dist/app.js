@@ -1,8 +1,13 @@
 import { w2layout, w2sidebar, w2utils, w2prompt, query } from '/w2ui/w2ui-2.0.es6.js'
-import { setToolbarIcon, logErr } from '/util.js'
+import { setToolbarIcon, logErr, newObjName } from './util.js'
 
-import { proj_series } from '/proj_series.js'
-import { config_authors } from '/config_authors.js'
+import { proj_series } from './proj_series.js'
+import { config_authors } from './config_authors.js'
+
+const appViews = [
+    proj_series,
+    config_authors
+]
 
 guiMain = {
     div: query('#main'),
@@ -73,7 +78,7 @@ guiMain = {
             },
             {
                 id: 'config', text: 'Config', group: true, expanded: true, groupShowHide: false, nodes: [
-                    { id: 'cfg_authors', text: 'Authors', icon: 'fa fa-vcard', count: 0 }
+                    { id: 'cfg_authors', text: 'Authors', icon: 'fa fa-vcard', count: 0, appView: config_authors }
                 ],
             },
             {
@@ -83,7 +88,6 @@ guiMain = {
         dataToUI: () => {
             const sidebar_node = guiMain.sidebar.get('proj_series')
             sidebar_node.nodes = []
-            sidebar_node.count = appState.proj.series.length
             if (appState.proj.series && appState.proj.series.length)
                 guiMain.sidebar.insert('proj_series', null, appState.proj.series.map(series => {
                     return { id: 'proj_series_' + series.id, text: series.id }
@@ -101,36 +105,28 @@ guiMain = {
         onMenuClick(evt) {
             switch (evt.detail.menuItem.id) {
                 case 'proj_series_addnew':
-                    w2prompt({
-                        title: 'Add New Series',
-                        label: 'ID',
-                        value: '',
-                    }).ok((evt) => {
-                        if (evt && evt.detail && evt.detail.value && evt.detail.value.length) {
-                            if (!appState.proj.series)
-                                appState.proj.series = []
-                            for (const series of appState.proj.series)
-                                if (series.id == evt.detail.value) {
-                                    evt.isCancelled = true
-                                    evt.preventDefault()
-                                    alert('Already exists: ' + evt.detail.value)
-                                    return
-                                }
-                            appState.proj.series.push({ id: evt.detail.value })
-                            guiMain.sidebar.dataToUI()
-                            onDirtyProj(true)
-                        } else {
-                            evt.isCancelled = true
-                            evt.preventDefault()
-                            alert('ID is required')
-                        }
-                    })
+                    const name = newObjName('Series', appState.proj.series.map(_ => _.id))
+                    appState.proj.series.push({ id: name })
+                    guiMain.sidebar.dataToUI()
+                    guiMain.sidebar.select('proj_series_' + name)
+                    onDirtyProj(true)
                     break
             }
         },
     }),
 }
 
+function refreshCounts() {
+    guiMain.sidebar.each(node => {
+        if (node.nodes && node.nodes.length && !node.group)
+            guiMain.sidebar.setCount(node.id, node.nodes.length)
+        if (node.appView && node.appView.dataCount) {
+            const count = node.appView.dataCount()
+            if (count === 0 || count >= 1)
+                guiMain.sidebar.setCount(node.id, count)
+        }
+    })
+}
 
 function lockUnlock(locked) {
     if (locked)
@@ -207,6 +203,7 @@ function appStateReload(proj, cfg) {
                     if (latestAppState && cfg) {
                         appState.config = latestAppState.config
                         guiMain.div.trigger(new Event('reloadedcfg'))
+                        refreshCounts()
                     }
                 })
                 .catch(req.onErr)
@@ -216,6 +213,7 @@ function appStateReload(proj, cfg) {
 }
 
 function onDirtyChanged() {
+    refreshCounts()
     const toolbar = guiMain.layout.panels[0].toolbar;
     toolbar.refresh()
     const neither_dirty = toolbar.get('menu_proj:menu_proj_save').disabled && toolbar.get('menu_cfg:menu_cfg_save').disabled
@@ -232,35 +230,24 @@ function onDirtyCfg(dirty) {
     onDirtyChanged()
 }
 
-const appViews = {
-    "cfg_authors": config_authors,
-}
-
 // guiMain.sidebar.on('*', (evt) => { console.log('guiMain.sidebar', evt) })
 guiMain.sidebar.on('click', (evt) => {
-    for (const t in appViews)
-        if (t == evt.target) {
-            guiMain.layout.html('main', appViews[t])
-            return
-        }
-    console.log(evt)
+    // if sub-nodes, expand-or-collapse
     if (evt.object && evt.object.id && evt.object.nodes && evt.object.nodes.length) {
         evt.object.selected = false
         guiMain.sidebar.toggle(evt.object.id)
-        return
     }
+    // if appView on node, show it
+    if (evt.detail && evt.detail.node && evt.detail.node.appView)
+        guiMain.layout.html('main', evt.detail.node.appView)
 })
 
 guiMain.layout.render('#main')
 guiMain.layout.html('left', guiMain.sidebar)
 guiMain.layout.html('main', '')
 
-
-
-for (const id in appViews)
-    appViews[id].onGuiMainInited(onDirtyProj, onDirtyCfg, (newCount) => {
-        guiMain.sidebar.setCount(id, newCount)
-    })
+for (const appView of appViews)
+    appView.onGuiMainInited(onDirtyProj, onDirtyCfg)
 
 appStateReload(true, true)
 console.log(appState)

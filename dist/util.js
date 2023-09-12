@@ -1,5 +1,17 @@
 import { w2popup } from '/w2ui/w2ui-2.0.es6.js'
 
+export function newObjName(what, existingNames) {
+    let nn = 'new' + what
+    let n = existingNames.length + 1
+    let ret = nn + n
+    for (let i = 0; i < existingNames.length; i++)
+        if (ret == existingNames[i]) {
+            n++
+            ret = nn + n
+            i = -1
+        }
+    return ret
+}
 
 export function setToolbarIcon(toolbar, id, icon) {
     const item = toolbar.get(id)
