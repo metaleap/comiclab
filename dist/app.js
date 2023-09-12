@@ -21,7 +21,7 @@ let sideBarLists = {
         subList: (series) => {
             const ret = {}
             ret['proj_series_' + series.id] = {
-                appView: proj_series, name: 'Episodes', itemIcon: 'fa fa-cube', deletePrompt: id => 'Remove the "' + id + '" episode from the project files, including all its layouts and letterings?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+                appView: proj_series, name: 'Episode', itemIcon: 'fa fa-cube', deletePrompt: id => 'Remove the "' + id + '" episode from the project files, including all its layouts and letterings?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
                 binding: (set) => {
                     if (set)
                         series.episodes = set
@@ -110,8 +110,7 @@ guiMain = {
             },
         ],
         dataToUI: () => {
-            for (const node_id in sideBarLists) {
-                const list_info = sideBarLists[node_id]
+            const perSideBarList = (node_id, list_info) => {
                 const sidebar_node = guiMain.sidebar.get(node_id)
                 console.log(node_id, sidebar_node)
                 if (sidebar_node)
@@ -120,23 +119,23 @@ guiMain = {
                 if (!(data_src && data_src.length && data_src.length > 0))
                     return
                 guiMain.sidebar.insert(node_id, null, data_src.map(_ => ({ id: node_id + '_' + _.id, text: _.id, icon: list_info.itemIcon, appView: list_info.appView, record: _, })))
-                if (list_info.subList)
-                    for (const record of data_src) {
-                        const sub_list_info = list_info.subList(record)
-                        for (const k in sub_list_info)
-                            sideBarLists[k] = sub_list_info[k]
-                    }
+                sideBarSubList(list_info, data_src, perSideBarList)
             }
+            for (const node_id in sideBarLists)
+                perSideBarList(node_id, sideBarLists[node_id])
+            guiMain.sidebar.refresh()
         },
         onContextMenu(evt) {
             this.menu = []
-            for (const node_id in sideBarLists) {
-                const list_info = sideBarLists[node_id]
+            const perSideBarList = (node_id, list_info) => {
                 if (evt.target == node_id)
                     this.menu.push({ id: node_id + '_addnew', text: 'Add New ' + list_info.name + '...', icon: 'fa fa-plus' })
                 if (evt.target.startsWith && evt.target.startsWith(node_id + '_'))
                     this.menu.push({ id: node_id + '_delete', text: 'Delete ' + list_info.name + '...', icon: 'fa fa-remove' })
+                sideBarSubList(list_info, undefined, perSideBarList)
             }
+            for (const node_id in sideBarLists)
+                perSideBarList(node_id, sideBarLists[node_id])
         },
         onMenuClick(evt) {
             for (const node_id in sideBarLists) {
@@ -158,11 +157,6 @@ guiMain = {
                         if (item_node && item_node.record && item_node.record.id) {
                             w2confirm(list_info.deletePrompt(item_node.record.id))
                                 .yes(() => {
-                                    if (list_info.subList) {
-                                        const sub_list_info = list_info.subList(item_node.record)
-                                        for (const k in sub_list_info)
-                                            delete sideBarLists[k]
-                                    }
                                     if (item_node.selected)
                                         guiMain.sidebar.unselect(item_node.id)
                                     if (appViewActive == list_info.appView && appViewActive.record && appViewActive.record.id == item_node.record.id)
@@ -178,6 +172,19 @@ guiMain = {
             }
         },
     }),
+}
+
+function sideBarSubList(listInfo, dataSrc, perSideBarList) {
+    if (listInfo.subList) {
+        if (!dataSrc)
+            dataSrc = listInfo.binding()
+        for (const record of dataSrc) {
+            const sub_list_info = listInfo.subList(record)
+            if (sub_list_info)
+                for (const k in sub_list_info)
+                    perSideBarList(k, sub_list_info[k])
+        }
+    }
 }
 
 function lockUnlock(locked) {
