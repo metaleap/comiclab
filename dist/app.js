@@ -1,5 +1,5 @@
 import { query, w2layout, w2sidebar, w2utils, w2confirm } from '/w2ui/w2ui.es6.js'
-import { setToolbarIcon, logErr, logInfo, newObjName } from './util.js'
+import { arrayMoveItem, setToolbarIcon, logErr, logInfo, newObjName } from './util.js'
 
 import { proj_series } from './proj_series.js'
 import { config_authors } from './config_authors.js'
@@ -12,7 +12,7 @@ const appViews = [
 let appViewActive = null
 let sideBarLists = {
     'proj_series': {
-        appView: proj_series, name: 'Series', itemIcon: 'fa fa-cubes', deletePrompt: id => 'Remove the "' + id + '" series from the project files, including all its episodes and their layouts and letterings?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+        appView: proj_series, name: 'Series', itemIcon: 'fa fa-cubes', deletePrompt: id => 'Remove the "' + id + '" series from the project files, including all its episodes and their page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
         binding: (set) => {
             if (set)
                 appState.proj.series = set
@@ -21,7 +21,7 @@ let sideBarLists = {
         subList: (series) => {
             const ret = {}
             ret['proj_series_' + series.id] = {
-                appView: proj_series, name: 'Episode', itemIcon: 'fa fa-cube', deletePrompt: id => 'Remove the "' + id + '" episode from the project files, including all its layouts and letterings?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+                appView: proj_series, name: 'Episode', itemIcon: 'fa fa-cube', deletePrompt: id => 'Remove the "' + id + '" episode from the project files, including all its page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
                 binding: (set) => {
                     if (set)
                         series.episodes = set
@@ -112,7 +112,6 @@ guiMain = {
         dataToUI: () => {
             const perSideBarList = (node_id, list_info) => {
                 const sidebar_node = guiMain.sidebar.get(node_id)
-                console.log(node_id, sidebar_node)
                 if (sidebar_node)
                     guiMain.sidebar.remove(...sidebar_node.nodes.map(_ => _.id))
                 const data_src = list_info.binding()
@@ -128,19 +127,26 @@ guiMain = {
         onContextMenu(evt) {
             this.menu = []
             const perSideBarList = (node_id, list_info) => {
+                let data_src = list_info.binding()
                 if (evt.target == node_id)
                     this.menu.push({ id: node_id + '_addnew', text: 'Add New ' + list_info.name + '...', icon: 'fa fa-plus' })
-                if (evt.target.startsWith && evt.target.startsWith(node_id + '_'))
-                    this.menu.push({ id: node_id + '_delete', text: 'Delete ' + list_info.name + '...', icon: 'fa fa-remove' })
+                if (evt.object && evt.object.text && evt.object.record && evt.target.startsWith && evt.target.startsWith(node_id + '_') && evt.target.lastIndexOf('_') == node_id.length) {
+                    this.menu.push({ id: node_id + '_delete', text: 'Delete "' + evt.object.text + '"...', icon: 'fa fa-remove' })
+                    const idx = data_src.findIndex(_ => _.id == evt.object.record.id)
+                    this.menu.push({ id: node_id + '_moveup', text: 'Move "' + evt.object.text + '" Up', disabled: idx == 0, icon: 'fa fa-angle-up' })
+                    this.menu.push({ id: node_id + '_movedown', text: 'Move "' + evt.object.text + '" Down', disabled: idx == (data_src.length - 1), icon: 'fa fa-angle-down' })
+                    this.menu.push({ id: node_id + '_movefirst', text: 'Move "' + evt.object.text + '" To Top', disabled: idx == 0, icon: 'fa fa-angle-double-up' })
+                    this.menu.push({ id: node_id + '_movelast', text: 'Move "' + evt.object.text + '" To End', disabled: idx == (data_src.length - 1), icon: 'fa fa-angle-double-down' })
+                }
                 sideBarSubList(list_info, undefined, perSideBarList)
             }
             for (const node_id in sideBarLists)
                 perSideBarList(node_id, sideBarLists[node_id])
         },
         onMenuClick(evt) {
-            for (const node_id in sideBarLists) {
-                const list_info = sideBarLists[node_id]
+            const perSideBarList = (node_id, list_info) => {
                 let data_src = list_info.binding()
+                const item_node = guiMain.sidebar.get(evt.target)
                 switch (evt.detail.menuItem.id) {
                     case node_id + '_addnew':
                         const name = newObjName(list_info.name, data_src.map(_ => _.id))
@@ -153,7 +159,6 @@ guiMain = {
                         if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
                         break
                     case node_id + '_delete':
-                        const item_node = guiMain.sidebar.get(evt.target)
                         if (item_node && item_node.record && item_node.record.id) {
                             w2confirm(list_info.deletePrompt(item_node.record.id))
                                 .yes(() => {
@@ -168,7 +173,38 @@ guiMain = {
                                 })
                         }
                         break
+                    default:
+                        if (item_node && item_node.record && item_node.record.id) {
+                            let idx = data_src.findIndex(_ => _.id == item_node.record.id)
+                            if (idx >= 0) {
+                                let moved = false
+                                if (evt.detail.menuItem.id == (node_id + '_moveup') && idx > 0) {
+                                    data_src = arrayMoveItem(data_src, idx, idx - 1)
+                                    moved = true
+                                } else if (evt.detail.menuItem.id == (node_id + '_movedown') && idx < (data_src.length - 1)) {
+                                    data_src = arrayMoveItem(data_src, idx, idx + 1)
+                                    moved = true
+                                } else if (evt.detail.menuItem.id == (node_id + '_movefirst') && idx > 0) {
+                                    data_src = arrayMoveItem(data_src, idx, 0)
+                                    moved = true
+                                } else if (evt.detail.menuItem.id == (node_id + '_movelast') && idx != (data_src.length - 1)) {
+                                    data_src = arrayMoveItem(data_src, idx, data_src.length - 1)
+                                    moved = true
+                                }
+                                if (moved) {
+                                    data_src = list_info.binding(data_src)
+                                    guiMain.sidebar.dataToUI()
+                                    if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
+                                }
+                            }
+                        }
+                        break
                 }
+                sideBarSubList(list_info, data_src, perSideBarList)
+            }
+            for (const node_id in sideBarLists) {
+                const list_info = sideBarLists[node_id]
+                perSideBarList(node_id, list_info)
             }
         },
     }),

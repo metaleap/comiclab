@@ -1,5 +1,12 @@
 import { w2popup } from '/w2ui/w2ui.es6.js'
 
+export function arrayMoveItem(arr, idxOld, idxNew) {
+    var item = arr[idxOld]
+    arr.splice(idxOld, 1)
+    arr.splice(idxNew, 0, item)
+    return arr
+}
+
 export function newObjName(what, existingNames) {
     let nn = 'new' + what
     let n = existingNames.length + 1
