@@ -9,6 +9,8 @@ const appViews = [
     config_authors
 ]
 
+let appViewActive = null
+
 guiMain = {
     div: query('#main'),
     layout: new w2layout({
@@ -90,7 +92,7 @@ guiMain = {
             guiMain.sidebar.remove(...sidebar_node.nodes.map(_ => _.id))
             if (appState.proj.series && appState.proj.series.length)
                 guiMain.sidebar.insert('proj_series', null, appState.proj.series.map(_ => {
-                    return { id: 'proj_series_' + _.id, text: _.id, series: _, icon: 'fa fa-cubes' }
+                    return { id: 'proj_series_' + _.id, text: _.id, icon: 'fa fa-cubes', appView: proj_series, record: _, }
                 }))
         },
         onContextMenu(evt) {
@@ -106,10 +108,14 @@ guiMain = {
             switch (evt.detail.menuItem.id) {
                 case 'proj_series_delete':
                     const node = guiMain.sidebar.get(evt.target)
-                    if (node && node.series && node.series.id) {
-                        w2confirm('Remove the "' + node.series.id + '" series from the project files, including all its episodes and their layouts and letterings?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)')
+                    if (node && node.record && node.record.id) {
+                        w2confirm('Remove the "' + node.record.id + '" series from the project files, including all its episodes and their layouts and letterings?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)')
                             .yes(() => {
-                                appState.proj.series = appState.proj.series.filter(_ => _.id != node.series.id)
+                                if (node.selected)
+                                    guiMain.sidebar.unselect(node.id)
+                                if (appViewActive == proj_series && appViewActive.record && appViewActive.record.id == node.record.id)
+                                    appViewSet(null)
+                                appState.proj.series = appState.proj.series.filter(_ => _.id != node.record.id)
                                 guiMain.sidebar.dataToUI()
                                 onDirtyProj(true)
                             })
@@ -232,6 +238,11 @@ function onDirtyCfg(dirty) {
     onDirtyChanged()
 }
 
+function appViewSet(appView) {
+    appViewActive = appView
+    guiMain.layout.html('main', appView ? appView : '')
+}
+
 // guiMain.sidebar.on('*', (evt) => { console.log('guiMain.sidebar', evt) })
 guiMain.sidebar.on('click', (evt) => {
     // if sub-nodes, expand-or-collapse
@@ -240,13 +251,16 @@ guiMain.sidebar.on('click', (evt) => {
         guiMain.sidebar.toggle(evt.object.id)
     }
     // if appView on node, show it
-    if (evt.detail && evt.detail.node && evt.detail.node.appView)
-        guiMain.layout.html('main', evt.detail.node.appView)
+    if (evt.detail && evt.detail.node && evt.detail.node.appView) {
+        if (evt.detail.node.appView.setRecord && evt.detail.node.record)
+            evt.detail.node.appView.setRecord(evt.detail.node.record)
+        appViewSet(evt.detail.node.appView)
+    }
 })
 
 guiMain.layout.render('#main')
 guiMain.layout.html('left', guiMain.sidebar)
-guiMain.layout.html('main', '')
+appViewSet(null)
 
 for (const appView of appViews)
     appView.onGuiMainInited(onDirtyProj, onDirtyCfg)
