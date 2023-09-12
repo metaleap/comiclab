@@ -1,3 +1,6 @@
+import { w2popup } from '/w2ui/w2ui-2.0.es6.js'
+
+
 export function setToolbarIcon(toolbar, id, icon) {
     const item = toolbar.get(id)
     if (item) {

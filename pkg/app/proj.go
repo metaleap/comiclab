@@ -18,6 +18,7 @@ func init() {
 }
 
 type Proj struct {
+	Series []*Series `json:"series"`
 }
 
 func (me *Proj) FilePath() string { return filepath.Join(projDirPath, projFileName) }

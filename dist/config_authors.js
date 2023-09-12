@@ -70,11 +70,11 @@ config_authors.onGuiMainInited = (onDirtyProj, onDirtyCfg, setCount) => {
         setCount(config_authors.records.length)
         onDirtyCfg(dirty)
     }
-    guiMain.div.on('savedcfg', (evt) => {
-        config_authors.refresh()
-    })
     guiMain.div.on('reloadedcfg', (evt) => {
         config_authors.dataToUI()
         setCount(config_authors.records.length)
+    })
+    guiMain.div.on('savedcfg', (evt) => {
+        config_authors.refresh()
     })
 }
