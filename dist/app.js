@@ -90,10 +90,9 @@ guiMain = {
         dataToUI: () => {
             const sidebar_node = guiMain.sidebar.get('proj_series')
             guiMain.sidebar.remove(...sidebar_node.nodes.map(_ => _.id))
-            if (appState.proj.series && appState.proj.series.length)
-                guiMain.sidebar.insert('proj_series', null, appState.proj.series.map(_ => {
-                    return { id: 'proj_series_' + _.id, text: _.id, icon: 'fa fa-cubes', appView: proj_series, record: _, }
-                }))
+            if (!(appState.proj.series && appState.proj.series.length && appState.proj.series.length > 0))
+                return
+            guiMain.sidebar.insert('proj_series', null, appState.proj.series.map(_ => ({ id: 'proj_series_' + _.id, text: _.id, icon: 'fa fa-cubes', appView: proj_series, record: _, })))
         },
         onContextMenu(evt) {
             switch (evt.target) {
@@ -204,6 +203,7 @@ function appStateReload(proj, cfg) {
                 .then((latestAppState) => {
                     if (!latestAppState)
                         return
+                    appViewSet(null)
                     if (proj) {
                         appState.proj = latestAppState.proj
                         guiMain.sidebar.dataToUI()
@@ -231,6 +231,7 @@ function onDirtyProj(dirty) {
     setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_proj', 'fa ' + (dirty ? 'fa-save' : 'fa-check-circle'))
     guiMain.layout.panels[0].toolbar[dirty ? 'enable' : 'disable']('menu_proj:menu_proj_save')
     onDirtyChanged()
+    guiMain.sidebar.dataToUI()
 }
 function onDirtyCfg(dirty) {
     setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_cfg', 'fa ' + (dirty ? 'fa-save' : 'fa-check-circle'))
