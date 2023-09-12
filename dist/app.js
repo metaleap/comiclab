@@ -16,8 +16,20 @@ let sideBarLists = {
         binding: (set) => {
             if (set)
                 appState.proj.series = set
-            return appState.proj.series
-        }
+            return appState.proj.series ?? []
+        },
+        subList: (series) => {
+            const ret = {}
+            ret['proj_series_' + series.id] = {
+                appView: proj_series, name: 'Episodes', itemIcon: 'fa fa-cube', deletePrompt: id => 'Remove the "' + id + '" episode from the project files, including all its layouts and letterings?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+                binding: (set) => {
+                    if (set)
+                        series.episodes = set
+                    return series.episodes ?? []
+                }
+            }
+            return ret
+        },
     },
 }
 
@@ -101,20 +113,29 @@ guiMain = {
             for (const node_id in sideBarLists) {
                 const list_info = sideBarLists[node_id]
                 const sidebar_node = guiMain.sidebar.get(node_id)
-                guiMain.sidebar.remove(...sidebar_node.nodes.map(_ => _.id))
+                console.log(node_id, sidebar_node)
+                if (sidebar_node)
+                    guiMain.sidebar.remove(...sidebar_node.nodes.map(_ => _.id))
                 const data_src = list_info.binding()
                 if (!(data_src && data_src.length && data_src.length > 0))
                     return
                 guiMain.sidebar.insert(node_id, null, data_src.map(_ => ({ id: node_id + '_' + _.id, text: _.id, icon: list_info.itemIcon, appView: list_info.appView, record: _, })))
+                if (list_info.subList)
+                    for (const record of data_src) {
+                        const sub_list_info = list_info.subList(record)
+                        for (const k in sub_list_info)
+                            sideBarLists[k] = sub_list_info[k]
+                    }
             }
         },
         onContextMenu(evt) {
+            this.menu = []
             for (const node_id in sideBarLists) {
                 const list_info = sideBarLists[node_id]
                 if (evt.target == node_id)
-                    this.menu = [{ id: node_id + '_addnew', text: 'Add New ' + list_info.name + '...', icon: 'fa fa-plus' }]
-                else if (evt.target.startsWith && evt.target.startsWith(node_id + '_'))
-                    this.menu = [{ id: node_id + '_delete', text: 'Delete ' + list_info.name + '...', icon: 'fa fa-remove' }]
+                    this.menu.push({ id: node_id + '_addnew', text: 'Add New ' + list_info.name + '...', icon: 'fa fa-plus' })
+                if (evt.target.startsWith && evt.target.startsWith(node_id + '_'))
+                    this.menu.push({ id: node_id + '_delete', text: 'Delete ' + list_info.name + '...', icon: 'fa fa-remove' })
             }
         },
         onMenuClick(evt) {
@@ -124,7 +145,8 @@ guiMain = {
                 switch (evt.detail.menuItem.id) {
                     case node_id + '_addnew':
                         const name = newObjName(list_info.name, data_src.map(_ => _.id))
-                        data_src.push({ id: name })
+                        const new_item = { id: name }
+                        data_src.push(new_item)
                         data_src = list_info.binding(data_src)
                         guiMain.sidebar.dataToUI()
                         guiMain.sidebar.expand(node_id)
@@ -136,6 +158,11 @@ guiMain = {
                         if (item_node && item_node.record && item_node.record.id) {
                             w2confirm(list_info.deletePrompt(item_node.record.id))
                                 .yes(() => {
+                                    if (list_info.subList) {
+                                        const sub_list_info = list_info.subList(item_node.record)
+                                        for (const k in sub_list_info)
+                                            delete sideBarLists[k]
+                                    }
                                     if (item_node.selected)
                                         guiMain.sidebar.unselect(item_node.id)
                                     if (appViewActive == list_info.appView && appViewActive.record && appViewActive.record.id == item_node.record.id)
