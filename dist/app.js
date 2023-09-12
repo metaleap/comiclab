@@ -1,7 +1,8 @@
 import { w2layout, w2sidebar, w2toolbar, w2utils, w2popup, query } from '/w2ui/w2ui-2.0.es6.js'
-import { config_authors } from '/config-authors.js'
+import { setToolbarIcon, logErr } from '/util.js'
+import { config_authors } from '/config_authors.js'
 
-export const gui_main = {
+guiMain = {
     div: query('#main'),
     layout: new w2layout({
         name: 'main_layout',
@@ -79,39 +80,19 @@ export const gui_main = {
     }),
 }
 
-export function logErr(err) { logMsg(true, err) }
-export function logInfo(msg) { logMsg(false, msg) }
-export function logMsg(isErr, msg) {
-    const now = new Date()
-    logMsg.mostRecentItem = gui_main.sidebar.insert('log', logMsg.mostRecentItem,
-        {
-            id: 'log_item_' + now.getTime(), count: strTime(now), text: msg, tooltip: msg, icon: 'fa ' + (isErr ? 'fa-exclamation-triangle' : 'fa-info-circle'),
-            onClick(evt) {
-                w2popup.open({ title: strTime(now), text: msg })
-            }
-        },
-    ).id
-    gui_main.sidebar.expand('log')
-    if (isErr)
-        w2popup.open({ title: strTime(now), text: msg })
-}
-
-function strTime(t) {
-    return t.toLocaleTimeString(undefined, { hour12: false })
-}
 
 function lockUnlock(locked) {
     if (locked)
-        w2utils.lock(gui_main.div, { spinner: true })
+        w2utils.lock(guiMain.div, { spinner: true })
     else
-        w2utils.unlock(gui_main.div)
+        w2utils.unlock(guiMain.div)
 }
 
 function prepReq(proj, cfg) {
     if (proj)
-        setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_proj', 'fa fa-spinner')
+        setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_proj', 'fa fa-spinner')
     if (cfg)
-        setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_cfg', 'fa fa-spinner')
+        setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_cfg', 'fa fa-spinner')
     lockUnlock(true)
     let failed = false
     return {
@@ -120,11 +101,11 @@ function prepReq(proj, cfg) {
             const icon = 'fa ' + (failed ? 'fa-exclamation-triangle' : 'fa-check-circle')
             if (proj) {
                 onDirtyProj(failed)
-                setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_proj', icon)
+                setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_proj', icon)
             }
             if (cfg) {
                 onDirtyCfg(failed)
-                setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_cfg', icon)
+                setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_cfg', icon)
             }
         },
         onErr: (err) => {
@@ -150,8 +131,8 @@ function appStateSave(proj, cfg) {
     fetch('/appState', { method: 'POST', priority: 'high', body: JSON.stringify(postBody), headers: { "Content-Type": "application/json" }, })
         .then((resp) => {
             if (resp.ok) {
-                if (proj) gui_main.div.trigger(new Event('savedproj'))
-                if (cfg) gui_main.div.trigger(new Event('savedcfg'))
+                if (proj) guiMain.div.trigger(new Event('savedproj'))
+                if (cfg) guiMain.div.trigger(new Event('savedcfg'))
             } else
                 req.onErr(resp)
         })
@@ -169,11 +150,11 @@ function appStateReload(proj, cfg) {
                 .then((latestAppState) => {
                     if (latestAppState && proj) {
                         appState.proj = latestAppState.proj
-                        gui_main.div.trigger(new Event('reloadedproj'))
+                        guiMain.div.trigger(new Event('reloadedproj'))
                     }
                     if (latestAppState && cfg) {
                         appState.config = latestAppState.config
-                        gui_main.div.trigger(new Event('reloadedcfg'))
+                        guiMain.div.trigger(new Event('reloadedcfg'))
                     }
                 })
                 .catch(req.onErr)
@@ -182,47 +163,35 @@ function appStateReload(proj, cfg) {
         .finally(req.onDone)
 }
 
-export function on(evtName, handlerFunc) {
-    gui_main.div.on(evtName, handlerFunc)
-}
-
-export function onDirtyChanged() {
-    const toolbar = gui_main.layout.panels[0].toolbar;
+function onDirtyChanged() {
+    const toolbar = guiMain.layout.panels[0].toolbar;
     toolbar.refresh()
     const neither_dirty = toolbar.get('menu_proj:menu_proj_save').disabled && toolbar.get('menu_cfg:menu_cfg_save').disabled
     toolbar[neither_dirty ? 'disable' : 'enable']('both_save')
 }
-export function onDirtyProj(dirty) {
-    setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_proj', 'fa ' + (dirty ? 'fa-save' : 'fa-check-circle'))
-    gui_main.layout.panels[0].toolbar[dirty ? 'enable' : 'disable']('menu_proj:menu_proj_save')
+function onDirtyProj(dirty) {
+    setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_proj', 'fa ' + (dirty ? 'fa-save' : 'fa-check-circle'))
+    guiMain.layout.panels[0].toolbar[dirty ? 'enable' : 'disable']('menu_proj:menu_proj_save')
     onDirtyChanged()
 }
-export function onDirtyCfg(dirty) {
-    setToolbarIcon(gui_main.layout.panels[0].toolbar, 'menu_cfg', 'fa ' + (dirty ? 'fa-save' : 'fa-check-circle'))
-    gui_main.layout.panels[0].toolbar[dirty ? 'enable' : 'disable']('menu_cfg:menu_cfg_save')
+function onDirtyCfg(dirty) {
+    setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_cfg', 'fa ' + (dirty ? 'fa-save' : 'fa-check-circle'))
+    guiMain.layout.panels[0].toolbar[dirty ? 'enable' : 'disable']('menu_cfg:menu_cfg_save')
     onDirtyChanged()
 }
 
-function setToolbarIcon(toolbar, id, icon) {
-    const item = toolbar.get(id)
-    if (item) {
-        item.icon = icon
-        toolbar.refresh()
-    }
-}
-
-// gui_main.sidebar.on('*', (evt) => { console.log('gui_main.sidebar', evt) })
-gui_main.sidebar.on('click', (evt) => {
+// guiMain.sidebar.on('*', (evt) => { console.log('guiMain.sidebar', evt) })
+guiMain.sidebar.on('click', (evt) => {
     switch (evt.target) {
         case 'cfg_authors':
-            gui_main.layout.html('main', config_authors)
+            guiMain.layout.html('main', config_authors)
             break;
     }
 })
 
-gui_main.layout.render('#main')
-gui_main.layout.html('left', gui_main.sidebar)
-gui_main.layout.html('main', 'Welcome')
+guiMain.layout.render('#main')
+guiMain.layout.html('left', guiMain.sidebar)
+guiMain.layout.html('main', 'Welcome')
 
 
 
@@ -231,8 +200,8 @@ const appViews = {
 }
 
 for (const id in appViews)
-    appViews[id].onGuiMainInited(gui_main, onDirtyProj, onDirtyCfg, (newCount) => {
-        gui_main.sidebar.setCount(id, newCount)
+    appViews[id].onGuiMainInited(onDirtyProj, onDirtyCfg, (newCount) => {
+        guiMain.sidebar.setCount(id, newCount)
     })
 
 appStateReload(true, true)

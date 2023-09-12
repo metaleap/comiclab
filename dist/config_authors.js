@@ -22,8 +22,19 @@ export const config_authors = new w2grid({
         { field: "author_id", text: "ID", sortable: true, editable: { type: 'text' } },
         { field: "author_name", text: "Full Name", sortable: true, editable: { type: 'text' } },
     ],
-    records: [
-    ],
+    records: [],
+    dataToUI: () => {
+        config_authors.records = []
+        if (appState.config && appState.config.authors)
+            for (const id in appState.config.authors)
+                config_authors.records.push({ author_id: id, author_name: appState.config.authors[id] })
+        config_authors.refresh()
+    },
+    dataFromUI: () => {
+        appState.config.authors = {}
+        for (const rec of config_authors.records)
+            appState.config.authors[rec.author_id] = rec.author_name
+    },
 })
 
 // config_authors.on('*', (evt) => { console.log('config_authors', evt) })
@@ -52,25 +63,18 @@ config_authors.on('change', (evt) => {
     }
 })
 
-config_authors.onGuiMainInited = (gui_main, onDirtyProj, onDirtyCfg, setCount) => {
+config_authors.onGuiMainInited = (onDirtyProj, onDirtyCfg, setCount) => {
     config_authors.onDirtyCfg = (dirty) => {
-        if (dirty) {
-            appState.config.authors = {}
-            for (const rec of config_authors.records)
-                appState.config.authors[rec.author_id] = rec.author_name
-        }
+        if (dirty)
+            config_authors.dataFromUI()
         setCount(config_authors.records.length)
         onDirtyCfg(dirty)
     }
-    gui_main.div.on('savedcfg', (evt) => {
+    guiMain.div.on('savedcfg', (evt) => {
         config_authors.refresh()
     })
-    gui_main.div.on('reloadedcfg', (evt) => {
-        config_authors.records = []
-        if (appState.config && appState.config.authors)
-            for (const id in appState.config.authors)
-                config_authors.records.push({ author_id: id, author_name: appState.config.authors[id] })
-        config_authors.refresh()
+    guiMain.div.on('reloadedcfg', (evt) => {
+        config_authors.dataToUI()
         setCount(config_authors.records.length)
     })
 }
