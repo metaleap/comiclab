@@ -1,4 +1,4 @@
-import { w2popup } from '/w2ui/w2ui-2.0.es6.js'
+import { w2popup } from '/w2ui/w2ui.es6.js'
 
 export function newObjName(what, existingNames) {
     let nn = 'new' + what

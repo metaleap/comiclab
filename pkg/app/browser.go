@@ -11,6 +11,7 @@ var browserPid = -1
 
 var browserCmd = []string{
 	"", // filled in by browserDetect()
+
 	"--new-window", "--single-process",
 	"--user-data-dir=" + browserTmpDirPath,
 	"--disable-extensions",

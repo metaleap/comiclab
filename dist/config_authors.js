@@ -1,4 +1,4 @@
-import { w2grid } from '/w2ui/w2ui.js'
+import { w2grid } from '/w2ui/w2ui.es6.js'
 import { newObjName } from './util.js'
 
 export const config_authors = new w2grid({
@@ -24,9 +24,6 @@ export const config_authors = new w2grid({
         { field: "author_name", text: "Full Name", sortable: true, editable: { type: 'text' } },
     ],
     records: [],
-    dataCount: () => {
-        return config_authors.records.length
-    },
     dataToUI: () => {
         config_authors.records = []
         if (appState.config && appState.config.authors)
