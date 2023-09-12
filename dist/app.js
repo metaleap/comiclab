@@ -12,7 +12,8 @@ const appViews = [
 let appViewActive = null
 let sideBarLists = {
     'proj_series': {
-        appView: proj_series, itemIcon: 'fa fa-cubes', binding: (set) => {
+        appView: proj_series, name: 'Series', itemIcon: 'fa fa-cubes', deletePrompt: id => 'Remove the "' + id + '" series from the project files, including all its episodes and their layouts and letterings?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+        binding: (set) => {
             if (set)
                 appState.proj.series = set
             return appState.proj.series
@@ -81,7 +82,7 @@ guiMain = {
         nodes: [
             {
                 id: 'project', text: 'Project', group: true, expanded: true, groupShowHide: false, nodes: [
-                    { id: 'proj_series', text: 'Series', icon: 'fa fa-cubes', nodes: [] },
+                    { id: 'proj_series', text: 'Series &amp; Episodes', icon: sideBarLists['proj_series'].itemIcon, nodes: [] },
                     { id: 'proj_books', text: 'Books', icon: 'fa fa-book' },
                     { id: 'proj_sitegen', text: 'SiteGen', icon: 'fa fa-globe' },
                     { id: 'proj_settings', text: 'Settings', icon: 'fa fa-wrench' }
@@ -98,49 +99,55 @@ guiMain = {
         ],
         dataToUI: () => {
             for (const node_id in sideBarLists) {
-                const listInfo = sideBarLists[node_id]
+                const list_info = sideBarLists[node_id]
                 const sidebar_node = guiMain.sidebar.get(node_id)
                 guiMain.sidebar.remove(...sidebar_node.nodes.map(_ => _.id))
-                const dataSrc = listInfo.binding()
-                if (!(dataSrc && dataSrc.length && dataSrc.length > 0))
+                const data_src = list_info.binding()
+                if (!(data_src && data_src.length && data_src.length > 0))
                     return
-                guiMain.sidebar.insert(node_id, null, dataSrc.map(_ => ({ id: node_id + '_' + _.id, text: _.id, icon: listInfo.itemIcon, appView: listInfo.appView, record: _, })))
+                guiMain.sidebar.insert(node_id, null, data_src.map(_ => ({ id: node_id + '_' + _.id, text: _.id, icon: list_info.itemIcon, appView: list_info.appView, record: _, })))
             }
         },
         onContextMenu(evt) {
-            switch (evt.target) {
-                case 'proj_series':
-                    this.menu = [{ id: 'proj_series_addnew', text: 'Add New Series...', icon: 'fa fa-plus' }]
-                    break
+            for (const node_id in sideBarLists) {
+                const list_info = sideBarLists[node_id]
+                if (evt.target == node_id)
+                    this.menu = [{ id: node_id + '_addnew', text: 'Add New ' + list_info.name + '...', icon: 'fa fa-plus' }]
+                else if (evt.target.startsWith && evt.target.startsWith(node_id + '_'))
+                    this.menu = [{ id: node_id + '_delete', text: 'Delete ' + list_info.name + '...', icon: 'fa fa-remove' }]
             }
-            if (evt.target.startsWith && evt.target.startsWith('proj_series_'))
-                this.menu = [{ id: 'proj_series_delete', text: 'Delete...', icon: 'fa fa-plus' }]
         },
         onMenuClick(evt) {
-            switch (evt.detail.menuItem.id) {
-                case 'proj_series_delete':
-                    const node = guiMain.sidebar.get(evt.target)
-                    if (node && node.record && node.record.id) {
-                        w2confirm('Remove the "' + node.record.id + '" series from the project files, including all its episodes and their layouts and letterings?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)')
-                            .yes(() => {
-                                if (node.selected)
-                                    guiMain.sidebar.unselect(node.id)
-                                if (appViewActive == proj_series && appViewActive.record && appViewActive.record.id == node.record.id)
-                                    appViewSet(null)
-                                appState.proj.series = appState.proj.series.filter(_ => _.id != node.record.id)
-                                guiMain.sidebar.dataToUI()
-                                onDirtyProj(true)
-                            })
-                    }
-                    break
-                case 'proj_series_addnew':
-                    const name = newObjName('Series', appState.proj.series.map(_ => _.id))
-                    appState.proj.series.push({ id: name })
-                    guiMain.sidebar.dataToUI()
-                    guiMain.sidebar.expand('proj_series')
-                    guiMain.sidebar.select('proj_series_' + name)
-                    onDirtyProj(true)
-                    break
+            for (const node_id in sideBarLists) {
+                const list_info = sideBarLists[node_id]
+                let data_src = list_info.binding()
+                switch (evt.detail.menuItem.id) {
+                    case node_id + '_addnew':
+                        const name = newObjName(list_info.name, data_src.map(_ => _.id))
+                        data_src.push({ id: name })
+                        data_src = list_info.binding(data_src)
+                        guiMain.sidebar.dataToUI()
+                        guiMain.sidebar.expand(node_id)
+                        guiMain.sidebar.select(node_id + '_' + name)
+                        if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
+                        break
+                    case node_id + '_delete':
+                        const item_node = guiMain.sidebar.get(evt.target)
+                        if (item_node && item_node.record && item_node.record.id) {
+                            w2confirm(list_info.deletePrompt(item_node.record.id))
+                                .yes(() => {
+                                    if (item_node.selected)
+                                        guiMain.sidebar.unselect(item_node.id)
+                                    if (appViewActive == list_info.appView && appViewActive.record && appViewActive.record.id == item_node.record.id)
+                                        appViewSet(null)
+                                    data_src = data_src.filter(_ => _.id != item_node.record.id)
+                                    data_src = list_info.binding(data_src)
+                                    guiMain.sidebar.dataToUI()
+                                    if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
+                                })
+                        }
+                        break
+                }
             }
         },
     }),
