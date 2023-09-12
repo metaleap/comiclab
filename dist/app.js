@@ -3,12 +3,14 @@ import { arrayMoveItem, setToolbarIcon, logErr, logInfo, newObjName } from './ut
 
 import { proj_series } from './proj_series.js'
 import { proj_episode } from './proj_episode.js'
+import { proj_pagelayout } from './proj_pagelayout.js'
 import { config_authors } from './config_authors.js'
 
 const appViews = [
     config_authors,
     proj_series,
     proj_episode,
+    proj_pagelayout,
 ]
 
 let appViewActive = null
@@ -21,16 +23,28 @@ let sideBarLists = {
             return appState.proj.series ?? []
         },
         subList: (series) => {
-            const ret = {}
-            ret['proj_series_' + series.id] = {
+            const ret_episodes = {}
+            ret_episodes['proj_series_' + series.id] = {
                 appView: proj_episode, name: 'Episode', itemIcon: 'fa fa-cube', deletePrompt: id => 'Remove the "' + id + '" episode from the project files, including all its page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
                 binding: (set) => {
                     if (set)
                         series.episodes = set
                     return series.episodes ?? []
-                }
+                },
+                subList: (episode) => {
+                    const ret_pagelayouts = {}
+                    ret_pagelayouts['proj_series_' + series.id + '_' + episode.id] = {
+                        appView: proj_pagelayout, name: 'Page', itemIcon: 'fa fa-th', deletePrompt: id => 'Remove the "' + id + '" page from the project files, including all its letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+                        binding: (set) => {
+                            if (set)
+                                episode.pages = set
+                            return episode.pages ?? []
+                        },
+                    }
+                    return ret_pagelayouts
+                },
             }
-            return ret
+            return ret_episodes
         },
     },
 }
@@ -96,7 +110,7 @@ guiMain = {
         nodes: [
             {
                 id: 'project', text: 'Project', group: true, expanded: true, groupShowHide: false, nodes: [
-                    { id: 'proj_series', text: 'Series &amp; Episodes', icon: sideBarLists['proj_series'].itemIcon, nodes: [] },
+                    { id: 'proj_series', text: 'Series &amp; Episodes', icon: sideBarLists['proj_series'].itemIcon, nodes: [], expanded: true },
                     { id: 'proj_books', text: 'Books', icon: 'fa fa-book' },
                     { id: 'proj_sitegen', text: 'SiteGen', icon: 'fa fa-globe' },
                     { id: 'proj_settings', text: 'Settings', icon: 'fa fa-wrench' }
@@ -112,6 +126,11 @@ guiMain = {
             },
         ],
         dataToUI: () => {
+            const sel_node_id = guiMain.sidebar.selected
+            let sel_node = guiMain.sidebar.get(sel_node_id)
+            guiMain.sidebar.unselect()
+            const app_view = appViewActive
+            appViewSet(null)
             const perSideBarList = (node_id, list_info) => {
                 const sidebar_node = guiMain.sidebar.get(node_id)
                 if (sidebar_node)
@@ -124,6 +143,20 @@ guiMain = {
             }
             for (const node_id in sideBarLists)
                 perSideBarList(node_id, sideBarLists[node_id])
+            // restore selection & view if possible
+            appViewSet(app_view)
+            if (sel_node_id && sel_node_id.length && guiMain.sidebar.get(sel_node_id)) {
+                guiMain.sidebar.expandParents(sel_node_id)
+                guiMain.sidebar.select(sel_node_id)
+            } else if (sel_node && sel_node.parent && sel_node.record) {
+                sel_node = (guiMain.sidebar.find(sel_node.parent.id, { record: sel_node.record }) ?? sel_node.parent)
+                guiMain.sidebar.expandParents(sel_node.id)
+                guiMain.sidebar.select(sel_node.id)
+            }
+            guiMain.sidebar.each(node => {
+                if (node.id.startsWith(proj_series.name))
+                    node.count = (node.nodes && node.nodes.length && node.nodes.length > 0) ? node.nodes.length : undefined
+            })
             guiMain.sidebar.refresh()
         },
         onContextMenu(evt) {
@@ -155,22 +188,18 @@ guiMain = {
                         const new_item = { id: name }
                         data_src.push(new_item)
                         data_src = list_info.binding(data_src)
-                        guiMain.sidebar.dataToUI()
-                        guiMain.sidebar.expand(node_id)
-                        guiMain.sidebar.select(node_id + '_' + name)
                         if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
+                        guiMain.sidebar.expandParents(node_id + '_' + name)
+                        guiMain.sidebar.select(node_id + '_' + name)
+                        list_info.appView.record = new_item
+                        appViewSet(list_info.appView)
                         break
                     case node_id + '_delete':
                         if (item_node && item_node.record && item_node.record.id) {
                             w2confirm(list_info.deletePrompt(item_node.record.id))
                                 .yes(() => {
-                                    if (item_node.selected)
-                                        guiMain.sidebar.unselect(item_node.id)
-                                    if (appViewActive == list_info.appView && appViewActive.record && appViewActive.record.id == item_node.record.id)
-                                        appViewSet(null)
                                     data_src = data_src.filter(_ => _.id != item_node.record.id)
                                     data_src = list_info.binding(data_src)
-                                    guiMain.sidebar.dataToUI()
                                     if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
                                 })
                         }
@@ -195,7 +224,6 @@ guiMain = {
                                 }
                                 if (moved) {
                                     data_src = list_info.binding(data_src)
-                                    guiMain.sidebar.dataToUI()
                                     if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
                                 }
                             }

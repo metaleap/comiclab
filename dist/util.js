@@ -8,13 +8,13 @@ export function arrayMoveItem(arr, idxOld, idxNew) {
 }
 
 export function newObjName(what, existingNames) {
-    let nn = 'new' + what
+    let nn = what.toLowerCase()
     let n = existingNames.length + 1
-    let ret = nn + n
+    let ret = nn + (n < 10 ? '0' : '') + n
     for (let i = 0; i < existingNames.length; i++)
         if (ret == existingNames[i]) {
             n++
-            ret = nn + n
+            ret = nn + (n < 10 ? '0' : '') + n
             i = -1
         }
     return ret

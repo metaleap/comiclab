@@ -11,4 +11,5 @@ type Episode struct {
 }
 
 type PageLayout struct {
+	ID string `json:"id"`
 }
