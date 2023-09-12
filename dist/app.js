@@ -10,6 +10,15 @@ const appViews = [
 ]
 
 let appViewActive = null
+let sideBarLists = {
+    'proj_series': {
+        appView: proj_series, itemIcon: 'fa fa-cubes', binding: (set) => {
+            if (set)
+                appState.proj.series = set
+            return appState.proj.series
+        }
+    },
+}
 
 guiMain = {
     div: query('#main'),
@@ -88,11 +97,15 @@ guiMain = {
             },
         ],
         dataToUI: () => {
-            const sidebar_node = guiMain.sidebar.get('proj_series')
-            guiMain.sidebar.remove(...sidebar_node.nodes.map(_ => _.id))
-            if (!(appState.proj.series && appState.proj.series.length && appState.proj.series.length > 0))
-                return
-            guiMain.sidebar.insert('proj_series', null, appState.proj.series.map(_ => ({ id: 'proj_series_' + _.id, text: _.id, icon: 'fa fa-cubes', appView: proj_series, record: _, })))
+            for (const node_id in sideBarLists) {
+                const listInfo = sideBarLists[node_id]
+                const sidebar_node = guiMain.sidebar.get(node_id)
+                guiMain.sidebar.remove(...sidebar_node.nodes.map(_ => _.id))
+                const dataSrc = listInfo.binding()
+                if (!(dataSrc && dataSrc.length && dataSrc.length > 0))
+                    return
+                guiMain.sidebar.insert(node_id, null, dataSrc.map(_ => ({ id: node_id + '_' + _.id, text: _.id, icon: listInfo.itemIcon, appView: listInfo.appView, record: _, })))
+            }
         },
         onContextMenu(evt) {
             switch (evt.target) {
