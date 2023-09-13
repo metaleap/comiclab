@@ -34,6 +34,7 @@ export const proj_pagelayout = new w2form({
                         error: 'Another Page already has this ID.',
                     })
     },
+    tabTitle: () => proj_pagelayout.record.id,
     dataToUI: () => {
         const pagelayout = proj_pagelayout.record
         proj_pagelayout.setValue('id', pagelayout ? pagelayout.id : '')
@@ -56,8 +57,3 @@ export const proj_pagelayout = new w2form({
         }
     },
 })
-
-proj_pagelayout.setRecord = (pagelayout) => {
-    proj_pagelayout.record = pagelayout
-    proj_pagelayout.dataToUI()
-}

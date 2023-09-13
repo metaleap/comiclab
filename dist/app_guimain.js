@@ -1,7 +1,7 @@
-import { query, w2layout, w2utils } from './w2ui/w2ui.es6.js'
+import { query, w2layout, w2utils, w2tabs } from './w2ui/w2ui.es6.js'
 import { setToolbarIcon, logErr, logInfo } from './util.js'
 
-import { appViews, appViewSet } from './app_views.js'
+import { appViews, appViewSetActive, appViewRefresh } from './app_views.js'
 import { app_sidebar } from './app_sidebar.js'
 
 guiMain = {
@@ -56,7 +56,15 @@ guiMain = {
                     }
                 }
             },
-            { type: 'main', html: 'main' },
+            {
+                type: 'main', show: { tabs: true }, tabs: new w2tabs({
+                    name: 'main_tabs',
+                    tabs: [],
+                    onClick(evt) {
+                        guiMain.layout.html('main', evt.object.ctl)
+                    },
+                })
+            },
         ]
     }),
     sidebar: app_sidebar,
@@ -132,7 +140,7 @@ function appStateReload(proj, cfg) {
                 .then((latestAppState) => {
                     if (!latestAppState)
                         return
-                    appViewSet(null)
+                    appViewSetActive(null)
                     if (proj) {
                         appState.proj = latestAppState.proj
                         guiMain.sidebar.dataToUI()
@@ -171,29 +179,29 @@ export function onDirtyCfg(dirty) {
 function onGuiMainInited(appView) {
     switch (true) {
         case appView.name.startsWith('config_'):
-            appView.onDirtyCfg = (dirty) => {
+            appView.onDirty = (dirty) => {
                 if (dirty)
                     appView.dataFromUI()
                 onDirtyCfg(dirty)
             }
             guiMain.div.on('reloadedcfg', (evt) => { appView.dataToUI() })
-            guiMain.div.on('savedcfg', (evt) => { appView.refresh() })
+            guiMain.div.on('savedcfg', (evt) => { appViewRefresh(appView) })
             break
         case appView.name.startsWith('proj_'):
-            appView.onDirtyProj = (dirty) => {
+            appView.onDirty = (dirty) => {
                 if (dirty)
                     appView.dataFromUI()
                 onDirtyProj(dirty)
             }
             guiMain.div.on('reloadedproj', (evt) => { appView.dataToUI() })
-            guiMain.div.on('savedproj', (evt) => { appView.refresh() })
+            guiMain.div.on('savedproj', (evt) => { appViewRefresh(appView) })
             break
     }
 }
 
 guiMain.layout.render('#main')
 guiMain.layout.html('left', guiMain.sidebar)
-appViewSet(null)
+appViewSetActive(null)
 
 for (const appViewID in appViews)
     onGuiMainInited(appViews[appViewID])

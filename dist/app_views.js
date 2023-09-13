@@ -1,20 +1,42 @@
 import { proj_series } from './proj_series.js'
 import { proj_episode } from './proj_episode.js'
 import { proj_pagelayout } from './proj_pagelayout.js'
-import { config_authors } from './config_authors.js'
-import { config_pagelayouts } from './config_pagelayouts.js'
+import { config_contentauthoring } from './config_contentauthoring.js'
 
 export const appViews = {
     proj_series: proj_series,
     proj_episode: proj_episode,
     proj_pagelayout: proj_pagelayout,
-    config_authors: config_authors,
-    config_pagelayouts: config_pagelayouts,
+    config_contentauthoring: config_contentauthoring,
 }
 
 export let appViewActive = null
 
-export function appViewSet(appView) {
+export function appViewSetActive(appView) {
     appViewActive = appView
-    guiMain.layout.html('main', appView ? appView : '')
+    if (appView) {
+        const main_panel = guiMain.layout.panels[1]
+        main_panel.tabs.remove(main_panel.tabs.tabs.map(_ => _.id))
+        if (appView.tabbed) {
+            main_panel.tabs.add(appView.tabbed)
+            main_panel.tabs.click(appView.tabbed[0].id)
+        } else {
+            main_panel.tabs.add([{ id: 'tab_' + appView.name, text: appView.tabTitle(), ctl: appView }])
+            main_panel.tabs.click('tab_' + appView.name)
+        }
+    }
+}
+
+export function appViewSetRecord(appView, record) {
+    appView.record = record
+    appView.dataToUI()
+}
+
+export function appViewRefresh(appView) {
+    if (appView.refresh)
+        appView.refresh()
+    else if (appView.tabbed)
+        for (const tab of appView.tabbed)
+            if (tab.ctl.refresh)
+                tab.ctl.refresh()
 }

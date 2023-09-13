@@ -2,7 +2,7 @@ import { w2sidebar, w2confirm, w2tooltip } from './w2ui/w2ui.es6.js'
 import { arrayMoveItem, newObjName } from './util.js'
 
 import { onDirtyProj, onDirtyCfg } from './app_guimain.js'
-import { appViews, appViewActive, appViewSet } from './app_views.js'
+import { appViews, appViewActive, appViewSetActive, appViewSetRecord } from './app_views.js'
 
 let sideBarLists = {
     'proj_series': {
@@ -45,7 +45,7 @@ export const app_sidebar = new w2sidebar({
     nodes: [
         {
             id: 'project', text: 'Project', group: true, expanded: true, groupShowHide: false, nodes: [
-                { id: 'proj_series', text: 'Series &amp; Episodes', icon: sideBarLists['proj_series'].itemIcon, nodes: [], expanded: true },
+                { id: 'proj_series', text: 'Series &amp; Episodes', icon: 'fa fa-archive', nodes: [], expanded: true },
                 { id: 'proj_books', text: 'Books', icon: 'fa fa-book' },
                 { id: 'proj_sitegen', text: 'SiteGen', icon: 'fa fa-globe' },
                 { id: 'proj_settings', text: 'Settings', icon: 'fa fa-wrench' }
@@ -53,8 +53,7 @@ export const app_sidebar = new w2sidebar({
         },
         {
             id: 'config', text: 'Config', group: true, expanded: true, groupShowHide: false, nodes: [
-                { id: 'config_authors', text: 'Authors', icon: 'fa fa-vcard', appView: appViews.config_authors },
-                { id: 'config_pagelayouts', text: 'Page Layouting', icon: 'fa fa-th', appView: appViews.config_pagelayouts },
+                { id: 'config_contentauthoring', text: 'Content Authoring', icon: 'fa fa-map', appView: appViews.config_contentauthoring },
             ],
         },
         {
@@ -66,7 +65,7 @@ export const app_sidebar = new w2sidebar({
         let sel_node = app_sidebar.get(sel_node_id)
         app_sidebar.unselect()
         const app_view = appViewActive
-        appViewSet(null)
+        appViewSetActive(null)
         const perSideBarList = (node_id, list_info) => {
             const sidebar_node = app_sidebar.get(node_id)
             if (sidebar_node)
@@ -80,7 +79,7 @@ export const app_sidebar = new w2sidebar({
         for (const node_id in sideBarLists)
             perSideBarList(node_id, sideBarLists[node_id])
         // restore selection & view if possible
-        appViewSet(app_view)
+        appViewSetActive(app_view)
         if (sel_node_id && sel_node_id.length && app_sidebar.get(sel_node_id)) {
             app_sidebar.expandParents(sel_node_id)
             app_sidebar.select(sel_node_id)
@@ -128,14 +127,14 @@ export const app_sidebar = new w2sidebar({
                     app_sidebar.unselect()
                     app_sidebar.expandParents(node_id + '_' + name)
                     app_sidebar.select(node_id + '_' + name)
-                    list_info.appView.record = new_item
-                    appViewSet(list_info.appView)
+                    appViewSetRecord(list_info.appView, new_item)
+                    appViewSetActive(list_info.appView)
                     break
                 case node_id + '_delete':
                     if (item_node && item_node.record && item_node.record.id) {
                         w2confirm(list_info.deletePrompt(item_node.record.id))
                             .yes(() => {
-                                appViewSet(null)
+                                appViewSetActive(null)
                                 data_src = data_src.filter(_ => _.id != item_node.record.id)
                                 data_src = list_info.binding(data_src)
                                 if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
@@ -143,7 +142,7 @@ export const app_sidebar = new w2sidebar({
                                 if (item_node.parent) {
                                     app_sidebar.expandParents(item_node.parent.id)
                                     app_sidebar.select(item_node.parent.id)
-                                    appViewSet(appViewActive)
+                                    appViewSetActive(appViewActive)
                                 }
                             })
                     }
@@ -209,8 +208,8 @@ app_sidebar.on('click', (evt) => {
     }
     // if appView on node, show it
     if (evt.detail && evt.detail.node && evt.detail.node.appView) {
-        if (evt.detail.node.appView.setRecord && evt.detail.node.record)
-            evt.detail.node.appView.setRecord(evt.detail.node.record)
-        appViewSet(evt.detail.node.appView)
+        if (evt.detail.node.record)
+            appViewSetRecord(evt.detail.node.appView, evt.detail.node.record)
+        appViewSetActive(evt.detail.node.appView)
     }
 })

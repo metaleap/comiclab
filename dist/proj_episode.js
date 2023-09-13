@@ -28,6 +28,7 @@ export const proj_episode = new w2form({
                         error: 'Another Episode already has this ID.',
                     })
     },
+    tabTitle: () => proj_episode.record.id,
     dataToUI: () => {
         const episode = proj_episode.record
         proj_episode.setValue('id', episode ? episode.id : '')
@@ -50,8 +51,3 @@ export const proj_episode = new w2form({
         }
     },
 })
-
-proj_episode.setRecord = (episode) => {
-    proj_episode.record = episode
-    proj_episode.dataToUI()
-}
