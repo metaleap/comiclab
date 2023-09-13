@@ -206,7 +206,6 @@ app_sidebar.on('click', (evt) => {
         app_sidebar.toggle(evt.object.id)
     }
     // if appView on node, show it
-    if (evt.detail && evt.detail.node && evt.detail.node.appView) {
+    if (evt.detail && evt.detail.node && evt.detail.node.appView)
         appViewSetActive(evt.detail.node.appView, evt.detail.node.record)
-    }
 })

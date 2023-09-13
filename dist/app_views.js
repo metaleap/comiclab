@@ -23,7 +23,9 @@ export function appViewSetActive(appView, record) {
         return
     const main_panel = guiMain.layout.panels[1]
     main_panel.tabs.remove(...main_panel.tabs.tabs.map(_ => _.id))
-    if (appViewActive = appView) {
+    if (!(appViewActive = appView))
+        guiMain.layout.html('main', '?')
+    else {
         if (appView.tabbed) {
             main_panel.tabs.insert(null, appView.tabbed)
             main_panel.tabs.click(appView.tabbed[0].id)

@@ -60,9 +60,7 @@ guiMain = {
                 type: 'main', show: { tabs: true }, tabs: new w2tabs({
                     name: 'main_tabs',
                     tabs: [],
-                    onClick(evt) {
-                        guiMain.layout.html('main', evt.object.ctl)
-                    },
+                    onClick(evt) { guiMain.layout.html('main', evt.object.ctl) },
                 })
             },
         ]
