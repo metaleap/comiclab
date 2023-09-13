@@ -1,31 +1,34 @@
-import { w2grid } from '/w2ui/w2ui.es6.js'
+import { w2form } from './w2ui/w2ui.es6.js'
+
 import { newGrid } from './util.js'
 
 const tab_authors = {
     id: 'tab_authors',
-    text: '📇 Authors',
+    icon: 'fa-vcard',
+    text: 'Authors',
     ctl: newGrid('tab_authors_grid', 'author_id', 'Author', (dirty) => config_contentauthoring.onDirty(dirty), [
         { field: "author_id", text: "ID", sortable: true, },
         { field: "author_name", text: "Full Name", sortable: true, editable: { type: 'text' } },
     ]),
     dataToUI: () => {
         const recs = []
-        if (appState.config && appState.config.authors)
-            for (const id in appState.config.authors)
-                recs.push({ 'author_id': id, 'author_name': appState.config.authors[id] })
+        if (appState.config && appState.config.contentAuthoring.authors)
+            for (const id in appState.config.contentAuthoring.authors)
+                recs.push({ 'author_id': id, 'author_name': appState.config.contentAuthoring.authors[id] })
         tab_authors.ctl.afterDataToUI(recs)
     },
     dataFromUI: () => {
         tab_authors.ctl.beforeDataFromUI()
-        appState.config.authors = {}
+        appState.config.contentAuthoring.authors = {}
         for (const rec of tab_authors.ctl.records)
-            appState.config.authors[rec.author_id] = rec.author_name
+            appState.config.contentAuthoring.authors[rec.author_id] = rec.author_name
     },
 }
 
 const tab_pageformats = {
     id: 'tab_pageformats',
-    text: '📐 Page Formats',
+    icon: 'fa-file',
+    text: 'Page Formats',
     ctl: newGrid('tab_pageformats_grid', 'pageformat_id', 'PageFormat', (dirty) => config_contentauthoring.onDirty(dirty), [
         { field: "pageformat_id", text: "ID", sortable: true, },
         { field: "widthMm", text: "Width (mm)", sortable: false, render: 'int', editable: { type: 'int', min: 0, max: 1234 } },
@@ -33,16 +36,53 @@ const tab_pageformats = {
     ]),
     dataToUI: () => {
         const recs = []
-        if (appState.config && appState.config.pageFormats)
-            for (const id in appState.config.pageFormats)
-                recs.push({ 'pageformat_id': id, 'widthMm': appState.config.pageFormats[id].widthMm, 'heightMm': appState.config.pageFormats[id].heightMm })
+        if (appState.config && appState.config.contentAuthoring.pageFormats)
+            for (const id in appState.config.contentAuthoring.pageFormats)
+                recs.push({ 'pageformat_id': id, 'widthMm': appState.config.contentAuthoring.pageFormats[id].widthMm, 'heightMm': appState.config.contentAuthoring.pageFormats[id].heightMm })
         tab_pageformats.ctl.afterDataToUI(recs)
     },
     dataFromUI: () => {
         tab_pageformats.ctl.beforeDataFromUI()
-        appState.config.pageFormats = {}
+        appState.config.contentAuthoring.pageFormats = {}
         for (const rec of tab_pageformats.ctl.records)
-            appState.config.pageFormats[rec.pageformat_id] = { 'widthMm': rec.widthMm, 'heightMm': rec.heightMm }
+            appState.config.contentAuthoring.pageFormats[rec.pageformat_id] = { 'widthMm': rec.widthMm, 'heightMm': rec.heightMm }
+    },
+}
+
+const tab_localization = {
+    id: 'tab_localization',
+    icon: 'fa-language',
+    text: 'Localization',
+    ctl: new w2form({
+        name: 'tab_localization_form',
+        fields: [
+            { field: 'languages', type: 'map', html: { label: 'Languages', key: { text: '=', attr: 'style="width: 44px"' }, value: { attr: 'style="width: 77px"' } } },
+            { field: 'contentFields', type: 'array', html: { label: 'Content Fields' } },
+        ],
+        record: {
+            'languages': {},
+            'contentFields': [],
+        },
+        onChange(evt) {
+            const errs = tab_localization.ctl.validate()
+            if (!(errs && errs.length && errs.length > 0))
+                config_contentauthoring.onDirty(true)
+        },
+        onValidate(evt) {
+        },
+    }),
+    dataToUI: () => {
+        tab_localization.ctl.setValue('languages', appState.config.contentAuthoring.languages, true)
+        tab_localization.ctl.setValue('contentFields', appState.config.contentAuthoring.contentFields, true)
+        tab_localization.ctl.refresh()
+    },
+    dataFromUI: () => {
+        tab_localization.ctl.refresh()
+        setTimeout(() => {
+            const rec = tab_localization.ctl.getCleanRecord()
+            appState.config.contentAuthoring.languages = rec.languages
+            appState.config.contentAuthoring.contentFields = rec.contentFields
+        }, 123)
     },
 }
 
@@ -51,7 +91,8 @@ export const config_contentauthoring = {
     tabbed: [
         tab_authors,
         tab_pageformats,
+        tab_localization,
     ],
-    dataFromUI: () => config_contentauthoring.tabbed.map(_ => _.dataFromUI()),
-    dataToUI: () => config_contentauthoring.tabbed.map(_ => _.dataToUI()),
+    dataFromUI: () => config_contentauthoring.tabbed.forEach(_ => _.dataFromUI()),
+    dataToUI: () => config_contentauthoring.tabbed.forEach(_ => _.dataToUI()),
 }

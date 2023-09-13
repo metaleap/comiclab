@@ -1,8 +1,7 @@
-import { w2form } from '/w2ui/w2ui.es6.js'
+import { w2form } from './w2ui/w2ui.es6.js'
 
 export const proj_pagelayout = new w2form({
     name: 'proj_pagelayout',
-    record: null,
     parentEpisode: () => {
         for (const series of appState.proj.series) {
             const episode = series.episodes.find(_ => _.pages && _.pages.includes && _.pages.includes(proj_pagelayout.record))

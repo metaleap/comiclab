@@ -65,7 +65,9 @@ export function newGrid(name, recID, objName, onDirty, fields) {
         ret.clear(true)
         ret.add(records)
     }
-    ret.beforeDataFromUI = ret.mergeChanges
+    ret.beforeDataFromUI = () => {
+        ret.mergeChanges()
+    }
 
     ret.on('keydown', (evt) => {
         if (evt.detail && evt.detail.originalEvent && (evt.detail.originalEvent.key == 'Meta' || evt.detail.originalEvent.key == 'ContextMenu')) {
@@ -106,7 +108,7 @@ export function newGrid(name, recID, objName, onDirty, fields) {
     ret.on('change', (evt) => {
         ret.mergeChanges()
         onDirty(true)
-        ret.refresh() // yes, needed again despite mergeChanges...
+        setTimeout(ret.refresh, 345) // yes, needed again (AND delayed) despite mergeChanges...
     })
 
     return ret

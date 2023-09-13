@@ -1,8 +1,7 @@
-import { w2form } from '/w2ui/w2ui.es6.js'
+import { w2form } from './w2ui/w2ui.es6.js'
 
 export const proj_episode = new w2form({
     name: 'proj_episode',
-    record: null,
     parentSeries: () => appState.proj.series.find(_ => _.episodes.includes(proj_episode.record)),
     fields: [
         { field: 'id', type: 'text', required: true, html: { label: 'Episode ID' } }

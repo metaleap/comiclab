@@ -130,6 +130,7 @@ function appStateSave(proj, cfg) {
 
 function appStateReload(proj, cfg) {
     const req = prepReq(proj, cfg)
+    appViewSetActive(null)
     fetch('/appState', { method: 'POST', priority: 'high' })
         .then((resp) => {
             if (!resp.ok)
@@ -137,8 +138,7 @@ function appStateReload(proj, cfg) {
             return resp.json()
                 .then((latestAppState) => {
                     if (!latestAppState)
-                        return
-                    appViewSetActive(null)
+                        return req.onErr('No error reported but nothing received, buggily. Frontend app state might be out of date, try again and fix that bug.')
                     if (proj) {
                         appState.proj = latestAppState.proj
                         guiMain.sidebar.dataToUI()

@@ -7,8 +7,12 @@ import (
 const configFileName = "comiclab.json"
 
 type Config struct {
-	Authors     map[string]string      `json:"authors"`
-	PageFormats map[string]*PageFormat `json:"pageFormats"`
+	ContentAuthoring struct {
+		Authors       map[string]string      `json:"authors"`
+		PageFormats   map[string]*PageFormat `json:"pageFormats"`
+		Languages     map[string]string      `json:"languages"`
+		ContentFields []string               `json:"contentFields"`
+	} `json:"contentAuthoring"`
 }
 
 type PageFormat struct {

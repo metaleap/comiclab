@@ -19,7 +19,7 @@ var (
 
 func Main() {
 	var err error
-	if State.Config, err = readJSONFile(State.Config.FilePath(), &Config{Authors: map[string]string{}}); err != nil {
+	if State.Config, err = readJSONFile(State.Config.FilePath(), &Config{}); err != nil {
 		panic(err)
 	}
 	if State.Proj, err = readJSONFile(State.Proj.FilePath(), &Proj{}); err != nil {
