@@ -24,7 +24,7 @@ let sideBarLists = {
                 subList: (episode) => {
                     const ret_pagelayouts = {}
                     ret_pagelayouts['proj_series_' + series.id + '_' + episode.id] = {
-                        appView: appViews.proj_pagelayout, name: 'Page', itemIcon: 'fa fa-th', deletePrompt: id => 'Remove the "' + id + '" page from the project files, including all its letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+                        appView: appViews.proj_pagelayout, name: 'Page', itemIcon: 'fa fa-th-large', deletePrompt: id => 'Remove the "' + id + '" page from the project files, including all its letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
                         binding: (set) => {
                             if (set)
                                 episode.pages = set

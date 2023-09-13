@@ -13,7 +13,7 @@ export const appViews = {
 export let appViewActive = null
 
 export function appViewSetActive(appView) {
-    if (appViewActive == appView)
+    if (appViewActive == appView && appViewActive?.record == appView?.record)
         return
     const main_panel = guiMain.layout.panels[1]
     main_panel.tabs.remove(...main_panel.tabs.tabs.map(_ => _.id))
