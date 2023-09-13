@@ -2,7 +2,7 @@ import { w2sidebar, w2confirm, w2tooltip } from './w2ui/w2ui.es6.js'
 import { arrayMoveItem, newObjName } from './util.js'
 
 import { onDirtyProj, onDirtyCfg } from './app_guimain.js'
-import { appViews, appViewActive, appViewSetActive, appViewSetRecord } from './app_views.js'
+import { appViews, appViewActive, appViewSetActive } from './app_views.js'
 
 let sideBarLists = {
     'proj_series': {
@@ -119,7 +119,7 @@ export const app_sidebar = new w2sidebar({
             const item_node = app_sidebar.get(evt.target)
             switch (evt.detail.menuItem.id) {
                 case node_id + '_addnew':
-                    const name = newObjName(list_info.name, data_src.map(_ => _.id))
+                    const name = newObjName(list_info.name, data_src.len)
                     const new_item = { id: name }
                     data_src.push(new_item)
                     data_src = list_info.binding(data_src)
@@ -127,8 +127,7 @@ export const app_sidebar = new w2sidebar({
                     app_sidebar.unselect()
                     app_sidebar.expandParents(node_id + '_' + name)
                     app_sidebar.select(node_id + '_' + name)
-                    appViewSetRecord(list_info.appView, new_item)
-                    appViewSetActive(list_info.appView)
+                    appViewSetActive(list_info.appView, new_item)
                     break
                 case node_id + '_delete':
                     if (item_node && item_node.record && item_node.record.id) {
@@ -208,8 +207,6 @@ app_sidebar.on('click', (evt) => {
     }
     // if appView on node, show it
     if (evt.detail && evt.detail.node && evt.detail.node.appView) {
-        if (evt.detail.node.record)
-            appViewSetRecord(evt.detail.node.appView, evt.detail.node.record)
-        appViewSetActive(evt.detail.node.appView)
+        appViewSetActive(evt.detail.node.appView, evt.detail.node.record)
     }
 })

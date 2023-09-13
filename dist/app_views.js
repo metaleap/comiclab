@@ -12,8 +12,14 @@ export const appViews = {
 
 export let appViewActive = null
 
-export function appViewSetActive(appView) {
-    if (appViewActive == appView && appViewActive?.record == appView?.record)
+export function appViewSetActive(appView, record) {
+    let didSetRecord = false
+    if (record && appView && record != appView.record) {
+        appView.record = record
+        appView.dataToUI()
+        didSetRecord = true
+    }
+    if (appViewActive == appView && appViewActive?.record == appView?.record && !didSetRecord)
         return
     const main_panel = guiMain.layout.panels[1]
     main_panel.tabs.remove(...main_panel.tabs.tabs.map(_ => _.id))
@@ -26,11 +32,6 @@ export function appViewSetActive(appView) {
             main_panel.tabs.click('tab_' + appView.name)
         }
     }
-}
-
-export function appViewSetRecord(appView, record) {
-    appView.record = record
-    appView.dataToUI()
 }
 
 export function appViewRefresh(appView) {

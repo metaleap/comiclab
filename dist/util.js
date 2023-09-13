@@ -1,4 +1,4 @@
-import { w2popup, w2grid } from './w2ui/w2ui.es6.js'
+import { w2popup, w2grid, w2prompt } from './w2ui/w2ui.es6.js'
 
 export function arrayMoveItem(arr, idxOld, idxNew) {
     var item = arr[idxOld]
@@ -7,17 +7,9 @@ export function arrayMoveItem(arr, idxOld, idxNew) {
     return arr
 }
 
-export function newObjName(what, existingNames) {
-    let nn = what.toLowerCase()
-    let n = existingNames.length + 1
-    let ret = nn + (n < 10 ? '0' : '') + n
-    for (let i = 0; i < existingNames.length; i++)
-        if (ret == existingNames[i]) {
-            n++
-            ret = nn + (n < 10 ? '0' : '') + n
-            i = -1
-        }
-    return ret
+export function newObjName(what, currentCount) {
+    const n = currentCount + 1
+    return what.toLowerCase() + (n < 10 ? '0' : '') + n
 }
 
 export function setToolbarIcon(toolbar, id, icon) {
@@ -47,7 +39,7 @@ export function logMsg(isErr, msg) {
         w2popup.open({ title: strTime(now), text: msg })
 }
 
-export function newGrid(name, objName, recid, onDirty, fields, records) {
+export function newGrid(name, recID, objName, onDirty, fields) {
     const ret = new w2grid({
         name: name,
         selectType: 'row',
@@ -66,10 +58,14 @@ export function newGrid(name, objName, recid, onDirty, fields, records) {
         },
         autoLoad: false,
         advanceOnEdit: false,
-        recid: recid,
+        recid: recID,
         columns: fields,
-        records: records ?? [],
     })
+    ret.afterDataToUI = (records) => {
+        ret.clear(true)
+        ret.add(records)
+    }
+    ret.beforeDataFromUI = ret.mergeChanges
 
     ret.on('keydown', (evt) => {
         if (evt.detail && evt.detail.originalEvent && (evt.detail.originalEvent.key == 'Meta' || evt.detail.originalEvent.key == 'ContextMenu')) {
@@ -78,27 +74,39 @@ export function newGrid(name, objName, recid, onDirty, fields, records) {
         }
     })
     ret.on('delete', (evt) => {
-        setTimeout(() => { if (evt.phase == 'after') onDirty(true) }, 1)
+        setTimeout(() => {
+            if (evt.phase == 'after') {
+                ret.mergeChanges()
+                onDirty(true)
+            }
+        }, 1)
     })
     ret.on('add', (evt) => {
-        const initialID = newObjName(objName, ret.records.map(_ => _[recid]))
-        const new_obj = {}
-        new_obj[recid] = initialID
-        ret.add(new_obj)
-        ret.scrollIntoView(initialID)
-        ret.editField(initialID, 0)
-        onDirty(true)
+        const num_recs = ret.records.length
+        const proposal = newObjName(objName, num_recs)
+        w2prompt({
+            title: 'Add new ' + objName,
+            label: recID + ':',
+            value: proposal,
+        })
+            .ok((evt) => {
+                if (evt?.detail?.value && evt.detail.value.length) {
+                    const new_obj = {}
+                    new_obj[recID] = evt.detail.value
+                    if (ret.add(new_obj)) {
+                        ret.selectNone(true)
+                        ret.mergeChanges()
+                        onDirty(true)
+                        ret.scrollIntoView(new_obj[recID])
+                        ret.select(new_obj[recID])
+                    }
+                }
+            })
     })
     ret.on('change', (evt) => {
-        const col = ret.columns[evt.detail.column]
-        if ((!col) || (!col.editable) || (col.editable.type != 'text') || col.editable.allowEmpty || (evt.detail.value.new && evt.detail.value.new.length)) {
-            ret.mergeChanges()
-            onDirty(true)
-        } else { // prevent: cell was cleared for a text cell without .editable.allowEmpty
-            evt.detail.value.new = evt.detail.value.previous
-            evt.isCancelled = true
-            evt.preventDefault()
-        }
+        ret.mergeChanges()
+        onDirty(true)
+        ret.refresh() // yes, needed again despite mergeChanges...
     })
 
     return ret
