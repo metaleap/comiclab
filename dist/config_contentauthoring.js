@@ -1,38 +1,18 @@
 import { w2grid } from '/w2ui/w2ui.es6.js'
-import { newObjName } from './util.js'
+import { newGrid } from './util.js'
 
 const tab_authors = {
     id: 'tab_authors',
     text: 'Authors',
-    ctl: new w2grid({
-        name: "tab_authors_ctl",
-        selectType: 'row',
-        multiSelect: true,
-        show: {
-            columnMenu: false,
-            toolbar: true,
-            toolbarAdd: true,
-            toolbarDelete: true,
-            toolbarEdit: false,
-            toolbarSave: false,
-            toolbarSearch: false,
-            toolbarReload: false,
-            recordTitles: true,
-        },
-        autoLoad: false,
-        advanceOnEdit: true,
-        recid: 'author_id',
-        columns: [
-            { field: "author_id", text: "ID", sortable: true, editable: { type: 'text' } },
-            { field: "author_name", text: "Full Name", sortable: true, editable: { type: 'text' } },
-        ],
-        records: [],
-    }),
+    ctl: newGrid('tab_authors_grid', 'Author', 'author_id', (dirty) => config_contentauthoring.onDirty(dirty), [
+        { field: "author_id", text: "ID", sortable: true, editable: { type: 'text' } },
+        { field: "author_name", text: "Full Name", sortable: true, editable: { type: 'text' } },
+    ]),
     dataToUI: () => {
         tab_authors.ctl.records = []
         if (appState.config && appState.config.authors)
             for (const id in appState.config.authors)
-                tab_authors.ctl.records.push({ author_id: id, author_name: appState.config.authors[id] })
+                tab_authors.ctl.records.push({ 'author_id': id, 'author_name': appState.config.authors[id] })
         tab_authors.ctl.refresh()
     },
     dataFromUI: () => {
@@ -42,43 +22,34 @@ const tab_authors = {
     },
 }
 
+const tab_pageformats = {
+    id: 'tab_pageformats',
+    text: 'Page Formats',
+    ctl: newGrid('tab_pageformats_grid', 'PageFormat', 'pageformat_id', (dirty) => config_contentauthoring.onDirty(dirty), [
+        { field: "pageformat_id", text: "ID", sortable: true, editable: { type: 'text' } },
+        { field: "widthMm", text: "Width (mm)", sortable: false, render: 'int', editable: { type: 'int', min: 0, max: 123 } },
+        { field: "heightMm", text: "Height (mm)", sortable: false, render: 'int', editable: { type: 'int', min: 0, max: 123 } },
+    ]),
+    dataToUI: () => {
+        tab_pageformats.ctl.records = []
+        if (appState.config && appState.config.pageFormats)
+            for (const id in appState.config.pageFormats)
+                tab_pageformats.ctl.records.push({ 'pageformat_id': id, 'widthMm': appState.config.pageFormats[id].widthMm, 'heightMm': appState.config.pageFormats[id].heightMm })
+        tab_pageformats.ctl.refresh()
+    },
+    dataFromUI: () => {
+        appState.config.pageFormats = {}
+        for (const rec of tab_pageformats.ctl.records)
+            appState.config.pageFormats[rec.pageformat_id] = { 'widthMm': rec.widthMm, 'heightMm': rec.heightMm }
+    },
+}
+
 export const config_contentauthoring = {
     name: 'config_contentauthoring',
     tabbed: [
         tab_authors,
+        tab_pageformats,
     ],
     dataFromUI: () => config_contentauthoring.tabbed.map(_ => _.dataFromUI()),
     dataToUI: () => config_contentauthoring.tabbed.map(_ => _.dataToUI()),
 }
-
-tab_authors.ctl.on('keydown', (evt) => {
-    if (evt.detail && evt.detail.originalEvent && (evt.detail.originalEvent.key == 'Meta' || evt.detail.originalEvent.key == 'ContextMenu')) {
-        evt.isCancelled = true
-        evt.preventDefault()
-    }
-})
-
-tab_authors.ctl.on('delete', (evt) => {
-    setTimeout(() => { if (evt.phase == 'after') config_contentauthoring.onDirty(true) }, 1)
-})
-tab_authors.ctl.on('add', (evt) => {
-    const initialID = newObjName('Author', tab_authors.ctl.records.map(_ => _.author_id))
-    tab_authors.ctl.add({ author_id: initialID, author_name: 'New Author Full Name' })
-    tab_authors.ctl.scrollIntoView(initialID)
-    tab_authors.ctl.editField(initialID, 0)
-    config_contentauthoring.onDirty(true)
-})
-tab_authors.ctl.on('change', (evt) => {
-    console.log(evt)
-    if (evt.detail.value.new && evt.detail.value.new.length) {
-        const rec = tab_authors.ctl.records[evt.detail.index]
-        const col = tab_authors.ctl.columns[evt.detail.column]
-        rec[col.field] = evt.detail.value.new
-        tab_authors.ctl.records[evt.detail.index] = rec
-        config_contentauthoring.onDirty(true)
-    } else {
-        evt.detail.value.new = evt.detail.value.previous
-        evt.isCancelled = true
-        evt.preventDefault()
-    }
-})

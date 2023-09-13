@@ -13,15 +13,16 @@ export const appViews = {
 export let appViewActive = null
 
 export function appViewSetActive(appView) {
-    appViewActive = appView
-    if (appView) {
-        const main_panel = guiMain.layout.panels[1]
-        main_panel.tabs.remove(main_panel.tabs.tabs.map(_ => _.id))
+    if (appViewActive == appView)
+        return
+    const main_panel = guiMain.layout.panels[1]
+    main_panel.tabs.remove(...main_panel.tabs.tabs.map(_ => _.id))
+    if (appViewActive = appView) {
         if (appView.tabbed) {
-            main_panel.tabs.add(appView.tabbed)
+            main_panel.tabs.insert(null, appView.tabbed)
             main_panel.tabs.click(appView.tabbed[0].id)
         } else {
-            main_panel.tabs.add([{ id: 'tab_' + appView.name, text: appView.tabTitle(), ctl: appView }])
+            main_panel.tabs.insert(null, [{ id: 'tab_' + appView.name, text: appView.tabTitle(), ctl: appView }])
             main_panel.tabs.click('tab_' + appView.name)
         }
     }
