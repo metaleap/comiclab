@@ -1,4 +1,4 @@
-import { w2sidebar, w2confirm } from './w2ui/w2ui.es6.js'
+import { w2sidebar, w2confirm, w2tooltip } from './w2ui/w2ui.es6.js'
 import { arrayMoveItem, newObjName } from './util.js'
 
 import { onDirtyProj, onDirtyCfg } from './app_guimain.js'
@@ -125,6 +125,7 @@ export const app_sidebar = new w2sidebar({
                     data_src.push(new_item)
                     data_src = list_info.binding(data_src)
                     if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
+                    app_sidebar.unselect()
                     app_sidebar.expandParents(node_id + '_' + name)
                     app_sidebar.select(node_id + '_' + name)
                     list_info.appView.record = new_item
@@ -134,9 +135,16 @@ export const app_sidebar = new w2sidebar({
                     if (item_node && item_node.record && item_node.record.id) {
                         w2confirm(list_info.deletePrompt(item_node.record.id))
                             .yes(() => {
+                                appViewSet(null)
                                 data_src = data_src.filter(_ => _.id != item_node.record.id)
                                 data_src = list_info.binding(data_src)
                                 if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
+                                app_sidebar.unselect()
+                                if (item_node.parent) {
+                                    app_sidebar.expandParents(item_node.parent.id)
+                                    app_sidebar.select(item_node.parent.id)
+                                    appViewSet(appViewActive)
+                                }
                             })
                     }
                     break
@@ -189,9 +197,13 @@ function sideBarSubList(listInfo, dataSrc, perSideBarList) {
 }
 
 // app_sidebar.on('*', (evt) => { console.log('app_sidebar', evt) })
+app_sidebar.on('keydown', (evt) => {
+    if (evt.detail && evt.detail.originalEvent && evt.detail.originalEvent.keyCode == 27)
+        w2tooltip.hide() // it's really for closing the open context menu, if any
+})
 app_sidebar.on('click', (evt) => {
     // if sub-nodes, expand-or-collapse
-    if (evt.object && evt.object.id && evt.object.nodes && evt.object.nodes.length) {
+    if (evt.detail && evt.detail.originalEvent && evt.detail.originalEvent.button == 0 && evt.object && evt.object.id && evt.object.nodes && evt.object.nodes.length) {
         evt.object.selected = false
         app_sidebar.toggle(evt.object.id)
     }
