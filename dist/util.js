@@ -1,4 +1,4 @@
-import { w2popup, w2grid } from '/w2ui/w2ui.es6.js'
+import { w2popup, w2grid } from './w2ui/w2ui.es6.js'
 
 export function arrayMoveItem(arr, idxOld, idxNew) {
     var item = arr[idxOld]
@@ -91,16 +91,10 @@ export function newGrid(name, objName, recid, onDirty, fields, records) {
     })
     ret.on('change', (evt) => {
         const col = ret.columns[evt.detail.column]
-        if ((!col) || (!col.editable) || (col.editable.type != 'text') || col.editable.allowEmpty) {
+        if ((!col) || (!col.editable) || (col.editable.type != 'text') || col.editable.allowEmpty || (evt.detail.value.new && evt.detail.value.new.length)) {
+            ret.mergeChanges()
             onDirty(true)
-            return
-        }
-        if (evt.detail.value.new && evt.detail.value.new.length) {
-            const rec = ret.records[evt.detail.index]
-            rec[col.field] = evt.detail.value.new
-            ret.records[evt.detail.index] = rec
-            onDirty(true)
-        } else {
+        } else { // prevent: cell was cleared for a text cell without .editable.allowEmpty
             evt.detail.value.new = evt.detail.value.previous
             evt.isCancelled = true
             evt.preventDefault()

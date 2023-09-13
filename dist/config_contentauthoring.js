@@ -3,7 +3,7 @@ import { newGrid } from './util.js'
 
 const tab_authors = {
     id: 'tab_authors',
-    text: 'Authors',
+    text: '📇 Authors',
     ctl: newGrid('tab_authors_grid', 'Author', 'author_id', (dirty) => config_contentauthoring.onDirty(dirty), [
         { field: "author_id", text: "ID", sortable: true, editable: { type: 'text' } },
         { field: "author_name", text: "Full Name", sortable: true, editable: { type: 'text' } },
@@ -24,7 +24,7 @@ const tab_authors = {
 
 const tab_pageformats = {
     id: 'tab_pageformats',
-    text: 'Page Formats',
+    text: '📐 Page Formats',
     ctl: newGrid('tab_pageformats_grid', 'PageFormat', 'pageformat_id', (dirty) => config_contentauthoring.onDirty(dirty), [
         { field: "pageformat_id", text: "ID", sortable: true, editable: { type: 'text' } },
         { field: "widthMm", text: "Width (mm)", sortable: false, render: 'int', editable: { type: 'int', min: 0, max: 123 } },
@@ -39,8 +39,12 @@ const tab_pageformats = {
     },
     dataFromUI: () => {
         appState.config.pageFormats = {}
-        for (const rec of tab_pageformats.ctl.records)
+        for (const rec of tab_pageformats.ctl.records) {
+            console.log(rec)
+            console.log()
             appState.config.pageFormats[rec.pageformat_id] = { 'widthMm': rec.widthMm, 'heightMm': rec.heightMm }
+            console.log(appState.config.pageFormats[rec.pageformat_id])
+        }
     },
 }
 
