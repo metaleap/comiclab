@@ -46,14 +46,14 @@ config_authors.on('keydown', (evt) => {
     }
 })
 config_authors.on('delete', (evt) => {
-    setTimeout(() => { if (evt.phase == 'after') config_authors.onDirtyCfg(true) }, 1)
+    setTimeout(() => { if (evt.phase == 'after') config_authors.onDirty(true) }, 1)
 })
 config_authors.on('add', (evt) => {
     const initialID = newObjName('Author', config_authors.records.map(_ => _.author_id))
     config_authors.add({ author_id: initialID, author_name: 'New Author Full Name' })
     config_authors.scrollIntoView(initialID)
     config_authors.editField(initialID, 0)
-    config_authors.onDirtyCfg(true)
+    config_authors.onDirty(true)
 })
 config_authors.on('change', (evt) => {
     console.log(evt)
@@ -62,24 +62,10 @@ config_authors.on('change', (evt) => {
         const col = config_authors.columns[evt.detail.column]
         rec[col.field] = evt.detail.value.new
         config_authors.records[evt.detail.index] = rec
-        config_authors.onDirtyCfg(true)
+        config_authors.onDirty(true)
     } else {
         evt.detail.value.new = evt.detail.value.previous
         evt.isCancelled = true
         evt.preventDefault()
     }
 })
-
-config_authors.onGuiMainInited = (onDirtyProj, onDirtyCfg) => {
-    config_authors.onDirtyCfg = (dirty) => {
-        if (dirty)
-            config_authors.dataFromUI()
-        onDirtyCfg(dirty)
-    }
-    guiMain.div.on('reloadedcfg', (evt) => {
-        config_authors.dataToUI()
-    })
-    guiMain.div.on('savedcfg', (evt) => {
-        config_authors.refresh()
-    })
-}

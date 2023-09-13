@@ -1,7 +1,7 @@
 import { w2sidebar, w2confirm } from './w2ui/w2ui.es6.js'
 import { arrayMoveItem, newObjName } from './util.js'
 
-import { onDirtyProj, onDirtyCfg } from './app.js'
+import { onDirtyProj, onDirtyCfg } from './app_guimain.js'
 import { appViews, appViewActive, appViewSet } from './app_views.js'
 
 let sideBarLists = {
@@ -53,7 +53,8 @@ export const app_sidebar = new w2sidebar({
         },
         {
             id: 'config', text: 'Config', group: true, expanded: true, groupShowHide: false, nodes: [
-                { id: 'cfg_authors', text: 'Authors', icon: 'fa fa-vcard', appView: appViews.config_authors }
+                { id: 'config_authors', text: 'Authors', icon: 'fa fa-vcard', appView: appViews.config_authors },
+                { id: 'config_pagelayouts', text: 'Page Layouting', icon: 'fa fa-th', appView: appViews.config_pagelayouts },
             ],
         },
         {

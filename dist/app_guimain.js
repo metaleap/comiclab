@@ -106,9 +106,9 @@ function appStateSave(proj, cfg) {
     const req = prepReq(proj, cfg)
     const postBody = {}
     if (proj)
-        postBody.proj = appState.proj;
+        postBody.proj = appState.proj
     if (cfg)
-        postBody.config = appState.config;
+        postBody.config = appState.config
     fetch('/appState', { method: 'POST', priority: 'high', body: JSON.stringify(postBody), headers: { "Content-Type": "application/json" }, })
         .then((resp) => {
             if (resp.ok) {
@@ -151,7 +151,7 @@ function appStateReload(proj, cfg) {
 }
 
 function onDirtyChanged() {
-    const toolbar = guiMain.layout.panels[0].toolbar;
+    const toolbar = guiMain.layout.panels[0].toolbar
     toolbar.refresh()
     const neither_dirty = toolbar.get('menu_proj:menu_proj_save').disabled && toolbar.get('menu_cfg:menu_cfg_save').disabled
     toolbar[neither_dirty ? 'disable' : 'enable']('both_save')
@@ -168,13 +168,35 @@ export function onDirtyCfg(dirty) {
     onDirtyChanged()
 }
 
+function onGuiMainInited(appView) {
+    switch (true) {
+        case appView.name.startsWith('config_'):
+            appView.onDirtyCfg = (dirty) => {
+                if (dirty)
+                    appView.dataFromUI()
+                onDirtyCfg(dirty)
+            }
+            guiMain.div.on('reloadedcfg', (evt) => { appView.dataToUI() })
+            guiMain.div.on('savedcfg', (evt) => { appView.refresh() })
+            break
+        case appView.name.startsWith('proj_'):
+            appView.onDirtyProj = (dirty) => {
+                if (dirty)
+                    appView.dataFromUI()
+                onDirtyProj(dirty)
+            }
+            guiMain.div.on('reloadedproj', (evt) => { appView.dataToUI() })
+            guiMain.div.on('savedproj', (evt) => { appView.refresh() })
+            break
+    }
+}
 
 guiMain.layout.render('#main')
 guiMain.layout.html('left', guiMain.sidebar)
 appViewSet(null)
 
 for (const appViewID in appViews)
-    appViews[appViewID].onGuiMainInited(onDirtyProj, onDirtyCfg)
+    onGuiMainInited(appViews[appViewID])
 
 appStateReload(true, true)
 console.log("initial appState:", appState)

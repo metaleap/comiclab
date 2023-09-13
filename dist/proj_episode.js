@@ -10,7 +10,7 @@ export const proj_episode = new w2form({
     onChange(evt) {
         const errs = proj_episode.validate()
         if (!(errs && errs.length && errs.length > 0))
-            proj_episode.onDirtyProj(true)
+            proj_episode.onDirty(true)
     },
     onValidate(evt) {
         const episode_id = (proj_episode.getValue('id') + '').trim()
@@ -54,18 +54,4 @@ export const proj_episode = new w2form({
 proj_episode.setRecord = (episode) => {
     proj_episode.record = episode
     proj_episode.dataToUI()
-}
-
-proj_episode.onGuiMainInited = (onDirtyProj, onDirtyCfg) => {
-    proj_episode.onDirtyProj = (dirty) => {
-        if (dirty)
-            proj_episode.dataFromUI()
-        onDirtyProj(dirty)
-    }
-    guiMain.div.on('reloadedproj', (evt) => {
-        proj_episode.dataToUI()
-    })
-    guiMain.div.on('savedproj', (evt) => {
-        proj_episode.refresh()
-    })
 }

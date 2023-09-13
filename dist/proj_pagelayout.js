@@ -16,7 +16,7 @@ export const proj_pagelayout = new w2form({
     onChange(evt) {
         const errs = proj_pagelayout.validate()
         if (!(errs && errs.length && errs.length > 0))
-            proj_pagelayout.onDirtyProj(true)
+            proj_pagelayout.onDirty(true)
     },
     onValidate(evt) {
         const pagelayout_id = (proj_pagelayout.getValue('id') + '').trim()
@@ -60,18 +60,4 @@ export const proj_pagelayout = new w2form({
 proj_pagelayout.setRecord = (pagelayout) => {
     proj_pagelayout.record = pagelayout
     proj_pagelayout.dataToUI()
-}
-
-proj_pagelayout.onGuiMainInited = (onDirtyProj, onDirtyCfg) => {
-    proj_pagelayout.onDirtyProj = (dirty) => {
-        if (dirty)
-            proj_pagelayout.dataFromUI()
-        onDirtyProj(dirty)
-    }
-    guiMain.div.on('reloadedproj', (evt) => {
-        proj_pagelayout.dataToUI()
-    })
-    guiMain.div.on('savedproj', (evt) => {
-        proj_pagelayout.refresh()
-    })
 }

@@ -9,7 +9,7 @@ export const proj_series = new w2form({
     onChange(evt) {
         const errs = proj_series.validate()
         if (!(errs && errs.length && errs.length > 0))
-            proj_series.onDirtyProj(true)
+            proj_series.onDirty(true)
     },
     onValidate(evt) {
         const series_id = (proj_series.getValue('id') + '').trim()
@@ -49,18 +49,4 @@ export const proj_series = new w2form({
 proj_series.setRecord = (series) => {
     proj_series.record = series
     proj_series.dataToUI()
-}
-
-proj_series.onGuiMainInited = (onDirtyProj, onDirtyCfg) => {
-    proj_series.onDirtyProj = (dirty) => {
-        if (dirty)
-            proj_series.dataFromUI()
-        onDirtyProj(dirty)
-    }
-    guiMain.div.on('reloadedproj', (evt) => {
-        proj_series.dataToUI()
-    })
-    guiMain.div.on('savedproj', (evt) => {
-        proj_series.refresh()
-    })
 }
