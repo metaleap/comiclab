@@ -4,91 +4,26 @@ import { arrayMoveItem, newObjName } from './util.js'
 import { onDirtyProj, onDirtyCfg } from './app_guimain.js'
 import { appViews, appViewActive, appViewSetActive } from './app_views.js'
 
+let sideBarLists = {}
+
 let listTypes = {
     'series': {
         name: 'Series', icon: 'fa-cubes', contains: ['episodes'], appView: appViews.proj_series,
-        deletePrompt: id => 'Remove the "' + id + '" series from the project files, including all its episodes and their page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+        deletePrompt: id => `Remove the '${id}' series from the project files, including all its episodes and their page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)`,
     },
     'episodes': {
         name: 'Episode', icon: 'fa-cube', contains: ['pages'], appView: appViews.proj_episode,
-        deletePrompt: id => 'Remove the "' + id + '" episode from the project files, including all its page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+        deletePrompt: id => `Remove the '${id}' episode from the project files, including all its page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)`,
     },
     'pages': {
         name: 'Page', icon: 'fa-th-large', contains: [], appView: appViews.proj_pagelayout,
-        deletePrompt: id => 'Remove the "' + id + '" page from the project files, including all its letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+        deletePrompt: id => `Remove the '${id}' page from the project files, including all its letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)`,
     },
     'collections': {
         name: 'Collection', icon: 'fa-briefcase', contains: ['collections', 'pages'], appView: appViews.proj_collection,
-        deletePrompt: id => 'Remove the "' + id + '" collection from the project files, including all its sub-collections and page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+        deletePrompt: id => `Remove the '${id}' collection from the project files, including all its sub-collections and page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)`,
     },
 }
-
-let sideBarLists = {
-    'proj_series': {
-        appView: appViews.proj_series, name: 'Series', itemIcon: 'fa fa-cubes', deletePrompt: id => 'Remove the "' + id + '" series from the project files, including all its episodes and their page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
-        binding: (owner, set) => {
-            if (!owner)
-                owner = appState.proj
-            if (set)
-                owner.series = set
-            return owner.series ?? []
-        },
-        subLists: (series) => {
-            const ret_episodes = {}
-            ret_episodes['proj_series_' + series.id] = {
-                appView: appViews.proj_episode, name: 'Episode', itemIcon: 'fa fa-cube', deletePrompt: id => 'Remove the "' + id + '" episode from the project files, including all its page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
-                binding: (owner, set) => {
-                    if (!owner)
-                        owner = series
-                    if (set)
-                        owner.episodes = set
-                    return owner.episodes ?? []
-                },
-                subLists: (episode) => {
-                    const ret_pagelayouts = {}
-                    ret_pagelayouts['proj_series_' + series.id + '_' + episode.id] = {
-                        appView: appViews.proj_pagelayout, name: 'Page', itemIcon: 'fa fa-th-large', deletePrompt: id => 'Remove the "' + id + '" page from the project files, including all its letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
-                        binding: (owner, set) => {
-                            if (!owner)
-                                owner = episode
-                            if (set)
-                                owner.pages = set
-                            return owner.pages ?? []
-                        },
-                    }
-                    return ret_pagelayouts
-                },
-            }
-            return ret_episodes
-        },
-    },
-    'proj_collections': {
-        appView: appViews.proj_collection, name: 'Collection', itemIcon: 'fa fa-briefcase', deletePrompt: id => 'Remove the "' + id + '" collection from the project files, including all its sub-collections and page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
-        binding: (owner, set) => {
-            if (!owner)
-                owner = appState.proj
-            if (set)
-                owner.collections = set
-            return owner.collections ?? []
-        },
-        subSelves: true,
-        subLists: (collection) => {
-            const ret = {}
-            ret['proj_collections_' + collection.id] = {
-                appView: appViews.proj_pagelayout, name: 'Page', itemIcon: 'fa fa-th-large', deletePrompt: id => 'Remove the "' + id + '" page from the project files, including all its letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
-                binding: (owner, set) => {
-                    if (!owner)
-                        owner = collection
-                    if (set)
-                        owner.pages = set
-                    return owner.pages ?? []
-                },
-            }
-            return ret
-        },
-    },
-}
-
 
 export const app_sidebar = new w2sidebar({
     name: 'sidebar',
@@ -128,7 +63,7 @@ export const app_sidebar = new w2sidebar({
                 const list = listOwner[list_of]
                 if (list && list.length)
                     app_sidebar.insert(listNode.id, null, list.map(_ => ({
-                        id: listNode.id + '_' + list_of + '_' + _.id, listOf: sub_info.contains,
+                        id: listNode.id + '_' + list_of + '_' + _.id, listOf: sub_info.contains, ownKind: list_of,
                         text: _.id, icon: 'fa ' + sub_info.icon, appView: sub_info.appView, record: _,
                     })))
             }
@@ -144,60 +79,72 @@ export const app_sidebar = new w2sidebar({
             clickNode(sel_node_id)
         else if (sel_node && sel_node.parent && sel_node.record) {
             const found = app_sidebar.find(sel_node.parent.id, { record: sel_node.record })
-            clickNode(found && found.id && app_sidebar.get(found.id) ? found.id : sel_node.parent.id)
+            clickNode((found && found.length && app_sidebar.get(found[0])) ? found[0].id : sel_node.parent.id)
         }
         app_sidebar.refresh()
     },
     onContextMenu(evt) {
         this.menu = []
-        const perSideBarList = (node_id, list_info) => {
-            let data_src = list_info.binding()
-            subLists(list_info, data_src, perSideBarList)
-            let num_items = this.menu.length
-            if (evt.target == node_id)
-                this.menu.push({ id: node_id + '_addnew', text: 'Add New ' + list_info.name + '...', icon: 'fa fa-plus' })
-            if (evt.object && evt.object.text && evt.object.record && evt.target.startsWith && evt.target.startsWith(node_id + '_') && evt.target.lastIndexOf('_') == node_id.length) {
-                const idx = data_src.findIndex(_ => _.id == evt.object.record.id)
-                this.menu.push({ id: node_id + '_moveup', text: 'Move "' + evt.object.text + '" Up', disabled: idx == 0, icon: 'fa fa-angle-up' })
-                this.menu.push({ id: node_id + '_movedown', text: 'Move "' + evt.object.text + '" Down', disabled: idx == (data_src.length - 1), icon: 'fa fa-angle-down' })
-                this.menu.push({ id: node_id + '_movefirst', text: 'Move "' + evt.object.text + '" To Top', disabled: idx == 0, icon: 'fa fa-angle-double-up' })
-                this.menu.push({ id: node_id + '_movelast', text: 'Move "' + evt.object.text + '" To End', disabled: idx == (data_src.length - 1), icon: 'fa fa-angle-double-down' })
-                this.menu.push({ id: node_id + '_delete', text: 'Delete "' + evt.object.text + '"...', icon: 'fa fa-remove' })
+        const node_id = evt.target
+        const node = app_sidebar.get(node_id)
+        // 'Add' action
+        for (const list_of of node.listOf) {
+            const sub_info = listTypes[list_of]
+            const owner = node.record ?? appState.proj
+            let list = owner[list_of]
+            if (!(list && list.length)) {
+                owner[list_of] = []
+                list = owner[list_of]
             }
-            if (this.menu.length > num_items)
-                this.menu.push({ text: '--' })
+            this.menu.push({
+                icon: 'fa fa-plus', text: 'Add new ' + sub_info.name + ' to ' + (node.record ? `'${node.record.id}'` : 'project') + '...',
+                onClick: () => {
+                    const new_item = { id: newObjName(sub_info.name, list.length, (n) => !list.some(_ => _.id == n)) }
+                    list.push(new_item)
+                    if (sub_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) } // refresh. brings node into sidebar
+                    const new_node_id = node_id + '_' + list_of + '_' + new_item.id
+                    clickNode(new_node_id)
+                },
+            })
         }
-        for (const node_id in sideBarLists)
-            perSideBarList(node_id, sideBarLists[node_id])
-        if (this.menu.length && this.menu[this.menu.length - 1].text == '--')
-            this.menu.pop()
+        // 'Delete' & 'Move' actions
+        if (node.ownKind) {
+            const list_info = listTypes[node.ownKind]
+            let parent_list = appState.proj[node.ownKind]
+            let parent_list_mut = (newList) => { appState.proj[node.ownKind] = newList }
+            if (node.parent && node.parent.record && node.parent.listOf?.length) {
+                parent_list = node.parent.record[node.ownKind]
+                parent_list_mut = (newList) => { node.parent.record[node.ownKind] = newList }
+            }
+            if (parent_list) {
+                if (this.menu.length)
+                    this.menu.push({ text: '--' })
+                const idx = parent_list.indexOf(node.record)
+                this.menu.push({ text: `Move '${node.record.id}' Up`, disabled: idx == 0, icon: 'fa fa-angle-up' })
+                this.menu.push({ text: `Move '${node.record.id}' Down`, disabled: idx == (parent_list.length - 1), icon: 'fa fa-angle-down' })
+                this.menu.push({ text: `Move '${node.record.id}' To Top`, disabled: idx == 0, icon: 'fa fa-angle-double-up' })
+                this.menu.push({ text: `Move '${node.record.id}' To End`, disabled: idx == (parent_list.length - 1), icon: 'fa fa-angle-double-down' })
+                this.menu.push({
+                    text: `Delete '${node.record.id}'...`, icon: 'fa fa-remove',
+                    onClick: () => w2confirm(list_info.deletePrompt(node.record.id)).yes(() => {
+                        appViewSetActive(null)
+                        parent_list_mut(parent_list.filter(_ => _.id != node.record.id))
+                        if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) } // refresh. drops node from sidebar
+                        clickNode(node.parent.id)
+                    }),
+                })
+            }
+        }
     },
     onMenuClick(evt) {
+        if (evt.detail.menuItem.onClick)
+            return evt.detail.menuItem.onClick()
+
         const perSideBarList = (node_id, list_info) => {
             let data_src = list_info.binding()
             const item_node = app_sidebar.get(evt.target)
+
             switch (evt.detail.menuItem.id) {
-                case node_id + '_addnew':
-                    const name = newObjName(list_info.name, data_src.length, (n) => !data_src.some(_ => _.id == n))
-                    const new_item = { id: name }
-                    data_src.push(new_item)
-                    data_src = list_info.binding(item_node.record, data_src)
-                    if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
-                    clickNode(node_id + '_' + name)
-                    appViewSetActive(list_info.appView, new_item)
-                    break
-                case node_id + '_delete':
-                    if (item_node && item_node.record && item_node.record.id) {
-                        w2confirm(list_info.deletePrompt(item_node.record.id))
-                            .yes(() => {
-                                appViewSetActive(null)
-                                data_src = data_src.filter(_ => _.id != item_node.record.id)
-                                data_src = list_info.binding(null, data_src)
-                                if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
-                                clickNode(item_node.parent.id)
-                            })
-                    }
-                    break
                 default:
                     if (item_node && item_node.record && item_node.record.id) {
                         let idx = data_src.findIndex(_ => _.id == item_node.record.id)
