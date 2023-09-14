@@ -18,8 +18,10 @@ func init() {
 }
 
 type Proj struct {
-	Series          []*Series `json:"series"`
-	DefaultLanguage string    `json:"defaultLanguage"`
+	Series   []*Series `json:"series"`
+	Settings struct {
+		DefaultLanguage string `json:"defaultLanguage,omitempty"`
+	} `json:"settings"`
 }
 
 func (me *Proj) FilePath() string { return filepath.Join(projDirPath, projFileName) }

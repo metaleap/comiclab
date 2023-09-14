@@ -48,7 +48,7 @@ export const app_sidebar = new w2sidebar({
                 { id: 'proj_series', text: 'Series &amp; Episodes', icon: 'fa fa-archive', nodes: [], expanded: true },
                 { id: 'proj_books', text: 'Books', icon: 'fa fa-book' },
                 { id: 'proj_sitegen', text: 'SiteGen', icon: 'fa fa-globe' },
-                { id: 'proj_settings', text: 'Settings', icon: 'fa fa-wrench' }
+                { id: 'proj_settings', text: 'Settings', icon: 'fa fa-wrench', appView: appViews.proj_settings }
             ],
         },
         {

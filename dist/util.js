@@ -7,6 +7,15 @@ export function arrayMoveItem(arr, idxOld, idxNew) {
     return arr
 }
 
+export function dictKeys(dict, skipUnderscored) {
+    const ret = []
+    if (dict)
+        for (const key in dict)
+            if ((!skipUnderscored) || (!key.startsWith) || !key.startsWith('_'))
+                ret.push(key)
+    return ret
+}
+
 export function newObjName(what, currentCount) {
     const n = currentCount + 1
     return what.toLowerCase() + (n < 10 ? '0' : '') + n
@@ -70,7 +79,7 @@ export function newGrid(name, recID, objName, onDirty, fields) {
     }
 
     ret.on('keydown', (evt) => {
-        if (evt.detail && evt.detail.originalEvent && (evt.detail.originalEvent.key == 'Meta' || evt.detail.originalEvent.key == 'ContextMenu')) {
+        if (['Meta', 'ContextMenu'].includes(evt?.detail?.originalEvent?.key)) {
             evt.isCancelled = true
             evt.preventDefault()
         }

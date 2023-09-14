@@ -1,12 +1,14 @@
 import { proj_series } from './proj_series.js'
 import { proj_episode } from './proj_episode.js'
 import { proj_pagelayout } from './proj_pagelayout.js'
+import { proj_settings } from './proj_settings.js'
 import { config_contentauthoring } from './config_contentauthoring.js'
 
 export const appViews = {
     proj_series: proj_series,
     proj_episode: proj_episode,
     proj_pagelayout: proj_pagelayout,
+    proj_settings: proj_settings,
     config_contentauthoring: config_contentauthoring,
 }
 

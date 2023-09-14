@@ -57,7 +57,7 @@ const tab_localization = {
         name: 'tab_localization_form',
         fields: [
             { field: 'languages', type: 'map', html: { label: 'Languages', key: { text: '=', attr: 'style="width: 44px"' }, value: { attr: 'style="width: 77px"' } } },
-            { field: 'contentFields', type: 'array', html: { label: 'Content Fields' } },
+            { field: 'contentFields', type: 'array', html: { label: 'Custom Localizable<br/>Content Fields' } },
         ],
         record: {
             'languages': {},
@@ -79,7 +79,7 @@ const tab_localization = {
     dataFromUI: () => {
         tab_localization.ctl.refresh()
         setTimeout(() => {
-            const rec = tab_localization.ctl.getCleanRecord()
+            const rec = tab_localization.ctl.getCleanRecord(true)
             appState.config.contentAuthoring.languages = rec.languages
             appState.config.contentAuthoring.contentFields = rec.contentFields
         }, 123)
