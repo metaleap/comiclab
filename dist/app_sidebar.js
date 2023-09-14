@@ -18,7 +18,7 @@ let listTypes = {
         deletePrompt: id => 'Remove the "' + id + '" page from the project files, including all its letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
     },
     'collections': {
-        name: 'Collection', icon: 'fa-briefcase', contains: ['pages', 'collections'], appView: appViews.proj_collection,
+        name: 'Collection', icon: 'fa-briefcase', contains: ['collections', 'pages'], appView: appViews.proj_collection,
         deletePrompt: id => 'Remove the "' + id + '" collection from the project files, including all its sub-collections and page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
     },
 }
@@ -146,10 +146,6 @@ export const app_sidebar = new w2sidebar({
             const found = app_sidebar.find(sel_node.parent.id, { record: sel_node.record })
             clickNode(found && found.id && app_sidebar.get(found.id) ? found.id : sel_node.parent.id)
         }
-        app_sidebar.each(node => {
-            if (node.id.startsWith('proj_collection'))
-                node.count = (node.nodes && node.nodes.length && node.nodes.length > 0) ? node.nodes.length : undefined
-        })
         app_sidebar.refresh()
     },
     onContextMenu(evt) {
