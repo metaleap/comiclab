@@ -14,7 +14,7 @@ var tmplMain *template.Template
 
 func init() {
 	var err error
-	tmpl_file_path := filepath.Join(DistDirPath, "app.tmpl")
+	tmpl_file_path := filepath.Join(DistDirPath, "app/app.tmpl")
 	if tmplMain, err = template.New(filepath.Base(tmpl_file_path)).ParseFiles(tmpl_file_path); err != nil {
 		panic(err)
 	}

@@ -9,7 +9,7 @@ const tab_pagelayout_details = {
         { field: 'id', type: 'text', required: true, html: { label: 'Page ID' } }
     ], {
         onValidate(evt) {
-            const page_id = (tab_pagelayout_details.ctl.getValue('id') + '').trim()
+            const page_id = tab_pagelayout_details.ctl.getValue('id')
             if (!(page_id && page_id.length && page_id.length > 0))
                 evt.detail.errors.push({
                     field: tab_pagelayout_details.ctl.get('id'),
@@ -53,15 +53,13 @@ export const proj_pagelayout = {
         tab_pagelayout_details,
     ],
     parentCollection: () => walkCollections((coll) => {
-        if (coll.pages && coll.pages.includes(proj_pagelayout.record))
+        if (coll.pages && coll.pages.some(_ => _ == proj_pagelayout.record || _.id == proj_pagelayout.record.id))
             return coll
     }),
     setRecord: (rec) => {
         proj_pagelayout.record = rec
-        proj_pagelayout.tabbed.forEach(_ => {
-            _.ctl.record = rec
-            _.dataToUI()
-        })
+        proj_pagelayout.tabbed.forEach(_ => { _.ctl.record = rec })
+        proj_pagelayout.dataToUI()
     },
     dataFromUI: () => proj_pagelayout.tabbed.forEach(_ => _.dataFromUI()),
     dataToUI: () => proj_pagelayout.tabbed.forEach(_ => _.dataToUI()),

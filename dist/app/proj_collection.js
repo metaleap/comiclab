@@ -8,20 +8,22 @@ const tab_collection_details = {
         { field: 'id', type: 'text', required: true, html: { label: 'Collection ID' } }
     ], {
         onValidate(evt) {
-            const collection_id = (tab_collection_details.ctl.getValue('id') + '').trim()
-            if (!(collection_id && collection_id.length && collection_id.length > 0))
+            const coll_id = tab_collection_details.ctl.getValue('id')
+            if (!(coll_id && coll_id.length && coll_id.length > 0))
                 evt.detail.errors.push({
                     field: tab_collection_details.ctl.get('id'),
                     error: 'Collection ID is required.',
                 })
-            const parent_collection = proj_collection.parentCollection()
-            if (parent_collection)
-                for (const collection of parent_collection.collections)
-                    if (collection.id == collection_id && collection != proj_collection.record)
+            const parent_coll = proj_collection.parentCollection()
+            console.log("OV2", coll_id, parent_coll)
+            if (parent_coll)
+                for (const coll of parent_coll.collections)
+                    if (coll.id == coll_id && coll != proj_collection.record)
                         evt.detail.errors.push({
                             field: tab_collection_details.ctl.get('id'),
-                            error: 'Another Collection in "' + parent_collection.id + '" already has this ID.',
+                            error: 'Another Collection in "' + parent_coll.id + '" already has this ID.',
                         })
+            console.log("PCOV3", evt)
         },
     }),
     dataToUI: () => tab_collection_details.ctl.onDataToUI(() => {
@@ -76,10 +78,8 @@ export const proj_collection = {
     },
     setRecord: (rec) => {
         proj_collection.record = rec
-        proj_collection.tabbed.forEach(_ => {
-            _.ctl.record = rec
-            _.dataToUI()
-        })
+        proj_collection.tabbed.forEach(_ => { _.ctl.record = rec })
+        proj_collection.dataToUI()
     },
     dataFromUI: () => proj_collection.tabbed.forEach(_ => _.dataFromUI()),
     dataToUI: () => proj_collection.tabbed.forEach(_ => _.dataToUI()),

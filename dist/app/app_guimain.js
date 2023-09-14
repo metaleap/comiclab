@@ -1,4 +1,4 @@
-import { query, w2layout, w2utils, w2tabs } from './w2ui/w2ui.es6.js'
+import { query, w2layout, w2utils, w2tabs } from '../w2ui/w2ui.es6.js'
 import { setToolbarIcon, logErr, logInfo } from './util.js'
 
 import { appViews, appViewSetActive, appViewRefresh } from './app_views.js'

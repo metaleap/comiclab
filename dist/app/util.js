@@ -1,4 +1,4 @@
-import { w2popup, w2grid, w2form, w2prompt } from './w2ui/w2ui.es6.js'
+import { w2popup, w2grid, w2form, w2prompt } from '../w2ui/w2ui.es6.js'
 
 export function arrayMoveItem(arr, idxOld, idxNew) {
     var item = arr[idxOld]
@@ -57,7 +57,7 @@ export function logMsg(isErr, msg) {
 }
 
 export function newGrid(name, recID, objName, onDirty, fields) {
-    const ret = new w2grid({
+    const init = {
         name: name,
         selectType: 'row',
         multiSelect: true,
@@ -77,7 +77,50 @@ export function newGrid(name, recID, objName, onDirty, fields) {
         advanceOnEdit: false,
         recid: recID,
         columns: fields,
-    })
+        onChange(evt) {
+            this.mergeChanges()
+            onDirty(true)
+            setTimeout(this.refresh, 345) // yes, needed again (AND delayed) despite mergeChanges...
+        },
+        onKeydown(evt) {
+            if (['Meta', 'ContextMenu'].includes(evt?.detail?.originalEvent?.key)) {
+                evt.isCancelled = true
+                evt.preventDefault()
+            }
+        },
+        onDelete(evt) {
+            setTimeout(() => {
+                if (evt.phase == 'after') {
+                    this.mergeChanges()
+                    onDirty(true)
+                }
+            }, 1)
+        },
+        onAdd(evt) {
+            const num_recs = this.records.length
+            const proposal = newObjName(objName, num_recs, (name) => !this.get(name))
+            w2prompt({
+                title: 'Add new ' + objName,
+                label: recID + ':',
+                value: proposal,
+            })
+                .ok((evt) => {
+                    if (evt?.detail?.value && evt.detail.value.length) {
+                        const new_obj = {}
+                        new_obj[recID] = evt.detail.value
+                        if (this.add(new_obj)) {
+                            this.selectNone(true)
+                            this.mergeChanges()
+                            onDirty(true)
+                            this.scrollIntoView(new_obj[recID])
+                            this.select(new_obj[recID])
+                        }
+                    }
+                })
+        }
+    }
+
+    const ret = new w2grid(init)
     ret.onDataToUI = (f) => {
         const recs = f()
         ret.clear(true)
@@ -87,74 +130,26 @@ export function newGrid(name, recID, objName, onDirty, fields) {
         ret.mergeChanges()
         f()
     }
-
-    ret.on('keydown', (evt) => {
-        if (['Meta', 'ContextMenu'].includes(evt?.detail?.originalEvent?.key)) {
-            evt.isCancelled = true
-            evt.preventDefault()
-        }
-    })
-    ret.on('delete', (evt) => {
-        setTimeout(() => {
-            if (evt.phase == 'after') {
-                ret.mergeChanges()
-                onDirty(true)
-            }
-        }, 1)
-    })
-    ret.on('add', (evt) => {
-        const num_recs = ret.records.length
-        const proposal = newObjName(objName, num_recs, (name) => !ret.get(name))
-        w2prompt({
-            title: 'Add new ' + objName,
-            label: recID + ':',
-            value: proposal,
-        })
-            .ok((evt) => {
-                if (evt?.detail?.value && evt.detail.value.length) {
-                    const new_obj = {}
-                    new_obj[recID] = evt.detail.value
-                    if (ret.add(new_obj)) {
-                        ret.selectNone(true)
-                        ret.mergeChanges()
-                        onDirty(true)
-                        ret.scrollIntoView(new_obj[recID])
-                        ret.select(new_obj[recID])
-                    }
-                }
-            })
-    })
-    ret.on('change', (evt) => {
-        ret.mergeChanges()
-        onDirty(true)
-        setTimeout(ret.refresh, 345) // yes, needed again (AND delayed) despite mergeChanges...
-    })
-
     return ret
 }
 
 export function newForm(name, onDirty, fields, extras) {
-    const ret = new w2form({
+    const init = {
         name: name,
         fields: fields,
         record: {},
         onChange(evt) {
-            const errs = ret.validate()
+            const errs = this.validate()
+            console.log("OC", errs)
             if (!(errs && errs.length && errs.length > 0))
                 onDirty(true)
+            else
+                evt.preventDefault()
         },
-        onDataToUI: (f) => {
-            f()
-            ret.refresh()
-        },
-        onDataFromUI: (f) => {
-            ret.refresh()
-            setTimeout(f, 123)
-        },
-    })
+    }
     if (extras)
         for (const key in extras)
-            ret[key] = extras[key]
+            init[key] = extras[key]
     for (const field of fields) {
         let v = undefined
         switch (field.type) {
@@ -169,7 +164,17 @@ export function newForm(name, onDirty, fields, extras) {
             case 'text', 'alphanumeric', 'pass', 'password', 'color', 'radio', 'select', 'textarea', 'combo', 'div', 'html', 'email', 'list':
                 v = ''
         }
-        ret.record[field.field] = v
+        init.record[field.field] = v
+    }
+
+    const ret = new w2form(init)
+    ret.onDataToUI = (f) => {
+        f()
+        ret.refresh()
+    }
+    ret.onDataFromUI = (f) => {
+        ret.refresh()
+        setTimeout(f, 123)
     }
     return ret
 }

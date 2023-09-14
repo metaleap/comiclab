@@ -1,4 +1,4 @@
-import { w2sidebar, w2confirm, w2tooltip } from './w2ui/w2ui.es6.js'
+import { w2sidebar, w2confirm, w2tooltip } from '../w2ui/w2ui.es6.js'
 import { arrayMoveItem, newObjName } from './util.js'
 
 import { onDirtyProj, onDirtyCfg } from './app_guimain.js'
