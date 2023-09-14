@@ -7,11 +7,11 @@ import { appViews, appViewActive, appViewSetActive } from './app_views.js'
 let listInfos = {
     'pages': {
         name: 'Page', icon: 'fa-th-large', contains: [], appView: appViews.proj_pagelayout,
-        deletePrompt: id => `Remove the '${id}' page from the project files, including all its letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)`,
+        deletePrompt: id => `Remove the '${id}' Page from the project?`,
     },
     'collections': {
         name: 'Collection', icon: 'fa-briefcase', contains: ['collections', 'pages'], appView: appViews.proj_collection,
-        deletePrompt: id => `Remove the '${id}' collection from the project files, including all its sub-collections and page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)`,
+        deletePrompt: id => `Remove the '${id}' Collection from the project?`,
     },
 }
 

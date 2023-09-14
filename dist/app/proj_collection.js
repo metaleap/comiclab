@@ -1,11 +1,13 @@
-import { newForm } from './util.js'
+import { query, w2menu, w2utils } from '../w2ui/w2ui.es6.js'
+import { dictKeys, newForm } from './util.js'
 
 const tab_collection_details = {
     id: 'tab_collection_details',
     icon: 'fa-briefcase',
     text: 'Collection Info',
     ctl: newForm('tab_collection_details_form', (dirty) => proj_collection.onDirty(dirty), [
-        { field: 'id', type: 'text', required: true, html: { label: 'Collection ID' } }
+        { field: 'id', type: 'text', required: true, html: { label: 'Collection ID' } },
+        { field: 'author', type: 'combo', html: { label: 'Author', }, options: { items: () => dictKeys(appState.config?.contentAuthoring?.authors) } },
     ], {
         onValidate(evt) {
             const new_id = tab_collection_details.ctl.getValue('id')
@@ -16,7 +18,7 @@ const tab_collection_details = {
                 })
             const parent_coll = proj_collection.parentCollection()
             const sibling_colls = parent_coll ? parent_coll.collections : appState.proj.collections
-            if (sibling_colls.length)
+            if (sibling_colls && sibling_colls.length)
                 for (const coll of sibling_colls)
                     if (coll.id == new_id && coll != proj_collection.record)
                         evt.detail.errors.push({
@@ -25,25 +27,10 @@ const tab_collection_details = {
                         })
         },
     }),
-    dataToUI: () => tab_collection_details.ctl.onDataToUI(() => {
-        const collection = tab_collection_details.ctl.record
-        tab_collection_details.ctl.setValue('id', collection ? collection.id : '')
-    }),
-    dataFromUI: () => tab_collection_details.ctl.onDataFromUI(() => {
-        const collection = tab_collection_details.ctl.record
-        if (collection) {
-            const oldID = collection.id
-            const newID = tab_collection_details.ctl.getValue('id')
-            if (oldID != newID) {
-                collection.id = newID
-                const parent_collection = proj_collection.parentCollection()
-                if (parent_collection)
-                    for (const i in parent_collection.collections)
-                        if (parent_collection.collections[i] == collection || parent_collection.collections[i].id == oldID)
-                            parent_collection.collections[i] = collection
-            }
-            tab_collection_details.ctl.record = collection
-        }
+    dataToUI: () => tab_collection_details.ctl.onDataToUI(),
+    dataFromUI: () => tab_collection_details.ctl.onDataFromUI((recClean) => {
+        for (const field_name in recClean)
+            tab_collection_details.ctl.record[field_name] = recClean[field_name]
     }),
 }
 

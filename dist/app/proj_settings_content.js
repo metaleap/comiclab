@@ -11,12 +11,11 @@ const tab_contentauthoring = {
             }, html: { label: 'Default Language', }
         },
     ]),
-    dataToUI: () => tab_contentauthoring.ctl.onDataToUI(() => {
-        tab_contentauthoring.ctl.setValue('defaultLanguage', appState.proj.settings.defaultLanguage, true)
-    }),
-    dataFromUI: () => tab_contentauthoring.ctl.onDataFromUI(() => {
-        const rec = tab_contentauthoring.ctl.getCleanRecord()
-        appState.proj.settings.defaultLanguage = rec.defaultLanguage
+    dataToUI: () => tab_contentauthoring.ctl.onDataToUI((_) => ({
+        'defaultLanguage': appState.proj.settings.defaultLanguage,
+    })),
+    dataFromUI: () => tab_contentauthoring.ctl.onDataFromUI((recClean) => {
+        appState.proj.settings.defaultLanguage = recClean.defaultLanguage
     }),
 }
 

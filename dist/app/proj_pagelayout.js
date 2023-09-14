@@ -25,10 +25,7 @@ const tab_pagelayout_details = {
                         })
         },
     }),
-    dataToUI: () => tab_pagelayout_details.ctl.onDataToUI(() => {
-        const pagelayout = proj_pagelayout.record
-        tab_pagelayout_details.ctl.setValue('id', pagelayout ? pagelayout.id : '')
-    }),
+    dataToUI: () => tab_pagelayout_details.ctl.onDataToUI(),
     dataFromUI: () => tab_pagelayout_details.ctl.onDataFromUI(() => {
         const pagelayout = proj_pagelayout.record
         if (pagelayout) {

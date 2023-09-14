@@ -8,7 +8,7 @@ const tab_authors = {
         { field: "author_id", text: "ID", sortable: true, },
         { field: "author_name", text: "Full Name", sortable: true, editable: { type: 'text' } },
     ]),
-    dataToUI: () => tab_authors.ctl.onDataToUI(() => {
+    dataToUI: () => tab_authors.ctl.onDataToUI((_) => {
         const ret = []
         if (appState.config && appState.config.contentAuthoring.authors)
             for (const id in appState.config.contentAuthoring.authors)
@@ -31,7 +31,7 @@ const tab_pageformats = {
         { field: "widthMm", text: "Width (mm)", sortable: false, render: 'int', editable: { type: 'int', min: 0, max: 1234 } },
         { field: "heightMm", text: "Height (mm)", sortable: false, render: 'int', editable: { type: 'int', min: 0, max: 1234 } },
     ]),
-    dataToUI: () => tab_pageformats.ctl.onDataToUI(() => {
+    dataToUI: () => tab_pageformats.ctl.onDataToUI((_) => {
         const ret = []
         if (appState.config && appState.config.contentAuthoring.pageFormats)
             for (const id in appState.config.contentAuthoring.pageFormats)
@@ -53,14 +53,13 @@ const tab_localization = {
         { field: 'languages', type: 'map', html: { label: 'Languages', key: { text: '=', attr: 'style="width: 44px"' }, value: { attr: 'style="width: 77px"' } } },
         { field: 'contentFields', type: 'array', html: { label: 'Custom Localizable<br/>Content Fields' } },
     ]),
-    dataToUI: () => tab_localization.ctl.onDataToUI(() => {
-        tab_localization.ctl.setValue('languages', dictCopy(appState.config.contentAuthoring.languages), true) // dictCopy because w2ui inserts `_order` dict entry
-        tab_localization.ctl.setValue('contentFields', appState.config.contentAuthoring.contentFields, true)
-    }),
-    dataFromUI: () => tab_localization.ctl.onDataFromUI(() => {
-        const rec = tab_localization.ctl.getCleanRecord(true)
-        appState.config.contentAuthoring.languages = rec.languages
-        appState.config.contentAuthoring.contentFields = rec.contentFields
+    dataToUI: () => tab_localization.ctl.onDataToUI((_) => ({
+        'languages': dictCopy(appState.config.contentAuthoring.languages),// dictCopy because w2ui inserts `_order` dict entry
+        'contentFields': appState.config.contentAuthoring.contentFields,
+    })),
+    dataFromUI: () => tab_localization.ctl.onDataFromUI((recClean) => {
+        appState.config.contentAuthoring.languages = recClean.languages
+        appState.config.contentAuthoring.contentFields = recClean.contentFields
     }),
 }
 

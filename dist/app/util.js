@@ -122,7 +122,7 @@ export function newGrid(name, recID, objName, onDirty, fields) {
 
     const ret = new w2grid(init)
     ret.onDataToUI = (f) => {
-        const recs = f()
+        const recs = f ? f(ret.records) : ret.records
         ret.clear(true)
         ret.add(recs)
     }
@@ -140,6 +140,7 @@ export function newForm(name, onDirty, fields, extras) {
         record: {},
         onChange(evt) {
             const errs = this.validate(false)
+
             if (errs && errs.length && errs.length > 0) {
                 evt.preventDefault()
                 this.setValue(errs[0].field.field, evt.detail?.value?.previous)
@@ -149,34 +150,41 @@ export function newForm(name, onDirty, fields, extras) {
                 onDirty(true)
         },
     }
-    if (extras)
-        for (const key in extras)
-            init[key] = extras[key]
     for (const field of fields) {
-        let v = undefined
+        let v
         switch (field.type) {
             case 'array', 'check', 'checks', 'enum':
                 v = []
+                break
             case 'map':
                 v = {}
+                break
             case 'checkbox', 'toggle':
                 v = false
+                break
             case 'float', 'int', 'hex', 'money', 'currency', 'percent':
                 v = 0
+                break
             case 'text', 'alphanumeric', 'pass', 'password', 'color', 'radio', 'select', 'textarea', 'combo', 'div', 'html', 'email', 'list':
                 v = ''
+                break
         }
         init.record[field.field] = v
     }
+    if (extras)
+        for (const key in extras)
+            init[key] = extras[key]
 
     const ret = new w2form(init)
     ret.onDataToUI = (f) => {
-        f()
+        const rec = f ? f(ret.record) : ret.getCleanRecord(true)
+        for (const field in rec)
+            ret.setValue(field, rec[field], true)
         ret.refresh()
     }
     ret.onDataFromUI = (f) => {
         ret.refresh()
-        setTimeout(f, 123)
+        setTimeout(() => f(ret.getCleanRecord(true)), 345)
     }
     return ret
 }
