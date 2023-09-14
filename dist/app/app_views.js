@@ -12,17 +12,17 @@ export const appViews = {
 
 export let appViewActive = null
 
-export function appViewSetActive(appView, record) {
-    let didSetRecord = false
-    if (record && appView && record != appView.record) {
-        if (appView.setRecord)
-            appView.setRecord(record)
+export function appViewSetActive(appView, obj) {
+    let didSetObj = false
+    if (obj && appView && obj != appView.obj) {
+        if (appView.setObj)
+            appView.setObj(obj)
         else
-            appView.record = record
+            appView.obj = obj
         appView.dataToUI()
-        didSetRecord = true
+        didSetObj = true
     }
-    if (appViewActive == appView && appViewActive?.record == appView?.record && !didSetRecord)
+    if (appViewActive == appView && appViewActive?.obj == appView?.obj && !didSetObj)
         return
     const main_panel = guiMain.layout.panels[1]
     main_panel.tabs.remove(...main_panel.tabs.tabs.map(_ => _.id))

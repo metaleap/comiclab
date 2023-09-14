@@ -18,29 +18,18 @@ const tab_pagelayout_details = {
             const parent_coll = proj_pagelayout.parentCollection()
             if (parent_coll && parent_coll.pages && parent_coll.pages.length)
                 for (const page of parent_coll.pages)
-                    if (page.id == new_id && page != proj_pagelayout.record)
+                    if (page.id == new_id && page != proj_pagelayout.obj)
                         evt.detail.errors.push({
                             field: tab_pagelayout_details.ctl.get('id'),
                             error: `Another '${new_id}' Page already exists in '${parent_coll.id}'.`,
                         })
         },
     }),
-    dataToUI: () => tab_pagelayout_details.ctl.onDataToUI(),
-    dataFromUI: () => tab_pagelayout_details.ctl.onDataFromUI(() => {
-        const pagelayout = proj_pagelayout.record
-        if (pagelayout) {
-            const oldID = pagelayout.id
-            const newID = tab_pagelayout_details.ctl.getValue('id')
-            if (oldID != newID) {
-                pagelayout.id = newID
-                const parent_coll = proj_pagelayout.parentCollection()
-                if (parent_coll && parent_coll.pages && parent_coll.pages.length)
-                    for (const i in parent_coll.pages)
-                        if (parent_coll.pages[i] == proj_pagelayout || parent_coll.pages[i].id == oldID)
-                            parent_coll.pages[i] = proj_pagelayout
-            }
-            proj_pagelayout.setRecord(pagelayout)
-        }
+    dataToUI: () => tab_pagelayout_details.ctl.onDataToUI((_) => ({
+        'id': proj_pagelayout.obj.id,
+    })),
+    dataFromUI: () => tab_pagelayout_details.ctl.onDataFromUI((recClean) => {
+        proj_pagelayout.obj.id = recClean.id
     }),
 }
 
@@ -51,14 +40,13 @@ export const proj_pagelayout = {
     ],
     parentCollection: () => walkCollections((path) => {
         const coll = path[0]
-        if (coll.pages && coll.pages.some(_ => _ == proj_pagelayout.record || _.id == proj_pagelayout.record.id))
+        if (coll.pages && coll.pages.some(_ => _ == proj_pagelayout.obj || _.id == proj_pagelayout.obj.id))
             return coll
     }, []),
-    setRecord: (rec) => {
-        proj_pagelayout.record = rec
-        proj_pagelayout.tabbed.forEach(_ => { _.ctl.record = rec })
+    setObj: (obj) => {
+        proj_pagelayout.obj = obj
         proj_pagelayout.dataToUI()
     },
     dataFromUI: () => proj_pagelayout.tabbed.forEach(_ => _.dataFromUI()),
-    dataToUI: () => proj_pagelayout.tabbed.forEach(_ => _.dataToUI()),
+    dataToUI: () => { if (proj_pagelayout.obj) proj_pagelayout.tabbed.forEach(_ => _.dataToUI()) },
 }

@@ -20,17 +20,20 @@ const tab_collection_details = {
             const sibling_colls = parent_coll ? parent_coll.collections : appState.proj.collections
             if (sibling_colls && sibling_colls.length)
                 for (const coll of sibling_colls)
-                    if (coll.id == new_id && coll != proj_collection.record)
+                    if (coll.id == new_id && coll != proj_collection.obj)
                         evt.detail.errors.push({
                             field: tab_collection_details.ctl.get('id'),
                             error: `Another '${new_id}' Collection already exists in ` + (parent_coll ? (`'${parent_coll.id}'`) : 'this project') + `.`,
                         })
         },
     }),
-    dataToUI: () => tab_collection_details.ctl.onDataToUI(),
+    dataToUI: () => tab_collection_details.ctl.onDataToUI((_) => ({
+        'id': proj_collection.obj.id,
+        'author': proj_collection.obj.author,
+    })),
     dataFromUI: () => tab_collection_details.ctl.onDataFromUI((recClean) => {
-        for (const field_name in recClean)
-            tab_collection_details.ctl.record[field_name] = recClean[field_name]
+        proj_collection.obj.id = recClean.id
+        proj_collection.author = recClean.author
     }),
 }
 
@@ -58,14 +61,13 @@ export const proj_collection = {
         tab_collection_details,
     ],
     parentCollection: () => {
-        const path = collectionParents(proj_collection.record)
+        const path = collectionParents(proj_collection.obj)
         return (path && path.length && path.length > 0) ? path[0] : null
     },
-    setRecord: (rec) => {
-        proj_collection.record = rec
-        proj_collection.tabbed.forEach(_ => { _.ctl.record = rec })
+    setObj: (obj) => {
+        proj_collection.obj = obj
         proj_collection.dataToUI()
     },
     dataFromUI: () => proj_collection.tabbed.forEach(_ => _.dataFromUI()),
-    dataToUI: () => proj_collection.tabbed.forEach(_ => _.dataToUI()),
+    dataToUI: () => { if (proj_collection.obj) proj_collection.tabbed.forEach(_ => _.dataToUI()) },
 }

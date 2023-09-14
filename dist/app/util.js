@@ -177,7 +177,7 @@ export function newForm(name, onDirty, fields, extras) {
 
     const ret = new w2form(init)
     ret.onDataToUI = (f) => {
-        const rec = f ? f(ret.record) : ret.getCleanRecord(true)
+        const rec = f ? f(ret.getCleanRecord(true)) : ret.getCleanRecord(true)
         for (const field in rec)
             ret.setValue(field, rec[field], true)
         ret.refresh()
