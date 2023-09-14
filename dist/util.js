@@ -1,4 +1,4 @@
-import { w2popup, w2grid, w2prompt } from './w2ui/w2ui.es6.js'
+import { w2popup, w2grid, w2form, w2prompt } from './w2ui/w2ui.es6.js'
 
 export function arrayMoveItem(arr, idxOld, idxNew) {
     var item = arr[idxOld]
@@ -7,12 +7,19 @@ export function arrayMoveItem(arr, idxOld, idxNew) {
     return arr
 }
 
-export function dictKeys(dict, skipUnderscored) {
+export function dictCopy(dict) {
+    const ret = {}
+    if (dict)
+        for (const key in dict)
+            ret[key] = dict[key]
+    return ret
+}
+
+export function dictKeys(dict) {
     const ret = []
     if (dict)
         for (const key in dict)
-            if ((!skipUnderscored) || (!key.startsWith) || !key.startsWith('_'))
-                ret.push(key)
+            ret.push(key)
     return ret
 }
 
@@ -120,5 +127,37 @@ export function newGrid(name, recID, objName, onDirty, fields) {
         setTimeout(ret.refresh, 345) // yes, needed again (AND delayed) despite mergeChanges...
     })
 
+    return ret
+}
+
+export function newForm(name, onDirty, fields) {
+    const ret = new w2form({
+        name: name,
+        fields: fields,
+        record: {},
+        onChange(evt) {
+            const errs = ret.validate()
+            if (!(errs && errs.length && errs.length > 0))
+                onDirty(true)
+        },
+        afterDataToUI: () => ret.refresh(),
+        beforeDataFromUI: () => ret.refresh(),
+    })
+    for (const field of fields) {
+        let v = undefined
+        switch (field.type) {
+            case 'array', 'check', 'checks', 'enum':
+                v = []
+            case 'map':
+                v = {}
+            case 'checkbox', 'toggle':
+                v = false
+            case 'float', 'int', 'hex', 'money', 'currency', 'percent':
+                v = 0
+            case 'text', 'alphanumeric', 'pass', 'password', 'color', 'radio', 'select', 'textarea', 'combo', 'div', 'html', 'email', 'list':
+                v = ''
+        }
+        ret.record[field.field] = v
+    }
     return ret
 }

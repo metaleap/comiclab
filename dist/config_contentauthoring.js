@@ -1,6 +1,6 @@
 import { w2form } from './w2ui/w2ui.es6.js'
 
-import { newGrid } from './util.js'
+import { newGrid, dictCopy } from './util.js'
 
 const tab_authors = {
     id: 'tab_authors',
@@ -72,7 +72,7 @@ const tab_localization = {
         },
     }),
     dataToUI: () => {
-        tab_localization.ctl.setValue('languages', appState.config.contentAuthoring.languages, true)
+        tab_localization.ctl.setValue('languages', dictCopy(appState.config.contentAuthoring.languages), true) // dictCopy because w2ui inserts `_order` dict entry
         tab_localization.ctl.setValue('contentFields', appState.config.contentAuthoring.contentFields, true)
         tab_localization.ctl.refresh()
     },
@@ -80,6 +80,8 @@ const tab_localization = {
         tab_localization.ctl.refresh()
         setTimeout(() => {
             const rec = tab_localization.ctl.getCleanRecord(true)
+            for (const key in rec.languages)
+                console.log("KEY", key)
             appState.config.contentAuthoring.languages = rec.languages
             appState.config.contentAuthoring.contentFields = rec.contentFields
         }, 123)
