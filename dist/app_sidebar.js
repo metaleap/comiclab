@@ -45,10 +45,10 @@ export const app_sidebar = new w2sidebar({
     nodes: [
         {
             id: 'project', text: 'Project', group: true, expanded: true, groupShowHide: false, nodes: [
-                { id: 'proj_series', text: 'Series &amp; Episodes', icon: 'fa fa-archive', nodes: [], expanded: true },
-                { id: 'proj_books', text: 'Books', icon: 'fa fa-book' },
-                { id: 'proj_sitegen', text: 'SiteGen', icon: 'fa fa-globe' },
-                { id: 'proj_settings', text: 'Settings', icon: 'fa fa-wrench', appView: appViews.proj_settings }
+                { id: 'proj_series', text: 'Series &amp; Episodes', icon: 'fa fa-archive', nodes: [], },
+                { id: 'proj_books', text: 'Books', icon: 'fa fa-book', disabled: true },
+                { id: 'proj_sitegen', text: 'SiteGen', icon: 'fa fa-globe', disabled: true },
+                { id: 'proj_settings', text: 'Project Settings', icon: 'fa fa-wrench', appView: appViews.proj_settings }
             ],
         },
         {
@@ -63,7 +63,6 @@ export const app_sidebar = new w2sidebar({
     dataToUI: () => {
         const sel_node_id = app_sidebar.selected
         let sel_node = app_sidebar.get(sel_node_id)
-        app_sidebar.unselect()
         const app_view = appViewActive
         appViewSetActive(null)
         const perSideBarList = (node_id, list_info) => {
@@ -74,20 +73,16 @@ export const app_sidebar = new w2sidebar({
             if (!(data_src && data_src.length && data_src.length > 0))
                 return
             app_sidebar.insert(node_id, null, data_src.map(_ => ({ id: node_id + '_' + _.id, text: _.id, icon: list_info.itemIcon, appView: list_info.appView, record: _, })))
-            sideBarSubList(list_info, data_src, perSideBarList)
+            subList(list_info, data_src, perSideBarList)
         }
         for (const node_id in sideBarLists)
             perSideBarList(node_id, sideBarLists[node_id])
         // restore selection & view if possible
         appViewSetActive(app_view)
-        if (sel_node_id && sel_node_id.length && app_sidebar.get(sel_node_id)) {
-            app_sidebar.expandParents(sel_node_id)
-            app_sidebar.select(sel_node_id)
-        } else if (sel_node && sel_node.parent && sel_node.record) {
-            sel_node = (app_sidebar.find(sel_node.parent.id, { record: sel_node.record }) ?? sel_node.parent)
-            app_sidebar.expandParents(sel_node.id)
-            app_sidebar.select(sel_node.id)
-        }
+        if (sel_node_id && sel_node_id.length && app_sidebar.get(sel_node_id))
+            clickNode(sel_node_id)
+        else if (sel_node && sel_node.parent && sel_node.record)
+            clickNode((app_sidebar.find(sel_node.parent.id, { record: sel_node.record }) ?? sel_node.parent).id)
         app_sidebar.each(node => {
             if (node.id.startsWith('proj_series'))
                 node.count = (node.nodes && node.nodes.length && node.nodes.length > 0) ? node.nodes.length : undefined
@@ -97,21 +92,26 @@ export const app_sidebar = new w2sidebar({
     onContextMenu(evt) {
         this.menu = []
         const perSideBarList = (node_id, list_info) => {
+            subList(list_info, undefined, perSideBarList)
             let data_src = list_info.binding()
+            let num_items = this.menu.length
             if (evt.target == node_id)
                 this.menu.push({ id: node_id + '_addnew', text: 'Add New ' + list_info.name + '...', icon: 'fa fa-plus' })
             if (evt.object && evt.object.text && evt.object.record && evt.target.startsWith && evt.target.startsWith(node_id + '_') && evt.target.lastIndexOf('_') == node_id.length) {
-                this.menu.push({ id: node_id + '_delete', text: 'Delete "' + evt.object.text + '"...', icon: 'fa fa-remove' })
                 const idx = data_src.findIndex(_ => _.id == evt.object.record.id)
                 this.menu.push({ id: node_id + '_moveup', text: 'Move "' + evt.object.text + '" Up', disabled: idx == 0, icon: 'fa fa-angle-up' })
                 this.menu.push({ id: node_id + '_movedown', text: 'Move "' + evt.object.text + '" Down', disabled: idx == (data_src.length - 1), icon: 'fa fa-angle-down' })
                 this.menu.push({ id: node_id + '_movefirst', text: 'Move "' + evt.object.text + '" To Top', disabled: idx == 0, icon: 'fa fa-angle-double-up' })
                 this.menu.push({ id: node_id + '_movelast', text: 'Move "' + evt.object.text + '" To End', disabled: idx == (data_src.length - 1), icon: 'fa fa-angle-double-down' })
+                this.menu.push({ id: node_id + '_delete', text: 'Delete "' + evt.object.text + '"...', icon: 'fa fa-remove' })
             }
-            sideBarSubList(list_info, undefined, perSideBarList)
+            if (this.menu.length > num_items)
+                this.menu.push({ text: '--' })
         }
         for (const node_id in sideBarLists)
             perSideBarList(node_id, sideBarLists[node_id])
+        if (this.menu.length && this.menu[this.menu.length - 1].text == '--')
+            this.menu.pop()
     },
     onMenuClick(evt) {
         const perSideBarList = (node_id, list_info) => {
@@ -119,14 +119,12 @@ export const app_sidebar = new w2sidebar({
             const item_node = app_sidebar.get(evt.target)
             switch (evt.detail.menuItem.id) {
                 case node_id + '_addnew':
-                    const name = newObjName(list_info.name, data_src.len)
+                    const name = newObjName(list_info.name, data_src.length)
                     const new_item = { id: name }
                     data_src.push(new_item)
                     data_src = list_info.binding(data_src)
                     if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
-                    app_sidebar.unselect()
-                    app_sidebar.expandParents(node_id + '_' + name)
-                    app_sidebar.select(node_id + '_' + name)
+                    clickNode(node_id + '_' + name)
                     appViewSetActive(list_info.appView, new_item)
                     break
                 case node_id + '_delete':
@@ -137,12 +135,7 @@ export const app_sidebar = new w2sidebar({
                                 data_src = data_src.filter(_ => _.id != item_node.record.id)
                                 data_src = list_info.binding(data_src)
                                 if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
-                                app_sidebar.unselect()
-                                if (item_node.parent) {
-                                    app_sidebar.expandParents(item_node.parent.id)
-                                    app_sidebar.select(item_node.parent.id)
-                                    appViewSetActive(appViewActive)
-                                }
+                                clickNode(item_node.parent.id)
                             })
                     }
                     break
@@ -172,7 +165,7 @@ export const app_sidebar = new w2sidebar({
                     }
                     break
             }
-            sideBarSubList(list_info, data_src, perSideBarList)
+            subList(list_info, data_src, perSideBarList)
         }
         for (const node_id in sideBarLists) {
             const list_info = sideBarLists[node_id]
@@ -181,7 +174,14 @@ export const app_sidebar = new w2sidebar({
     },
 })
 
-function sideBarSubList(listInfo, dataSrc, perSideBarList) {
+function clickNode(nodeID) {
+    app_sidebar.unselect()
+    app_sidebar.expandParents(nodeID)
+    app_sidebar.click(nodeID)
+    app_sidebar.expand(nodeID)
+}
+
+function subList(listInfo, dataSrc, perSideBarList) {
     if (listInfo.subList) {
         if (!dataSrc)
             dataSrc = listInfo.binding()
@@ -200,11 +200,6 @@ app_sidebar.on('keydown', (evt) => {
         w2tooltip.hide() // it's really for closing the open context menu, if any
 })
 app_sidebar.on('click', (evt) => {
-    // if sub-nodes, expand-or-collapse
-    if (evt.detail && evt.detail.originalEvent && evt.detail.originalEvent.button == 0 && evt.object && evt.object.id && evt.object.nodes && evt.object.nodes.length) {
-        evt.object.selected = false
-        app_sidebar.toggle(evt.object.id)
-    }
     // if appView on node, show it
     if (evt.detail && evt.detail.node && evt.detail.node.appView)
         appViewSetActive(evt.detail.node.appView, evt.detail.node.record)
