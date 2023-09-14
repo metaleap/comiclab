@@ -4,9 +4,7 @@ import { arrayMoveItem, newObjName } from './util.js'
 import { onDirtyProj, onDirtyCfg } from './app_guimain.js'
 import { appViews, appViewActive, appViewSetActive } from './app_views.js'
 
-let sideBarLists = {}
-
-let listTypes = {
+let listInfos = {
     'series': {
         name: 'Series', icon: 'fa-cubes', contains: ['episodes'], appView: appViews.proj_series,
         deletePrompt: id => `Remove the '${id}' series from the project files, including all its episodes and their page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)`,
@@ -59,7 +57,7 @@ export const app_sidebar = new w2sidebar({
                 return
             app_sidebar.remove(...listNode.nodes.map(_ => _.id))
             for (const list_of of listNode.listOf) {
-                const sub_info = listTypes[list_of]
+                const sub_info = listInfos[list_of]
                 const list = listOwner[list_of]
                 if (list && list.length)
                     app_sidebar.insert(listNode.id, null, list.map(_ => ({
@@ -83,13 +81,20 @@ export const app_sidebar = new w2sidebar({
         }
         app_sidebar.refresh()
     },
+
+    onMenuClick(evt) {
+        if (evt.detail.menuItem.onClick)
+            return evt.detail.menuItem.onClick()
+    },
+
     onContextMenu(evt) {
         this.menu = []
         const node_id = evt.target
         const node = app_sidebar.get(node_id)
+
         // 'Add' action
         for (const list_of of node.listOf) {
-            const sub_info = listTypes[list_of]
+            const sub_info = listInfos[list_of]
             const owner = node.record ?? appState.proj
             let list = owner[list_of]
             if (!(list && list.length)) {
@@ -107,9 +112,10 @@ export const app_sidebar = new w2sidebar({
                 },
             })
         }
+
         // 'Delete' & 'Move' actions
         if (node.ownKind) {
-            const list_info = listTypes[node.ownKind]
+            const list_info = listInfos[node.ownKind]
             let parent_list = appState.proj[node.ownKind]
             let parent_list_mut = (newList) => { appState.proj[node.ownKind] = newList }
             if (node.parent && node.parent.record && node.parent.listOf?.length) {
@@ -120,10 +126,14 @@ export const app_sidebar = new w2sidebar({
                 if (this.menu.length)
                     this.menu.push({ text: '--' })
                 const idx = parent_list.indexOf(node.record)
-                this.menu.push({ text: `Move '${node.record.id}' Up`, disabled: idx == 0, icon: 'fa fa-angle-up' })
-                this.menu.push({ text: `Move '${node.record.id}' Down`, disabled: idx == (parent_list.length - 1), icon: 'fa fa-angle-down' })
-                this.menu.push({ text: `Move '${node.record.id}' To Top`, disabled: idx == 0, icon: 'fa fa-angle-double-up' })
-                this.menu.push({ text: `Move '${node.record.id}' To End`, disabled: idx == (parent_list.length - 1), icon: 'fa fa-angle-double-down' })
+                const moveIt = (idxNew) => {
+                    parent_list_mut(arrayMoveItem(parent_list, idx, idxNew))
+                    if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) } // refresh. reorders node in sidebar
+                }
+                this.menu.push({ text: `Move '${node.record.id}' Up`, disabled: (idx == 0), icon: 'fa fa-angle-up', onClick: () => moveIt(idx - 1) })
+                this.menu.push({ text: `Move '${node.record.id}' Down`, disabled: (idx == (parent_list.length - 1)), icon: 'fa fa-angle-down', onClick: () => moveIt(idx + 1) })
+                this.menu.push({ text: `Move '${node.record.id}' To Top`, disabled: (idx == 0), icon: 'fa fa-angle-double-up', onClick: () => moveIt(0) })
+                this.menu.push({ text: `Move '${node.record.id}' To End`, disabled: (idx == (parent_list.length - 1)), icon: 'fa fa-angle-double-down', onClick: () => moveIt(parent_list.length - 1) })
                 this.menu.push({
                     text: `Delete '${node.record.id}'...`, icon: 'fa fa-remove',
                     onClick: () => w2confirm(list_info.deletePrompt(node.record.id)).yes(() => {
@@ -136,48 +146,6 @@ export const app_sidebar = new w2sidebar({
             }
         }
     },
-    onMenuClick(evt) {
-        if (evt.detail.menuItem.onClick)
-            return evt.detail.menuItem.onClick()
-
-        const perSideBarList = (node_id, list_info) => {
-            let data_src = list_info.binding()
-            const item_node = app_sidebar.get(evt.target)
-
-            switch (evt.detail.menuItem.id) {
-                default:
-                    if (item_node && item_node.record && item_node.record.id) {
-                        let idx = data_src.findIndex(_ => _.id == item_node.record.id)
-                        if (idx >= 0) {
-                            let moved = false
-                            if (evt.detail.menuItem.id == (node_id + '_moveup') && idx > 0) {
-                                data_src = arrayMoveItem(data_src, idx, idx - 1)
-                                moved = true
-                            } else if (evt.detail.menuItem.id == (node_id + '_movedown') && idx < (data_src.length - 1)) {
-                                data_src = arrayMoveItem(data_src, idx, idx + 1)
-                                moved = true
-                            } else if (evt.detail.menuItem.id == (node_id + '_movefirst') && idx > 0) {
-                                data_src = arrayMoveItem(data_src, idx, 0)
-                                moved = true
-                            } else if (evt.detail.menuItem.id == (node_id + '_movelast') && idx != (data_src.length - 1)) {
-                                data_src = arrayMoveItem(data_src, idx, data_src.length - 1)
-                                moved = true
-                            }
-                            if (moved) {
-                                data_src = list_info.binding(null, data_src)
-                                if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
-                            }
-                        }
-                    }
-                    break
-            }
-            subLists(list_info, data_src, perSideBarList)
-        }
-        for (const node_id in sideBarLists) {
-            const list_info = sideBarLists[node_id]
-            perSideBarList(node_id, list_info)
-        }
-    },
 })
 
 function clickNode(nodeID) {
@@ -185,18 +153,6 @@ function clickNode(nodeID) {
     app_sidebar.expandParents(nodeID)
     app_sidebar.click(nodeID)
     app_sidebar.expand(nodeID)
-}
-
-function subLists(listInfo, dataSrc, perSideBarList) {
-    if (listInfo.subLists && listInfo.subLists.length)
-        for (const record of dataSrc) {
-            const sub_list_infos = listInfo.subLists(record)
-            if (sub_list_infos)
-                for (const k in sub_list_infos) {
-                    if (k)
-                        perSideBarList(k, sub_list_infos[k])
-                }
-        }
 }
 
 // app_sidebar.on('*', (evt) => { console.log('app_sidebar', evt) })
