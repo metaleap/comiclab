@@ -48,13 +48,14 @@ const tab_collection_details = {
 
 export function walkCollections(perColl, path) {
     const colls = (path && path.length) ? path[0].collections : appState.proj.collections
-    for (const coll of colls) {
-        const cur_path = [coll].concat(path)
-        const ret = perColl(cur_path)
-        if (ret)
-            return ret
-        walkCollections(perColl, cur_path)
-    }
+    if (colls)
+        for (const coll of colls) {
+            const cur_path = [coll].concat(path)
+            const ret = perColl(cur_path)
+            if (ret)
+                return ret
+            walkCollections(perColl, cur_path)
+        }
 }
 
 function collectionParents(coll) {

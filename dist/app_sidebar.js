@@ -7,28 +7,34 @@ import { appViews, appViewActive, appViewSetActive } from './app_views.js'
 let sideBarLists = {
     'proj_series': {
         appView: appViews.proj_series, name: 'Series', itemIcon: 'fa fa-cubes', deletePrompt: id => 'Remove the "' + id + '" series from the project files, including all its episodes and their page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
-        binding: (set) => {
+        binding: (owner, set) => {
+            if (!owner)
+                owner = appState.proj
             if (set)
-                appState.proj.series = set
-            return appState.proj.series ?? []
+                owner.series = set
+            return owner.series ?? []
         },
         subLists: (series) => {
             const ret_episodes = {}
             ret_episodes['proj_series_' + series.id] = {
                 appView: appViews.proj_episode, name: 'Episode', itemIcon: 'fa fa-cube', deletePrompt: id => 'Remove the "' + id + '" episode from the project files, including all its page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
-                binding: (set) => {
+                binding: (owner, set) => {
+                    if (!owner)
+                        owner = series
                     if (set)
-                        series.episodes = set
-                    return series.episodes ?? []
+                        owner.episodes = set
+                    return owner.episodes ?? []
                 },
                 subLists: (episode) => {
                     const ret_pagelayouts = {}
                     ret_pagelayouts['proj_series_' + series.id + '_' + episode.id] = {
                         appView: appViews.proj_pagelayout, name: 'Page', itemIcon: 'fa fa-th-large', deletePrompt: id => 'Remove the "' + id + '" page from the project files, including all its letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
-                        binding: (set) => {
+                        binding: (owner, set) => {
+                            if (!owner)
+                                owner = episode
                             if (set)
-                                episode.pages = set
-                            return episode.pages ?? []
+                                owner.pages = set
+                            return owner.pages ?? []
                         },
                     }
                     return ret_pagelayouts
@@ -39,21 +45,26 @@ let sideBarLists = {
     },
     'proj_collections': {
         appView: appViews.proj_collection, name: 'Collection', itemIcon: 'fa fa-briefcase', deletePrompt: id => 'Remove the "' + id + '" collection from the project files, including all its sub-collections and page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
-        binding: (set) => {
+        binding: (owner, set) => {
+            if (!owner)
+                owner = appState.proj
             if (set)
-                appState.proj.collections = set
-            return appState.proj.collections ?? []
+                owner.collections = set
+            return owner.collections ?? []
         },
         subLists: (collection) => {
             const ret = {}
             ret['proj_collections_' + collection.id] = {
                 appView: appViews.proj_pagelayout, name: 'Page', itemIcon: 'fa fa-th-large', deletePrompt: id => 'Remove the "' + id + '" page from the project files, including all its letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
-                binding: (set) => {
+                binding: (owner, set) => {
+                    if (!owner)
+                        owner = collection
                     if (set)
-                        collection.pages = set
-                    return collection.pages ?? []
+                        owner.pages = set
+                    return owner.pages ?? []
                 },
             }
+            ret[''] = 'proj_collections'
             return ret
         },
     },
@@ -119,8 +130,8 @@ export const app_sidebar = new w2sidebar({
     onContextMenu(evt) {
         this.menu = []
         const perSideBarList = (node_id, list_info) => {
-            subLists(list_info, undefined, perSideBarList)
             let data_src = list_info.binding()
+            subLists(list_info, data_src, perSideBarList)
             let num_items = this.menu.length
             if (evt.target == node_id)
                 this.menu.push({ id: node_id + '_addnew', text: 'Add New ' + list_info.name + '...', icon: 'fa fa-plus' })
@@ -146,10 +157,10 @@ export const app_sidebar = new w2sidebar({
             const item_node = app_sidebar.get(evt.target)
             switch (evt.detail.menuItem.id) {
                 case node_id + '_addnew':
-                    const name = newObjName(list_info.name, data_src.length)
+                    const name = newObjName(list_info.name, data_src.length, (n) => !data_src.some(_ => _.id == n))
                     const new_item = { id: name }
                     data_src.push(new_item)
-                    data_src = list_info.binding(data_src)
+                    data_src = list_info.binding(item_node.record, data_src)
                     if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
                     clickNode(node_id + '_' + name)
                     appViewSetActive(list_info.appView, new_item)
@@ -160,7 +171,7 @@ export const app_sidebar = new w2sidebar({
                             .yes(() => {
                                 appViewSetActive(null)
                                 data_src = data_src.filter(_ => _.id != item_node.record.id)
-                                data_src = list_info.binding(data_src)
+                                data_src = list_info.binding(null, data_src)
                                 if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
                                 clickNode(item_node.parent.id)
                             })
@@ -185,7 +196,7 @@ export const app_sidebar = new w2sidebar({
                                 moved = true
                             }
                             if (moved) {
-                                data_src = list_info.binding(data_src)
+                                data_src = list_info.binding(null, data_src)
                                 if (list_info.isCfg) { onDirtyCfg(true) } else { onDirtyProj(true) }
                             }
                         }
@@ -209,16 +220,18 @@ function clickNode(nodeID) {
 }
 
 function subLists(listInfo, dataSrc, perSideBarList) {
-    if (listInfo.subLists && listInfo.subLists.length) {
-        if (!dataSrc)
-            dataSrc = listInfo.binding()
+    if (listInfo.subLists && listInfo.subLists.length)
         for (const record of dataSrc) {
             const sub_list_infos = listInfo.subLists(record)
             if (sub_list_infos)
-                for (const k in sub_list_infos)
-                    perSideBarList(k, sub_list_infos[k])
+                for (const k in sub_list_infos) {
+                    if (k)
+                        perSideBarList(k, sub_list_infos[k])
+                    else {
+                        perSideBarList(sub_list_infos[k], sideBarLists[sub_list_infos[k]])
+                    }
+                }
         }
-    }
 }
 
 // app_sidebar.on('*', (evt) => { console.log('app_sidebar', evt) })

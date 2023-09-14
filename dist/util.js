@@ -23,9 +23,10 @@ export function dictKeys(dict) {
     return ret
 }
 
-export function newObjName(what, currentCount) {
+export function newObjName(what, currentCount, ok) {
     const n = currentCount + 1
-    return what.toLowerCase() + (n < 10 ? '0' : '') + n
+    const ret = what.toLowerCase() + (n < 10 ? '0' : '') + n
+    return ok(ret) ? ret : (what.toLowerCase() + (new Date().getTime()))
 }
 
 export function setToolbarIcon(toolbar, id, icon) {
@@ -103,7 +104,7 @@ export function newGrid(name, recID, objName, onDirty, fields) {
     })
     ret.on('add', (evt) => {
         const num_recs = ret.records.length
-        const proposal = newObjName(objName, num_recs)
+        const proposal = newObjName(objName, num_recs, (name) => !ret.get(name))
         w2prompt({
             title: 'Add new ' + objName,
             label: recID + ':',
