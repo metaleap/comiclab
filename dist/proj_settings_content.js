@@ -2,8 +2,8 @@ import { dictKeys, newForm } from './util.js'
 
 const tab_contentauthoring = {
     id: 'tab_contentauthoring',
-    icon: 'fa-map',
-    text: 'Content Authoring',
+    icon: 'fa-archive',
+    text: 'Project Content Defaults',
     ctl: newForm('tab_contentauthoring_form', (dirty) => proj_settings_content.onDirty(dirty), [
         {
             field: 'defaultLanguage', type: 'combo', options: {
