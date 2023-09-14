@@ -4,6 +4,25 @@ import { arrayMoveItem, newObjName } from './util.js'
 import { onDirtyProj, onDirtyCfg } from './app_guimain.js'
 import { appViews, appViewActive, appViewSetActive } from './app_views.js'
 
+let listTypes = {
+    'series': {
+        name: 'Series', icon: 'fa-cubes', contains: ['episodes'], appView: appViews.proj_series,
+        deletePrompt: id => 'Remove the "' + id + '" series from the project files, including all its episodes and their page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+    },
+    'episodes': {
+        name: 'Episode', icon: 'fa-cube', contains: ['pages'], appView: appViews.proj_episode,
+        deletePrompt: id => 'Remove the "' + id + '" episode from the project files, including all its page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+    },
+    'pages': {
+        name: 'Page', icon: 'fa-th-large', contains: [], appView: appViews.proj_pagelayout,
+        deletePrompt: id => 'Remove the "' + id + '" page from the project files, including all its letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+    },
+    'collections': {
+        name: 'Collection', icon: 'fa-briefcase', contains: ['pages', 'collections'], appView: appViews.proj_collection,
+        deletePrompt: id => 'Remove the "' + id + '" collection from the project files, including all its sub-collections and page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
+    },
+}
+
 let sideBarLists = {
     'proj_series': {
         appView: appViews.proj_series, name: 'Series', itemIcon: 'fa fa-cubes', deletePrompt: id => 'Remove the "' + id + '" series from the project files, including all its episodes and their page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)',
@@ -77,8 +96,8 @@ export const app_sidebar = new w2sidebar({
     nodes: [
         {
             id: 'project', text: 'Project: ' + uiProjName, group: true, expanded: true, groupShowHide: false, nodes: [
-                { id: 'proj_series', text: 'Series &amp; Episodes', icon: 'fa fa-archive', nodes: [], appView: appViews.proj_settings_content, expanded: true, },
-                { id: 'proj_collections', text: 'Collections', icon: 'fa fa-archive', nodes: [], appView: appViews.proj_settings_content, expanded: true, selected: true },
+                { id: 'proj_series', listOf: ['series'], text: 'Series &amp; Episodes', icon: 'fa fa-archive', nodes: [], appView: appViews.proj_settings_content },
+                { id: 'proj_collections', listOf: ['collections'], text: 'Collections', icon: 'fa fa-archive', nodes: [], appView: appViews.proj_settings_content },
                 { id: 'proj_books', text: 'Books', icon: 'fa fa-book', disabled: true },
                 { id: 'proj_sitegen', text: 'SiteGen', icon: 'fa fa-globe', disabled: true },
             ],
@@ -99,18 +118,25 @@ export const app_sidebar = new w2sidebar({
         const app_view = appViewActive
         appViewSetActive(null)
 
-        const perSideBarList = (node_id, list_info) => {
-            const sidebar_node = app_sidebar.get(node_id)
-            if (sidebar_node)
-                app_sidebar.remove(...sidebar_node.nodes.map(_ => _.id))
-            const data_src = list_info.binding()
-            if (!(data_src && data_src.length && data_src.length > 0))
+        // actual refresh
+        const refreshList = (listNode, listOwner) => {
+            if (!(listNode.listOf && listNode.listOf.length))
                 return
-            app_sidebar.insert(node_id, null, data_src.map(_ => ({ id: node_id + '_' + _.id, text: _.id, icon: list_info.itemIcon, appView: list_info.appView, record: _, })))
-            subLists(list_info, data_src, perSideBarList)
+            app_sidebar.remove(...listNode.nodes.map(_ => _.id))
+            for (const list_of of listNode.listOf) {
+                const sub_info = listTypes[list_of]
+                const list = listOwner[list_of]
+                if (list && list.length)
+                    app_sidebar.insert(listNode.id, null, list.map(_ => ({
+                        id: listNode.id + '_' + list_of + '_' + _.id, listOf: sub_info.contains,
+                        text: _.id, icon: 'fa ' + sub_info.icon, appView: sub_info.appView, record: _,
+                    })))
+            }
+            for (const sub_node of listNode.nodes)
+                refreshList(sub_node, sub_node.record)
         }
-        for (const node_id in sideBarLists)
-            perSideBarList(node_id, sideBarLists[node_id])
+        for (const node of app_sidebar.get('project').nodes)
+            refreshList(node, appState.proj)
 
         // restore selection & view if possible
         appViewSetActive(app_view)
