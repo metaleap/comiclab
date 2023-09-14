@@ -52,6 +52,7 @@ let sideBarLists = {
                 owner.collections = set
             return owner.collections ?? []
         },
+        subSelves: true,
         subLists: (collection) => {
             const ret = {}
             ret['proj_collections_' + collection.id] = {
@@ -64,12 +65,10 @@ let sideBarLists = {
                     return owner.pages ?? []
                 },
             }
-            ret[''] = 'proj_collections'
             return ret
         },
     },
 }
-
 
 
 export const app_sidebar = new w2sidebar({
@@ -227,9 +226,6 @@ function subLists(listInfo, dataSrc, perSideBarList) {
                 for (const k in sub_list_infos) {
                     if (k)
                         perSideBarList(k, sub_list_infos[k])
-                    else {
-                        perSideBarList(sub_list_infos[k], sideBarLists[sub_list_infos[k]])
-                    }
                 }
         }
 }
