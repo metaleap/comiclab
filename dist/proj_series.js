@@ -3,7 +3,7 @@ import { newForm } from './util.js'
 const tab_series_details = {
     id: 'tab_series_details',
     icon: 'fa-cubes',
-    text: 'Series Details',
+    text: 'Series Info',
     ctl: newForm('tab_series_details_form', (dirty) => proj_series.onDirty(dirty), [
         { field: 'id', type: 'text', required: true, html: { label: 'Series ID' } }
     ], {

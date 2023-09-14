@@ -1,49 +1,38 @@
-import { w2form } from './w2ui/w2ui.es6.js'
+import { newForm } from './util.js'
 
-export const proj_pagelayout = new w2form({
-    name: 'proj_pagelayout',
-    parentEpisode: () => {
-        for (const series of appState.proj.series) {
-            const episode = series.episodes.find(_ => _.pages && _.pages.includes && _.pages.includes(proj_pagelayout.record))
-            if (episode)
-                return episode
-        }
-    },
-    fields: [
+const tab_pagelayout_details = {
+    id: 'tab_pagelayout_details',
+    icon: 'fa-th-large',
+    text: 'Page Info',
+    ctl: newForm('tab_pagelayout_details_form', (dirty) => proj_pagelayout.onDirty(dirty), [
         { field: 'id', type: 'text', required: true, html: { label: 'Page ID' } }
-    ],
-    onChange(evt) {
-        const errs = proj_pagelayout.validate()
-        if (!(errs && errs.length && errs.length > 0))
-            proj_pagelayout.onDirty(true)
-    },
-    onValidate(evt) {
-        const pagelayout_id = (proj_pagelayout.getValue('id') + '').trim()
-        if (!(pagelayout_id && pagelayout_id.length && pagelayout_id.length > 0))
-            evt.detail.errors.push({
-                field: proj_pagelayout.get('id'),
-                error: 'Page ID is required.',
-            })
-        const parent_episode = proj_pagelayout.parentEpisode()
-        if (parent_episode && parent_episode.pages && parent_episode.pages.length)
-            for (const pagelayout of parent_episode.pages)
-                if (pagelayout.id == pagelayout_id && pagelayout != proj_pagelayout.record)
-                    evt.detail.errors.push({
-                        field: proj_pagelayout.get('id'),
-                        error: 'Another Page already has this ID.',
-                    })
-    },
-    tabTitle: () => proj_pagelayout.record.id,
-    dataToUI: () => {
-        const pagelayout = proj_pagelayout.record
-        proj_pagelayout.setValue('id', pagelayout ? pagelayout.id : '')
-        proj_pagelayout.refresh()
-    },
-    dataFromUI: () => {
-        const pagelayout = proj_pagelayout.record
+    ], {
+        onValidate(evt) {
+            const page_id = (tab_pagelayout_details.ctl.getValue('id') + '').trim()
+            if (!(page_id && page_id.length && page_id.length > 0))
+                evt.detail.errors.push({
+                    field: tab_pagelayout_details.ctl.get('id'),
+                    error: 'Page ID is required.',
+                })
+            const parent_episode = proj_pagelayout.parentEpisode()
+            if (parent_episode && parent_episode.pages && parent_episode.pages.length)
+                for (const page of parent_episode.pages)
+                    if (page.id == page_id && page != proj_pagelayout.record)
+                        evt.detail.errors.push({
+                            field: tab_pagelayout_details.ctl.get('id'),
+                            error: 'Another Page already has this ID.',
+                        })
+        },
+    }),
+    dataToUI: () => tab_pagelayout_details.ctl.onDataToUI(() => {
+        const pagelayout = tab_pagelayout_details.ctl.record
+        tab_pagelayout_details.ctl.setValue('id', pagelayout ? pagelayout.id : '')
+    }),
+    dataFromUI: () => tab_pagelayout_details.ctl.onDataFromUI(() => {
+        const pagelayout = tab_pagelayout_details.ctl.record
         if (pagelayout) {
             const oldID = pagelayout.id
-            const newID = proj_pagelayout.getValue('id')
+            const newID = tab_pagelayout_details.ctl.getValue('id')
             if (oldID != newID) {
                 pagelayout.id = newID
                 const parent_episode = proj_pagelayout.parentEpisode()
@@ -52,7 +41,30 @@ export const proj_pagelayout = new w2form({
                         if (parent_episode.pages[i] == proj_pagelayout || parent_episode.pages[i].id == oldID)
                             parent_episode.pages[i] = proj_pagelayout
             }
-            proj_pagelayout.record = pagelayout
+            tab_pagelayout_details.ctl.record = pagelayout // TODO
+        }
+    }),
+}
+
+export const proj_pagelayout = {
+    name: 'proj_pagelayout',
+    tabbed: [
+        tab_pagelayout_details,
+    ],
+    parentEpisode: () => {
+        for (const series of appState.proj.series) {
+            const episode = series.episodes.find(_ => _.pages && _.pages.includes && _.pages.includes(proj_pagelayout.record))
+            if (episode)
+                return episode
         }
     },
-})
+    setRecord: (rec) => {
+        proj_pagelayout.record = rec
+        proj_pagelayout.tabbed.forEach(_ => {
+            _.ctl.record = rec
+            _.dataToUI()
+        })
+    },
+    dataFromUI: () => proj_pagelayout.tabbed.forEach(_ => _.dataFromUI()),
+    dataToUI: () => proj_pagelayout.tabbed.forEach(_ => _.dataToUI()),
+}

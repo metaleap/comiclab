@@ -2,8 +2,8 @@ import { newForm } from './util.js'
 
 const tab_episode_details = {
     id: 'tab_episode_details',
-    icon: 'fa-cubes',
-    text: 'Episode Details',
+    icon: 'fa-cube',
+    text: 'Episode Info',
     ctl: newForm('tab_episode_details_form', (dirty) => proj_episode.onDirty(dirty), [
         { field: 'id', type: 'text', required: true, html: { label: 'Episode ID' } }
     ], {
