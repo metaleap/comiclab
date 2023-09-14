@@ -9,8 +9,8 @@ const tab_pagelayout_details = {
         { field: 'id', type: 'text', required: true, html: { label: 'Page ID' } }
     ], {
         onValidate(evt) {
-            const page_id = tab_pagelayout_details.ctl.getValue('id')
-            if (!(page_id && page_id.length && page_id.length > 0))
+            const new_id = tab_pagelayout_details.ctl.getValue('id')
+            if (!(new_id && new_id.length && new_id.length > 0))
                 evt.detail.errors.push({
                     field: tab_pagelayout_details.ctl.get('id'),
                     error: 'Page ID is required.',
@@ -18,10 +18,10 @@ const tab_pagelayout_details = {
             const parent_coll = proj_pagelayout.parentCollection()
             if (parent_coll && parent_coll.pages && parent_coll.pages.length)
                 for (const page of parent_coll.pages)
-                    if (page.id == page_id && page != proj_pagelayout.record)
+                    if (page.id == new_id && page != proj_pagelayout.record)
                         evt.detail.errors.push({
                             field: tab_pagelayout_details.ctl.get('id'),
-                            error: 'Another Page in "' + parent_coll.id + '" already has this ID.',
+                            error: `Another '${new_id}' Page already exists in '${parent_coll.id}'.`,
                         })
         },
     }),
@@ -37,7 +37,7 @@ const tab_pagelayout_details = {
             if (oldID != newID) {
                 pagelayout.id = newID
                 const parent_coll = proj_pagelayout.parentCollection()
-                if (parent_coll)
+                if (parent_coll && parent_coll.pages && parent_coll.pages.length)
                     for (const i in parent_coll.pages)
                         if (parent_coll.pages[i] == proj_pagelayout || parent_coll.pages[i].id == oldID)
                             parent_coll.pages[i] = proj_pagelayout
@@ -52,10 +52,11 @@ export const proj_pagelayout = {
     tabbed: [
         tab_pagelayout_details,
     ],
-    parentCollection: () => walkCollections((coll) => {
+    parentCollection: () => walkCollections((path) => {
+        const coll = path[0]
         if (coll.pages && coll.pages.some(_ => _ == proj_pagelayout.record || _.id == proj_pagelayout.record.id))
             return coll
-    }),
+    }, []),
     setRecord: (rec) => {
         proj_pagelayout.record = rec
         proj_pagelayout.tabbed.forEach(_ => { _.ctl.record = rec })

@@ -1,4 +1,4 @@
-import { w2popup, w2grid, w2form, w2prompt } from '../w2ui/w2ui.es6.js'
+import { w2popup, w2grid, w2form, w2prompt, w2alert } from '../w2ui/w2ui.es6.js'
 
 export function arrayMoveItem(arr, idxOld, idxNew) {
     var item = arr[idxOld]
@@ -139,12 +139,14 @@ export function newForm(name, onDirty, fields, extras) {
         fields: fields,
         record: {},
         onChange(evt) {
-            const errs = this.validate()
-            console.log("OC", errs)
-            if (!(errs && errs.length && errs.length > 0))
-                onDirty(true)
-            else
+            const errs = this.validate(false)
+            if (errs && errs.length && errs.length > 0) {
                 evt.preventDefault()
+                this.setValue(errs[0].field.field, evt.detail?.value?.previous)
+                this.refresh()
+                w2alert(errs[0].error, errs[0].field.field)
+            } else
+                onDirty(true)
         },
     }
     if (extras)

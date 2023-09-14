@@ -8,22 +8,21 @@ const tab_collection_details = {
         { field: 'id', type: 'text', required: true, html: { label: 'Collection ID' } }
     ], {
         onValidate(evt) {
-            const coll_id = tab_collection_details.ctl.getValue('id')
-            if (!(coll_id && coll_id.length && coll_id.length > 0))
+            const new_id = tab_collection_details.ctl.getValue('id')
+            if (!(new_id && new_id.length && new_id.length > 0))
                 evt.detail.errors.push({
                     field: tab_collection_details.ctl.get('id'),
                     error: 'Collection ID is required.',
                 })
             const parent_coll = proj_collection.parentCollection()
-            console.log("OV2", coll_id, parent_coll)
-            if (parent_coll)
-                for (const coll of parent_coll.collections)
-                    if (coll.id == coll_id && coll != proj_collection.record)
+            const sibling_colls = parent_coll ? parent_coll.collections : appState.proj.collections
+            if (sibling_colls.length)
+                for (const coll of sibling_colls)
+                    if (coll.id == new_id && coll != proj_collection.record)
                         evt.detail.errors.push({
                             field: tab_collection_details.ctl.get('id'),
-                            error: 'Another Collection in "' + parent_coll.id + '" already has this ID.',
+                            error: `Another '${new_id}' Collection already exists in ` + (parent_coll ? (`'${parent_coll.id}'`) : 'this project') + `.`,
                         })
-            console.log("PCOV3", evt)
         },
     }),
     dataToUI: () => tab_collection_details.ctl.onDataToUI(() => {
@@ -48,15 +47,14 @@ const tab_collection_details = {
     }),
 }
 
-export function walkCollections(perColl, path) {
-    const colls = (path && path.length) ? path[0].collections : appState.proj.collections
+export function walkCollections(perColl, parents) {
+    const colls = (parents && parents.length) ? parents[0].collections : appState.proj.collections
     if (colls)
         for (const coll of colls) {
-            const cur_path = [coll].concat(path)
-            const ret = perColl(cur_path)
-            if (ret)
+            const cur_path = parents ? [coll].concat(parents) : [coll]
+            let ret = perColl(cur_path)
+            if (ret || (ret = walkCollections(perColl, cur_path)))
                 return ret
-            walkCollections(perColl, cur_path)
         }
 }
 
