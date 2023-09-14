@@ -5,14 +5,6 @@ import { onDirtyProj, onDirtyCfg } from './app_guimain.js'
 import { appViews, appViewActive, appViewSetActive } from './app_views.js'
 
 let listInfos = {
-    'series': {
-        name: 'Series', icon: 'fa-cubes', contains: ['episodes'], appView: appViews.proj_series,
-        deletePrompt: id => `Remove the '${id}' series from the project files, including all its episodes and their page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)`,
-    },
-    'episodes': {
-        name: 'Episode', icon: 'fa-cube', contains: ['pages'], appView: appViews.proj_episode,
-        deletePrompt: id => `Remove the '${id}' episode from the project files, including all its page layouts, letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)`,
-    },
     'pages': {
         name: 'Page', icon: 'fa-th-large', contains: [], appView: appViews.proj_pagelayout,
         deletePrompt: id => `Remove the '${id}' page from the project files, including all its letterings and translations?<br/><br/>(Picture files, whether scanned or generated, will not be deleted from the file system.)`,
@@ -29,7 +21,6 @@ export const app_sidebar = new w2sidebar({
     nodes: [
         {
             id: 'project', text: 'Project: ' + uiProjName, group: true, expanded: true, groupShowHide: false, nodes: [
-                { id: 'proj_series', listOf: ['series'], text: 'Series &amp; Episodes', icon: 'fa fa-archive', nodes: [], appView: appViews.proj_settings_content },
                 { id: 'proj_collections', listOf: ['collections'], text: 'Collections', icon: 'fa fa-archive', nodes: [], appView: appViews.proj_settings_content },
                 { id: 'proj_books', text: 'Books', icon: 'fa fa-book', disabled: true },
                 { id: 'proj_sitegen', text: 'SiteGen', icon: 'fa fa-globe', disabled: true },

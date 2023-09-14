@@ -18,7 +18,6 @@ func init() {
 }
 
 type Proj struct {
-	Series      []*Series     `json:"series"`
 	Collections []*Collection `json:"collections"`
 	Settings    struct {
 		DefaultLanguage string `json:"defaultLanguage,omitempty"`
