@@ -81,8 +81,10 @@ export const app_sidebar = new w2sidebar({
         appViewSetActive(app_view)
         if (sel_node_id && sel_node_id.length && app_sidebar.get(sel_node_id))
             clickNode(sel_node_id)
-        else if (sel_node && sel_node.parent && sel_node.record)
-            clickNode((app_sidebar.find(sel_node.parent.id, { record: sel_node.record }) ?? sel_node.parent).id)
+        else if (sel_node && sel_node.parent && sel_node.record) {
+            const found = app_sidebar.find(sel_node.parent.id, { record: sel_node.record })
+            clickNode(found && found.id && app_sidebar.get(found.id) ? found.id : sel_node.parent.id)
+        }
         app_sidebar.each(node => {
             if (node.id.startsWith('proj_series'))
                 node.count = (node.nodes && node.nodes.length && node.nodes.length > 0) ? node.nodes.length : undefined

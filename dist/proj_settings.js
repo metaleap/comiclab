@@ -1,10 +1,8 @@
-import { w2form } from './w2ui/w2ui.es6.js'
-
 import { dictKeys, newForm } from './util.js'
 
 const tab_contentauthoring = {
     id: 'tab_contentauthoring',
-    icon: 'fa-vcard',
+    icon: 'fa-map',
     text: 'Content Authoring',
     ctl: newForm('tab_contentauthoring_form', (dirty) => proj_settings.onDirty(dirty), [
         {

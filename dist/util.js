@@ -77,12 +77,14 @@ export function newGrid(name, recID, objName, onDirty, fields) {
         recid: recID,
         columns: fields,
     })
-    ret.afterDataToUI = (records) => {
+    ret.onDataToUI = (f) => {
+        const recs = f()
         ret.clear(true)
-        ret.add(records)
+        ret.add(recs)
     }
-    ret.beforeDataFromUI = () => {
+    ret.onDataFromUI = (f) => {
         ret.mergeChanges()
+        f()
     }
 
     ret.on('keydown', (evt) => {
@@ -130,7 +132,7 @@ export function newGrid(name, recID, objName, onDirty, fields) {
     return ret
 }
 
-export function newForm(name, onDirty, fields) {
+export function newForm(name, onDirty, fields, extras) {
     const ret = new w2form({
         name: name,
         fields: fields,
@@ -149,6 +151,9 @@ export function newForm(name, onDirty, fields) {
             setTimeout(f, 123)
         },
     })
+    if (extras)
+        for (const key in extras)
+            ret[key] = extras[key]
     for (const field of fields) {
         let v = undefined
         switch (field.type) {

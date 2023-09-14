@@ -1,5 +1,3 @@
-import { w2form } from './w2ui/w2ui.es6.js'
-
 import { newGrid, newForm, dictCopy } from './util.js'
 
 const tab_authors = {
@@ -10,19 +8,18 @@ const tab_authors = {
         { field: "author_id", text: "ID", sortable: true, },
         { field: "author_name", text: "Full Name", sortable: true, editable: { type: 'text' } },
     ]),
-    dataToUI: () => {
-        const recs = []
+    dataToUI: () => tab_authors.ctl.onDataToUI(() => {
+        const ret = []
         if (appState.config && appState.config.contentAuthoring.authors)
             for (const id in appState.config.contentAuthoring.authors)
-                recs.push({ 'author_id': id, 'author_name': appState.config.contentAuthoring.authors[id] })
-        tab_authors.ctl.afterDataToUI(recs)
-    },
-    dataFromUI: () => {
-        tab_authors.ctl.beforeDataFromUI()
+                ret.push({ 'author_id': id, 'author_name': appState.config.contentAuthoring.authors[id] })
+        return ret
+    }),
+    dataFromUI: () => tab_authors.ctl.onDataFromUI(() => {
         appState.config.contentAuthoring.authors = {}
         for (const rec of tab_authors.ctl.records)
             appState.config.contentAuthoring.authors[rec.author_id] = rec.author_name
-    },
+    }),
 }
 
 const tab_pageformats = {
@@ -34,19 +31,18 @@ const tab_pageformats = {
         { field: "widthMm", text: "Width (mm)", sortable: false, render: 'int', editable: { type: 'int', min: 0, max: 1234 } },
         { field: "heightMm", text: "Height (mm)", sortable: false, render: 'int', editable: { type: 'int', min: 0, max: 1234 } },
     ]),
-    dataToUI: () => {
-        const recs = []
+    dataToUI: () => tab_pageformats.ctl.onDataToUI(() => {
+        const ret = []
         if (appState.config && appState.config.contentAuthoring.pageFormats)
             for (const id in appState.config.contentAuthoring.pageFormats)
-                recs.push({ 'pageformat_id': id, 'widthMm': appState.config.contentAuthoring.pageFormats[id].widthMm, 'heightMm': appState.config.contentAuthoring.pageFormats[id].heightMm })
-        tab_pageformats.ctl.afterDataToUI(recs)
-    },
-    dataFromUI: () => {
-        tab_pageformats.ctl.beforeDataFromUI()
+                ret.push({ 'pageformat_id': id, 'widthMm': appState.config.contentAuthoring.pageFormats[id].widthMm, 'heightMm': appState.config.contentAuthoring.pageFormats[id].heightMm })
+        return ret
+    }),
+    dataFromUI: () => tab_pageformats.ctl.onDataFromUI(() => {
         appState.config.contentAuthoring.pageFormats = {}
         for (const rec of tab_pageformats.ctl.records)
             appState.config.contentAuthoring.pageFormats[rec.pageformat_id] = { 'widthMm': rec.widthMm, 'heightMm': rec.heightMm }
-    },
+    }),
 }
 
 const tab_localization = {

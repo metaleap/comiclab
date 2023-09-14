@@ -17,7 +17,10 @@ export let appViewActive = null
 export function appViewSetActive(appView, record) {
     let didSetRecord = false
     if (record && appView && record != appView.record) {
-        appView.record = record
+        if (appView.setRecord)
+            appView.setRecord(record)
+        else
+            appView.record = record
         appView.dataToUI()
         didSetRecord = true
     }
