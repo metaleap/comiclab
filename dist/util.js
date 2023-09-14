@@ -140,8 +140,14 @@ export function newForm(name, onDirty, fields) {
             if (!(errs && errs.length && errs.length > 0))
                 onDirty(true)
         },
-        afterDataToUI: () => ret.refresh(),
-        beforeDataFromUI: () => ret.refresh(),
+        onDataToUI: (f) => {
+            f()
+            ret.refresh()
+        },
+        onDataFromUI: (f) => {
+            ret.refresh()
+            setTimeout(f, 123)
+        },
     })
     for (const field of fields) {
         let v = undefined

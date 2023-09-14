@@ -1,6 +1,6 @@
 import { w2form } from './w2ui/w2ui.es6.js'
 
-import { newGrid, dictCopy } from './util.js'
+import { newGrid, newForm, dictCopy } from './util.js'
 
 const tab_authors = {
     id: 'tab_authors',
@@ -53,39 +53,19 @@ const tab_localization = {
     id: 'tab_localization',
     icon: 'fa-language',
     text: 'Localization',
-    ctl: new w2form({
-        name: 'tab_localization_form',
-        fields: [
-            { field: 'languages', type: 'map', html: { label: 'Languages', key: { text: '=', attr: 'style="width: 44px"' }, value: { attr: 'style="width: 77px"' } } },
-            { field: 'contentFields', type: 'array', html: { label: 'Custom Localizable<br/>Content Fields' } },
-        ],
-        record: {
-            'languages': {},
-            'contentFields': [],
-        },
-        onChange(evt) {
-            const errs = tab_localization.ctl.validate()
-            if (!(errs && errs.length && errs.length > 0))
-                config_contentauthoring.onDirty(true)
-        },
-        onValidate(evt) {
-        },
-    }),
-    dataToUI: () => {
+    ctl: newForm('tab_localization_form', (dirty) => config_contentauthoring.onDirty(dirty), [
+        { field: 'languages', type: 'map', html: { label: 'Languages', key: { text: '=', attr: 'style="width: 44px"' }, value: { attr: 'style="width: 77px"' } } },
+        { field: 'contentFields', type: 'array', html: { label: 'Custom Localizable<br/>Content Fields' } },
+    ]),
+    dataToUI: () => tab_localization.ctl.onDataToUI(() => {
         tab_localization.ctl.setValue('languages', dictCopy(appState.config.contentAuthoring.languages), true) // dictCopy because w2ui inserts `_order` dict entry
         tab_localization.ctl.setValue('contentFields', appState.config.contentAuthoring.contentFields, true)
-        tab_localization.ctl.refresh()
-    },
-    dataFromUI: () => {
-        tab_localization.ctl.refresh()
-        setTimeout(() => {
-            const rec = tab_localization.ctl.getCleanRecord(true)
-            for (const key in rec.languages)
-                console.log("KEY", key)
-            appState.config.contentAuthoring.languages = rec.languages
-            appState.config.contentAuthoring.contentFields = rec.contentFields
-        }, 123)
-    },
+    }),
+    dataFromUI: () => tab_localization.ctl.onDataFromUI(() => {
+        const rec = tab_localization.ctl.getCleanRecord(true)
+        appState.config.contentAuthoring.languages = rec.languages
+        appState.config.contentAuthoring.contentFields = rec.contentFields
+    }),
 }
 
 export const config_contentauthoring = {

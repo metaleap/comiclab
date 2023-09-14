@@ -7,13 +7,15 @@
         <link rel="stylesheet" href="/w2ui/font-awesome.min.css">
         <style type="text/css">
             #main { width: 96vw; height: 96vh; }
+            span.w2ui-group-text { text-transform: none !important; }
             .w2ui-reset, .w2ui-popup, .w2ui-overlay-body, .w2ui-lock-msg, .w2ui-node-text, .li-item, input, button, table, tr, th, td {
                 xfont-family: "Yanone Kaffeesatz", "OpenSans" !important;
                 xfont-size: 15px !important;
             }
         </style>
         <script>
-            const uiProjPath = '{{ .Proj.Name }}/*.json'
+            const uiProjName = '{{ .Proj.Name }}'
+            const uiProjPath = uiProjName + '/*.json'
             const uiCfgPath = '~/.config/{{ .Config.FileName }}'
 
             const appState = {

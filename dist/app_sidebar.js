@@ -44,7 +44,7 @@ export const app_sidebar = new w2sidebar({
     toggleAlign: 'left',
     nodes: [
         {
-            id: 'project', text: 'Project', group: true, expanded: true, groupShowHide: false, nodes: [
+            id: 'project', text: 'Project: ' + uiProjName, group: true, expanded: true, groupShowHide: false, nodes: [
                 { id: 'proj_series', text: 'Series &amp; Episodes', icon: 'fa fa-archive', nodes: [], },
                 { id: 'proj_books', text: 'Books', icon: 'fa fa-book', disabled: true },
                 { id: 'proj_sitegen', text: 'SiteGen', icon: 'fa fa-globe', disabled: true },
