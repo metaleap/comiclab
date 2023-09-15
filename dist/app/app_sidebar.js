@@ -6,7 +6,7 @@ import { appViews, appViewActive, appViewSetActive } from './app_views.js'
 
 let listInfos = {
     'pages': {
-        name: 'Page', icon: 'fa-th-large', contains: [], appView: appViews.proj_pagelayout,
+        name: 'Page', icon: 'fa-th-large', contains: [], appView: appViews.proj_page,
         deletePrompt: id => `Remove the '${id}' Page from the project?`,
     },
     'collections': {

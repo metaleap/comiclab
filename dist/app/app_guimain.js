@@ -1,70 +1,66 @@
-import { query, w2layout, w2utils, w2tabs } from '../w2ui/w2ui.es6.js'
-import { setToolbarIcon, logErr, logInfo } from './util.js'
+import { query, w2utils, w2tabs } from '../w2ui/w2ui.es6.js'
+import { setToolbarIcon, logErr, logInfo, newLayout } from './util.js'
 
 import { appViews, appViewSetActive, appViewRefresh } from './app_views.js'
 import { app_sidebar } from './app_sidebar.js'
 
 guiMain = {
     div: query('#main'),
-    layout: new w2layout({
-        name: 'main_layout',
-        padding: 4,
-        panels: [
-            {
-                type: 'left', size: 234, minSize: 55, maxSize: 555, resizable: true, html: '', toolbar: {
-                    tooltip: 'bottom',
-                    items: [
-                        { type: 'spacer' },
-                        {
-                            type: 'menu', id: 'menu_proj', tooltip: 'Project: ' + uiProjPath, icon: 'fa fa-spinner', items: [
-                                { id: 'menu_proj_save', text: 'Save Changes', icon: 'fa fa-save', disabled: true, },
-                                { id: 'menu_proj_reload', text: 'Reload', icon: 'fa fa-refresh', },
-                            ]
-                        },
-                        {
-                            type: 'menu', id: 'menu_cfg', tooltip: 'Config: ' + uiCfgPath, icon: 'fa fa-spinner', items: [
-                                { id: 'menu_cfg_save', text: 'Save Changes', icon: 'fa fa-save', disabled: true, },
-                                { id: 'menu_cfg_reload', text: 'Reload', icon: 'fa fa-refresh', },
-                            ]
-                        },
-                        { type: 'break' },
-                        { type: 'button', id: 'both_reload', tooltip: 'Reload Both', icon: 'fa fa-refresh' },
-                        { type: 'button', id: 'both_save', tooltip: 'Save Both', icon: 'fa fa-save', disabled: true },
-                        { type: 'spacer' },
-                    ],
-                    onClick(evt) {
-                        switch (evt.target) {
-                            case 'menu_proj:menu_proj_reload':
-                                appStateReload(true, false)
-                                break
-                            case 'menu_proj:menu_proj_save':
-                                appStateSave(true, false)
-                                break
-                            case 'menu_cfg:menu_cfg_reload':
-                                appStateReload(false, true)
-                                break
-                            case 'menu_cfg:menu_cfg_save':
-                                appStateSave(false, true)
-                                break
-                            case 'both_reload':
-                                appStateReload(true, true)
-                                break
-                            case 'both_save':
-                                appStateSave(true, true)
-                                break
-                        }
+    layout: newLayout('main_layout', [
+        {
+            type: 'left', size: 234, minSize: 55, maxSize: 555, resizable: true, html: '', toolbar: {
+                tooltip: 'bottom',
+                items: [
+                    { type: 'spacer' },
+                    {
+                        type: 'menu', id: 'menu_proj', tooltip: 'Project: ' + uiProjPath, icon: 'fa fa-spinner', items: [
+                            { id: 'menu_proj_save', text: 'Save Changes', icon: 'fa fa-save', disabled: true, },
+                            { id: 'menu_proj_reload', text: 'Reload', icon: 'fa fa-refresh', },
+                        ]
+                    },
+                    {
+                        type: 'menu', id: 'menu_cfg', tooltip: 'Config: ' + uiCfgPath, icon: 'fa fa-spinner', items: [
+                            { id: 'menu_cfg_save', text: 'Save Changes', icon: 'fa fa-save', disabled: true, },
+                            { id: 'menu_cfg_reload', text: 'Reload', icon: 'fa fa-refresh', },
+                        ]
+                    },
+                    { type: 'break' },
+                    { type: 'button', id: 'both_reload', tooltip: 'Reload Both', icon: 'fa fa-refresh' },
+                    { type: 'button', id: 'both_save', tooltip: 'Save Both', icon: 'fa fa-save', disabled: true },
+                    { type: 'spacer' },
+                ],
+                onClick(evt) {
+                    switch (evt.target) {
+                        case 'menu_proj:menu_proj_reload':
+                            appStateReload(true, false)
+                            break
+                        case 'menu_proj:menu_proj_save':
+                            appStateSave(true, false)
+                            break
+                        case 'menu_cfg:menu_cfg_reload':
+                            appStateReload(false, true)
+                            break
+                        case 'menu_cfg:menu_cfg_save':
+                            appStateSave(false, true)
+                            break
+                        case 'both_reload':
+                            appStateReload(true, true)
+                            break
+                        case 'both_save':
+                            appStateSave(true, true)
+                            break
                     }
                 }
-            },
-            {
-                type: 'main', show: { tabs: true }, tabs: new w2tabs({
-                    name: 'main_tabs',
-                    tabs: [],
-                    onClick(evt) { guiMain.layout.html('main', evt.object.ctl) },
-                })
-            },
-        ]
-    }),
+            }
+        },
+        {
+            type: 'main', show: { tabs: true }, tabs: new w2tabs({
+                name: 'main_tabs',
+                tabs: [],
+                onClick(evt) { guiMain.layout.html('main', evt.object.ctl) },
+            })
+        },
+    ]),
     sidebar: app_sidebar,
 }
 

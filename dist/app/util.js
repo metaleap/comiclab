@@ -1,4 +1,4 @@
-import { w2popup, w2grid, w2form, w2prompt, w2alert, w2tooltip } from '../w2ui/w2ui.es6.js'
+import { w2popup, w2grid, w2form, w2prompt, w2alert, w2layout } from '../w2ui/w2ui.es6.js'
 
 import { app_sidebar } from './app_sidebar.js'
 
@@ -186,14 +186,12 @@ export function newForm(name, onDirty, fields, extras) {
 
     const ret = new w2form(init)
     ret.refreshLookupHints = (recClean) => {
-        for (const field of ret.fields) {
-            if (field && field.type == 'combo' && field.lookupDict) {
-                console.log(field.el.id)
+        for (const field of ret.fields)
+            if (field && field.type == 'combo' && field.lookupDict && field.el) {
                 const dict = field.lookupDict()
-                if (dict && dict[recClean[field.field]])
-                    field.el.title = dict[recClean[field.field]]
+                if (dict)
+                    field.el.title = dict[recClean[field.field] ?? '']
             }
-        }
     }
     ret.onDataToUI = (f) => {
         const rec_clean = ret.getCleanRecord(true)
@@ -213,5 +211,11 @@ export function newForm(name, onDirty, fields, extras) {
             f(rec_clean)
         }, 11)
     }
+    return ret
+}
+
+export function newLayout(name, panels) {
+    const init = { name: name, panels: panels, padding: 0, resizer: 4 }
+    const ret = new w2layout(init)
     return ret
 }
