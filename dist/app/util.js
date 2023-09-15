@@ -1,4 +1,4 @@
-import { w2popup, w2grid, w2form, w2prompt, w2alert } from '../w2ui/w2ui.es6.js'
+import { w2popup, w2grid, w2form, w2prompt, w2alert, w2tooltip } from '../w2ui/w2ui.es6.js'
 
 import { app_sidebar } from './app_sidebar.js'
 
@@ -175,21 +175,45 @@ export function newForm(name, onDirty, fields, extras) {
                 break
         }
         init.record[field.field] = v
+        if (field.type == 'combo' && field.lookupDict && !(field.options && field.options.items)) {
+            if (!field.options)
+                field.options = {}
+            field.options.items = () => dictKeys(field.lookupDict())
+        }
     }
     if (extras)
         for (const key in extras)
             init[key] = extras[key]
 
     const ret = new w2form(init)
+    ret.refreshLookupHints = () => {
+        const field = this.get(evt.detail.field)
+        if (field && field.type == 'combo' && field.lookupDict && field.$el) {
+            evt.done(() => console.log(w2tooltip.show({
+                anchor: field.$el[0],
+                html: 'noice',
+                class: 'w2ui-white',
+                arrowSize: 11,
+                position: 'right',
+                align: 'none',
+            })))
+        }
+    }
     ret.onDataToUI = (f) => {
+        console.log("d2u")
         const rec = f ? f(ret.getCleanRecord(true)) : ret.getCleanRecord(true)
         for (const field in rec)
             ret.setValue(field, rec[field], true)
         ret.refresh()
+        ret.refreshLookupHints()
     }
     ret.onDataFromUI = (f) => {
+        console.log("u2d")
         ret.refresh()
-        setTimeout(() => f(ret.getCleanRecord(true)), 123)
+        setTimeout(() => {
+            f(ret.getCleanRecord(true))
+            ret.refreshLookupHints()
+        }, 123)
     }
     return ret
 }
