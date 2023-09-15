@@ -25,10 +25,10 @@ const tab_coll_details_form = newForm('tab_coll_details_form', (dirty) => proj_c
 })
 
 const tab_coll_details_grid = newGrid('tab_coll_details_grid', 'recid', 'Foo', (dirty) => proj_coll.onDirty(dirty), [
-    { field: 'title', text: 'Custom Content Field', sortable: true, resizable: true, },
+    { field: 'title', text: 'Custom Content Field', sortable: false, resizable: true, },
     { field: 'name', hidden: true, },
-    { field: 'lang_id', hidden: true, },
-    { field: 'lang', text: 'Language', sortable: false, resizable: true, },
+    { field: 'lang', hidden: true, },
+    { field: 'language', text: 'Language', sortable: false, resizable: true, },
     { field: 'value', text: 'Value', sortable: false, resizable: true, editable: { type: 'text' }, },
 ], true)
 
@@ -46,14 +46,15 @@ const tab_coll_details = {
             'author': proj_coll.obj.author,
         }))
         tab_coll_details_grid.onDataToUI((_) => {
+            console.log("D2U", proj_coll.obj.id, proj_coll.obj.contentFields)
             const ret = []
             const langs = dictMerge({ '': '' }, appState.config.contentAuthoring.languages)
             for (const content_field of appState.config.contentAuthoring.contentFields)
                 for (const lang in langs) {
                     let value = ''
-                    if (proj_coll.obj.contentFields && proj_coll.obj.contentFields.length && proj_coll.obj.contentFields[content_field] && proj_coll.obj.contentFields[content_field][lang])
+                    if (proj_coll.obj.contentFields && proj_coll.obj.contentFields[content_field] && proj_coll.obj.contentFields[content_field][lang])
                         value = proj_coll.obj.contentFields[content_field][lang]
-                    ret.push({ 'recid': content_field + '_' + lang, 'name': content_field, 'title': (lang == '' ? content_field : ''), 'lang': langs[lang], 'lang_id': lang, 'value': value })
+                    ret.push({ 'recid': content_field + '_' + lang, 'name': content_field, 'title': (lang == '' ? content_field : ''), 'language': langs[lang], 'lang': lang, 'value': value })
                 }
 
             return ret
@@ -64,7 +65,17 @@ const tab_coll_details = {
             proj_coll.obj.id = recClean.id
             proj_coll.obj.author = recClean.author
         })
-        tab_coll_details_grid.onDataFromUI((_) => { })
+        tab_coll_details_grid.onDataFromUI((recs) => {
+            proj_coll.obj.contentFields = {}
+            for (const rec of recs)
+                if (rec.value && rec.value.length) {
+                    if (!proj_coll.obj.contentFields[rec.name])
+                        proj_coll.obj.contentFields[rec.name] = {}
+                    if (!proj_coll.obj.contentFields[rec.name][rec.lang])
+                        proj_coll.obj.contentFields[rec.name][rec.lang] = {}
+                    proj_coll.obj.contentFields[rec.name][rec.lang] = rec.value
+                }
+        })
     },
 }
 

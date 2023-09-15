@@ -15,9 +15,9 @@ const tab_authors = {
                 ret.push({ 'author_id': id, 'author_name': appState.config.contentAuthoring.authors[id] })
         return ret
     }),
-    dataFromUI: () => tab_authors.ctl.onDataFromUI(() => {
+    dataFromUI: () => tab_authors.ctl.onDataFromUI((recs) => {
         appState.config.contentAuthoring.authors = {}
-        for (const rec of tab_authors.ctl.records)
+        for (const rec of recs)
             appState.config.contentAuthoring.authors[rec.author_id] = rec.author_name
     }),
 }
@@ -38,9 +38,9 @@ const tab_pageformats = {
                 ret.push({ 'pageformat_id': id, 'widthMm': appState.config.contentAuthoring.pageFormats[id].widthMm, 'heightMm': appState.config.contentAuthoring.pageFormats[id].heightMm })
         return ret
     }),
-    dataFromUI: () => tab_pageformats.ctl.onDataFromUI(() => {
+    dataFromUI: () => tab_pageformats.ctl.onDataFromUI((recs) => {
         appState.config.contentAuthoring.pageFormats = {}
-        for (const rec of tab_pageformats.ctl.records)
+        for (const rec of recs)
             appState.config.contentAuthoring.pageFormats[rec.pageformat_id] = { 'widthMm': rec.widthMm, 'heightMm': rec.heightMm }
     }),
 }

@@ -138,7 +138,7 @@ export function newGrid(name, recID, objName, onDirty, fields, noAddDelete) {
     }
     ret.onDataFromUI = (f) => {
         ret.mergeChanges()
-        f()
+        f(ret.records)
     }
     return ret
 }
@@ -209,7 +209,7 @@ export function newForm(name, onDirty, fields, extras) {
         setTimeout(() => {
             ret.refreshLookupHints(rec_clean)
             ret.refresh()
-        }, 11)
+        }, 44)
     }
     ret.onDataFromUI = (f) => {
         ret.refresh()
@@ -217,7 +217,7 @@ export function newForm(name, onDirty, fields, extras) {
             const rec_clean = ret.getCleanRecord(true)
             ret.refreshLookupHints(rec_clean)
             f(rec_clean)
-        }, 11)
+        }, 44)
     }
     return ret
 }
