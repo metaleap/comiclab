@@ -25,6 +25,14 @@ export function dictKeys(dict) {
     return ret
 }
 
+export function dictMerge(...dicts) {
+    const ret = {}
+    for (const dict of dicts)
+        for (const k in dict)
+            ret[k] = dict[k]
+    return ret
+}
+
 export function newObjName(what, currentCount, ok) {
     const n = currentCount + 1
     const ret = what.toLowerCase() + (n < 10 ? '0' : '') + n
@@ -58,7 +66,7 @@ export function logMsg(isErr, msg) {
         w2popup.open({ title: strTime(now), text: msg })
 }
 
-export function newGrid(name, recID, objName, onDirty, fields) {
+export function newGrid(name, recID, objName, onDirty, fields, noAddDelete) {
     const init = {
         name: name,
         selectType: 'row',
@@ -66,9 +74,9 @@ export function newGrid(name, recID, objName, onDirty, fields) {
         show: {
             columnMenu: false,
             footer: false,
-            toolbar: true,
-            toolbarAdd: true,
-            toolbarDelete: true,
+            toolbar: !noAddDelete,
+            toolbarAdd: !noAddDelete,
+            toolbarDelete: !noAddDelete,
             toolbarEdit: false,
             toolbarSave: false,
             toolbarSearch: false,

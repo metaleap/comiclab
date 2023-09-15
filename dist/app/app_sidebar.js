@@ -10,7 +10,7 @@ let listInfos = {
         deletePrompt: id => `Remove the '${id}' Page from the project?`,
     },
     'collections': {
-        name: 'Collection', icon: 'fa-briefcase', contains: ['collections', 'pages'], appView: appViews.proj_collection,
+        name: 'Collection', icon: 'fa-briefcase', contains: ['collections', 'pages'], appView: appViews.proj_coll,
         deletePrompt: id => `Remove the '${id}' Collection from the project?`,
     },
 }
@@ -21,7 +21,7 @@ export const app_sidebar = new w2sidebar({
     nodes: [
         {
             id: 'project', text: 'Project: ' + uiProjName, group: true, expanded: true, groupShowHide: false, nodes: [
-                { id: 'proj_collections', listOf: ['collections'], text: 'Collections', icon: 'fa fa-archive', nodes: [], appView: appViews.proj_settings_content, selected: true, expanded: true },
+                { id: 'proj_colls', listOf: ['collections'], text: 'Collections', icon: 'fa fa-archive', nodes: [], appView: appViews.proj_settings_content, selected: true, expanded: true },
                 { id: 'proj_books', text: 'Books', icon: 'fa fa-book', disabled: true },
                 { id: 'proj_sitegen', text: 'SiteGen', icon: 'fa fa-globe', disabled: true },
             ],

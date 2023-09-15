@@ -1,10 +1,10 @@
-import { proj_collection } from './proj_collection.js'
+import { proj_coll } from './proj_coll.js'
 import { proj_page } from './proj_page.js'
 import { proj_settings_content } from './proj_settings_content.js'
 import { config_contentauthoring } from './config_contentauthoring.js'
 
 export const appViews = {
-    proj_collection: proj_collection,
+    proj_coll: proj_coll,
     proj_page: proj_page,
     proj_settings_content: proj_settings_content,
     config_contentauthoring: config_contentauthoring,

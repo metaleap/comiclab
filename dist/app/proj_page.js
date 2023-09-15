@@ -1,5 +1,5 @@
 import { newForm } from './util.js'
-import { walkCollections } from './proj_collection.js'
+import { walkCollections } from './proj_coll.js'
 
 const tab_page_details = {
     id: 'tab_page_details',
