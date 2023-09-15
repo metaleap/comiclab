@@ -88,7 +88,6 @@ export function newGrid(name, recID, objName, onDirty, fields, noAddDelete) {
         recid: recID,
         columns: fields,
         onChange(evt) {
-            this.mergeChanges()
             onDirty(true)
             setTimeout(this.refresh, 345) // yes, needed again (AND delayed) despite mergeChanges...
         },
@@ -104,7 +103,7 @@ export function newGrid(name, recID, objName, onDirty, fields, noAddDelete) {
                     this.mergeChanges()
                     onDirty(true)
                 }
-            }, 1)
+            }, 44)
         },
         onAdd(evt) {
             const num_recs = this.records.length
@@ -158,7 +157,7 @@ export function newForm(name, onDirty, fields, extras) {
             } else {
                 onDirty(true)
                 if (evt.detail.field == 'id' && extras?.isSidebarObj && evt.detail.value?.current != evt.detail.value?.previous)
-                    setTimeout(() => { app_sidebar.dataToUI(true) }, 22)
+                    setTimeout(guiMain.sidebar.dataToUI, 123)
             }
         },
     }

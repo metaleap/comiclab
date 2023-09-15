@@ -162,7 +162,6 @@ export function onDirtyProj(dirty) {
     setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_proj', 'fa ' + (dirty ? 'fa-save' : 'fa-check-circle'))
     guiMain.layout.panels[0].toolbar[dirty ? 'enable' : 'disable']('menu_proj:menu_proj_save')
     onDirtyChanged()
-    guiMain.sidebar.dataToUI()
 }
 export function onDirtyCfg(dirty) {
     setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_cfg', 'fa ' + (dirty ? 'fa-save' : 'fa-check-circle'))

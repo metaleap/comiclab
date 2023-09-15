@@ -69,6 +69,7 @@ const tab_coll_details = {
             proj_coll.obj.contentFields = {}
             for (const rec of recs)
                 if (rec.value && rec.value.length) {
+                    console.log("U2D", proj_coll.obj.id, proj_coll.obj.contentFields, rec)
                     if (!proj_coll.obj.contentFields[rec.name])
                         proj_coll.obj.contentFields[rec.name] = {}
                     if (!proj_coll.obj.contentFields[rec.name][rec.lang])
