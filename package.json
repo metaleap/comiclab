@@ -21,15 +21,27 @@
     "views": {
       "comiclabExplorer": [
         {
-          "id": "comiclabExplorerProj",
-          "name": "Project",
-          "icon": "media/svg/comments.svg",
+          "id": "comiclabExplorerProjColls",
+          "name": "Collections",
+          "icon": "media/svg/box-archive.svg",
+          "type": "tree"
+        },
+        {
+          "id": "comiclabExplorerProjBooks",
+          "name": "Books",
+          "icon": "media/svg/book.svg",
+          "type": "tree"
+        },
+        {
+          "id": "comiclabExplorerProjSites",
+          "name": "Sites",
+          "icon": "media/svg/globe.svg",
           "type": "tree"
         },
         {
           "id": "comiclabExplorerCfg",
           "name": "Config",
-          "icon": "media/svg/comments.svg",
+          "icon": "media/svg/compass-drafting.svg",
           "type": "tree"
         }
       ]

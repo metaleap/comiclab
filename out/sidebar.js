@@ -1,32 +1,48 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SidebarNav = void 0;
-const vs = require("vscode");
-class NavItem extends vs.TreeItem {
-}
-class SidebarNav {
-    constructor(isProj) {
-        this.isProj = isProj;
-    }
+exports.NavCfg = exports.NavProjSites = exports.NavProjBooks = exports.NavProjColls = void 0;
+class NavProjColls {
     getTreeItem(element) {
         return element;
     }
     getChildren(element) {
         if (!element)
-            if (this.isProj) {
-                return [
-                    { id: "proj.collections", label: "Collections", iconPath: "media/svg/box-archive.svg" },
-                    { id: "proj.books", label: "Books", iconPath: "media/svg/book.svg" },
-                    { id: "proj.sitegen", label: "SiteGen", iconPath: "media/svg/globe.svg" },
-                ];
-            }
-            else {
-                return [
-                    { id: "cfg.contentAuthoring", label: "Content Authoring", iconPath: "media/svg/compass-drafting.svg" },
-                ];
-            }
+            return [
+                { id: "samplescoll", label: "short-stories", iconPath: "archive" },
+            ];
         return [];
     }
 }
-exports.SidebarNav = SidebarNav;
+exports.NavProjColls = NavProjColls;
+class NavProjBooks {
+    getTreeItem(element) {
+        return element;
+    }
+    getChildren(element) {
+        return []; // book
+    }
+}
+exports.NavProjBooks = NavProjBooks;
+class NavProjSites {
+    getTreeItem(element) {
+        return element;
+    }
+    getChildren(element) {
+        return []; // globe
+    }
+}
+exports.NavProjSites = NavProjSites;
+class NavCfg {
+    getTreeItem(element) {
+        return element;
+    }
+    getChildren(element) {
+        if (!element)
+            return [
+                { id: "contentAuthoring", label: "Content Authoring", iconPath: "preview" },
+            ];
+        return [];
+    }
+}
+exports.NavCfg = NavCfg;
 //# sourceMappingURL=sidebar.js.map

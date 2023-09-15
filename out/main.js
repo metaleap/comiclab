@@ -2,11 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
 const vs = require("vscode");
-const sidebar_1 = require("./sidebar");
+const sidebar = require("./sidebar");
 function activate(ctx) {
     ctx.subscriptions.push(vs.commands.registerCommand('comiclab.helloWorld', () => { vs.window.showInformationMessage('Hello World from ComicLab!'); }));
-    ctx.subscriptions.push(vs.window.registerTreeDataProvider('comiclabExplorerProj', new sidebar_1.SidebarNav(true)));
-    ctx.subscriptions.push(vs.window.registerTreeDataProvider('comiclabExplorerCfg', new sidebar_1.SidebarNav(false)));
+    ctx.subscriptions.push(vs.window.registerTreeDataProvider('comiclabExplorerProjColls', new sidebar.NavProjColls()));
+    ctx.subscriptions.push(vs.window.registerTreeDataProvider('comiclabExplorerProjBooks', new sidebar.NavProjBooks()));
+    ctx.subscriptions.push(vs.window.registerTreeDataProvider('comiclabExplorerProjSites', new sidebar.NavProjSites()));
+    ctx.subscriptions.push(vs.window.registerTreeDataProvider('comiclabExplorerCfg', new sidebar.NavCfg()));
 }
 exports.activate = activate;
 function deactivate() {
