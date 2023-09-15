@@ -8,6 +8,7 @@ const tab_pagelayout_details = {
     ctl: newForm('tab_pagelayout_details_form', (dirty) => proj_pagelayout.onDirty(dirty), [
         { field: 'id', type: 'text', required: true, html: { label: 'Page ID' } }
     ], {
+        isSidebarObj: true,
         onValidate(evt) {
             const new_id = tab_pagelayout_details.ctl.getValue('id')
             if (!(new_id && new_id.length && new_id.length > 0))
@@ -47,6 +48,6 @@ export const proj_pagelayout = {
         proj_pagelayout.obj = obj
         proj_pagelayout.dataToUI()
     },
-    dataFromUI: () => proj_pagelayout.tabbed.forEach(_ => _.dataFromUI()),
+    dataFromUI: () => { if (proj_pagelayout.obj) proj_pagelayout.tabbed.forEach(_ => _.dataFromUI()) },
     dataToUI: () => { if (proj_pagelayout.obj) proj_pagelayout.tabbed.forEach(_ => _.dataToUI()) },
 }

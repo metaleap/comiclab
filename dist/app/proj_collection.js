@@ -7,8 +7,9 @@ const tab_collection_details = {
     text: 'Collection Info',
     ctl: newForm('tab_collection_details_form', (dirty) => proj_collection.onDirty(dirty), [
         { field: 'id', type: 'text', required: true, html: { label: 'Collection ID' } },
-        { field: 'author', type: 'combo', html: { label: 'Author', }, options: { items: () => dictKeys(appState.config?.contentAuthoring?.authors) } },
+        { field: 'author', type: 'text', html: { label: 'Author' } },
     ], {
+        isSidebarObj: true,
         onValidate(evt) {
             const new_id = tab_collection_details.ctl.getValue('id')
             if (!(new_id && new_id.length && new_id.length > 0))
@@ -33,7 +34,7 @@ const tab_collection_details = {
     })),
     dataFromUI: () => tab_collection_details.ctl.onDataFromUI((recClean) => {
         proj_collection.obj.id = recClean.id
-        proj_collection.author = recClean.author
+        proj_collection.obj.author = recClean.author
     }),
 }
 
@@ -68,6 +69,6 @@ export const proj_collection = {
         proj_collection.obj = obj
         proj_collection.dataToUI()
     },
-    dataFromUI: () => proj_collection.tabbed.forEach(_ => _.dataFromUI()),
+    dataFromUI: () => { if (proj_collection.obj) proj_collection.tabbed.forEach(_ => _.dataFromUI()) },
     dataToUI: () => { if (proj_collection.obj) proj_collection.tabbed.forEach(_ => _.dataToUI()) },
 }

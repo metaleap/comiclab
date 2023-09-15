@@ -1,5 +1,7 @@
 import { w2popup, w2grid, w2form, w2prompt, w2alert } from '../w2ui/w2ui.es6.js'
 
+import { app_sidebar } from './app_sidebar.js'
+
 export function arrayMoveItem(arr, idxOld, idxNew) {
     var item = arr[idxOld]
     arr.splice(idxOld, 1)
@@ -146,8 +148,11 @@ export function newForm(name, onDirty, fields, extras) {
                 this.setValue(errs[0].field.field, evt.detail?.value?.previous)
                 this.refresh()
                 w2alert(errs[0].error, errs[0].field.field)
-            } else
+            } else {
                 onDirty(true)
+                if (evt.detail.field == 'id' && extras?.isSidebarObj && evt.detail.value?.current != evt.detail.value?.previous)
+                    setTimeout(() => { app_sidebar.dataToUI(true) }, 123)
+            }
         },
     }
     for (const field of fields) {
@@ -184,7 +189,7 @@ export function newForm(name, onDirty, fields, extras) {
     }
     ret.onDataFromUI = (f) => {
         ret.refresh()
-        setTimeout(() => f(ret.getCleanRecord(true)), 345)
+        setTimeout(() => f(ret.getCleanRecord(true)), 123)
     }
     return ret
 }

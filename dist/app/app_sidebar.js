@@ -21,7 +21,7 @@ export const app_sidebar = new w2sidebar({
     nodes: [
         {
             id: 'project', text: 'Project: ' + uiProjName, group: true, expanded: true, groupShowHide: false, nodes: [
-                { id: 'proj_collections', listOf: ['collections'], text: 'Collections', icon: 'fa fa-archive', nodes: [], appView: appViews.proj_settings_content },
+                { id: 'proj_collections', listOf: ['collections'], text: 'Collections', icon: 'fa fa-archive', nodes: [], appView: appViews.proj_settings_content, selected: true, expanded: true },
                 { id: 'proj_books', text: 'Books', icon: 'fa fa-book', disabled: true },
                 { id: 'proj_sitegen', text: 'SiteGen', icon: 'fa fa-globe', disabled: true },
             ],
@@ -40,6 +40,7 @@ export const app_sidebar = new w2sidebar({
         const sel_node_id = app_sidebar.selected
         let sel_node = app_sidebar.get(sel_node_id)
         const app_view = appViewActive
+        const app_view_obj = app_view?.obj
         appViewSetActive(null)
 
         // actual refresh
@@ -67,7 +68,9 @@ export const app_sidebar = new w2sidebar({
         if (sel_node_id && sel_node_id.length && app_sidebar.get(sel_node_id))
             clickNode(sel_node_id)
         else if (sel_node && sel_node.parent && sel_node.obj) {
-            const found = app_sidebar.find(sel_node.parent.id, { obj: sel_node.obj })
+            let found = app_sidebar.find(sel_node.parent.id, { obj: sel_node.obj })
+            if (app_view_obj && !(found && found.length && app_sidebar.get(found[0])))
+                found = app_sidebar.find(sel_node.parent.id, { obj: app_view_obj })
             clickNode((found && found.length && app_sidebar.get(found[0])) ? found[0].id : sel_node.parent.id)
         }
         app_sidebar.refresh()
