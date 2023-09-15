@@ -3,26 +3,47 @@
   "displayName": "ComicLab",
   "publisher": "metaleap",
   "version": "0.0.1",
-
   "activationEvents": [ ],
   "main": "./out/app.js",
-
   "contributes": {
     "viewsContainers": {
       "activitybar": [
-        { "id": "comiclabExplorer", "title": "ComicLab", "icon": "media/svg/comments.svg" }
+        {
+          "id": "comiclabExplorer",
+          "title": "ComicLab",
+          "icon": "media/svg/comments.svg"
+        }
       ]
     },
     "views": {
       "comiclabExplorer": [
-        { "id": "comiclabExplorerProjColls", "name": "Collections", "icon": "media/svg/box-archive.svg" },
-        { "id": "comiclabExplorerProjBooks", "name": "Books", "icon": "media/svg/book.svg" },
-        { "id": "comiclabExplorerProjSites", "name": "Sites", "icon": "media/svg/globe.svg" },
-        { "id": "comiclabExplorerCfg", "name": "Config", "icon": "media/svg/compass-drafting.svg" }
+        {
+          "id": "comiclabExplorerProjColls",
+          "name": "Collections",
+          "icon": "media/svg/box-archive.svg"
+        },
+        {
+          "id": "comiclabExplorerProjBooks",
+          "name": "Books",
+          "icon": "media/svg/book.svg"
+        },
+        {
+          "id": "comiclabExplorerProjSites",
+          "name": "Sites",
+          "icon": "media/svg/globe.svg"
+        },
+        {
+          "id": "comiclabExplorerCfg",
+          "name": "Config",
+          "icon": "media/svg/compass-drafting.svg"
+        }
       ]
     },
     "commands": [
-      { "command": "comiclab.appState", "title": "comiclab.appState" }
+      {
+        "command": "comiclab.appState",
+        "title": "comiclab.appState"
+      }
     ]
   },
   "scripts": {
@@ -38,9 +59,14 @@
     "@types/node": "18.x",
     "@types/node-fetch": "^2.6.5",
     "@types/vscode": "^1.82.0",
+    "@types/vscode-webview": "^1.57.2",
+    "@vscode/webview-ui-toolkit": "^1.2.2",
     "glob": "^10.3.4",
     "mocha": "^10.2.0",
     "node-fetch": "^2.7.0",
     "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@vscode/webview-ui-toolkit": "^1.2.2"
   }
 }

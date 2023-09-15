@@ -9,7 +9,7 @@ export function onInit(context: vs.ExtensionContext) {
 
 export function iconPath(name: string) {
     return {
-        light: path.join(__filename, '..', '..', 'media', 'svg', name + '.svg'),
-        dark: path.join(__filename, '..', '..', 'media', 'svg', name + '.svg')
+        light: vs.Uri.file(path.join(__filename, '..', '..', 'media', 'svg', name + '.svg')),
+        dark: vs.Uri.file(path.join(__filename, '..', '..', 'media', 'svg', name + '.svg'))
     }
 }
