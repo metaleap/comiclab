@@ -1,7 +1,6 @@
 package app
 
 import (
-	"math/rand"
 	"os"
 	"time"
 )
@@ -26,7 +25,7 @@ func Main() {
 		panic(err)
 	}
 
-	port := 1024 + rand.Intn(64000)
+	const port = 64646
 	go httpListenAndServe(port)
 	go browserLaunch(port)
 

@@ -3,54 +3,27 @@
   "displayName": "ComicLab",
   "publisher": "metaleap",
   "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.82.0"
-  },
-  "activationEvents": [],
-  "main": "./out/main.js",
+
+  "activationEvents": [ ],
+  "main": "./out/app.js",
+
   "contributes": {
     "viewsContainers": {
       "activitybar": [
-        {
-          "id": "comiclabExplorer",
-          "title": "ComicLab",
-          "icon": "media/svg/comments.svg"
-        }
+        { "id": "comiclabExplorer", "title": "ComicLab", "icon": "media/svg/comments.svg" }
       ]
     },
     "views": {
       "comiclabExplorer": [
-        {
-          "id": "comiclabExplorerProjColls",
-          "name": "Collections",
-          "icon": "media/svg/box-archive.svg",
-          "type": "tree"
-        },
-        {
-          "id": "comiclabExplorerProjBooks",
-          "name": "Books",
-          "icon": "media/svg/book.svg",
-          "type": "tree"
-        },
-        {
-          "id": "comiclabExplorerProjSites",
-          "name": "Sites",
-          "icon": "media/svg/globe.svg",
-          "type": "tree"
-        },
-        {
-          "id": "comiclabExplorerCfg",
-          "name": "Config",
-          "icon": "media/svg/compass-drafting.svg",
-          "type": "tree"
-        }
+        { "id": "comiclabExplorerProjColls", "name": "Collections", "icon": "media/svg/box-archive.svg" },
+        { "id": "comiclabExplorerProjBooks", "name": "Books", "icon": "media/svg/book.svg" },
+        { "id": "comiclabExplorerProjSites", "name": "Sites", "icon": "media/svg/globe.svg" },
+        { "id": "comiclabExplorerCfg", "name": "Config", "icon": "media/svg/compass-drafting.svg" }
       ]
     },
     "commands": [
-      {
-        "command": "comiclab.helloWorld",
-        "title": "ComicLab Hello World"
-      }
+      { "command": "comiclab.appStateReload", "title": "comiclab.appStateReload" },
+      { "command": "comiclab.appStateSave", "title": "comiclab.appStateSave" }
     ]
   },
   "scripts": {
@@ -58,12 +31,17 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./"
   },
+  "engines": {
+    "vscode": "^1.82.0"
+  },
   "devDependencies": {
-    "@types/vscode": "^1.82.0",
     "@types/mocha": "^10.0.1",
-    "@types/node": "16.x",
-    "glob": "^10.3.3",
+    "@types/node": "18.x",
+    "@types/node-fetch": "^2.6.5",
+    "@types/vscode": "^1.82.0",
+    "glob": "^10.3.4",
     "mocha": "^10.2.0",
-    "typescript": "^5.1.6"
+    "node-fetch": "^2.7.0",
+    "typescript": "^5.2.2"
   }
 }
