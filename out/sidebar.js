@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NavCfg = exports.NavProjSites = exports.NavProjBooks = exports.NavProjColls = void 0;
+exports.NavProjSites = exports.NavProjBooks = exports.NavProjColls = void 0;
 const utils = require("./utils");
 class NavProjColls {
     getTreeItem(element) {
@@ -33,17 +33,4 @@ class NavProjSites {
     }
 }
 exports.NavProjSites = NavProjSites;
-class NavCfg {
-    getTreeItem(element) {
-        return element;
-    }
-    getChildren(element) {
-        if (!element)
-            return [
-                { id: "contentAuthoring", label: "Content Authoring", iconPath: utils.iconPath('compass-drafting') },
-            ];
-        return [];
-    }
-}
-exports.NavCfg = NavCfg;
 //# sourceMappingURL=sidebar.js.map

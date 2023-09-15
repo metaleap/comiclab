@@ -31,18 +31,13 @@
           "id": "comiclabExplorerProjSites",
           "name": "Sites",
           "icon": "media/svg/globe.svg"
-        },
-        {
-          "id": "comiclabExplorerCfg",
-          "name": "Config",
-          "icon": "media/svg/compass-drafting.svg"
         }
       ]
     },
     "commands": [
       {
-        "command": "comiclab.appState",
-        "title": "comiclab.appState"
+        "command": "comiclab.menu",
+        "title": "ComicLab"
       }
     ]
   },
