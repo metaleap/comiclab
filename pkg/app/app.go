@@ -2,7 +2,6 @@ package app
 
 import (
 	"os"
-	"time"
 )
 
 type state = struct {
@@ -11,7 +10,6 @@ type state = struct {
 }
 
 var (
-	Exiting     = false
 	userHomeDir = os.Getenv("HOME")
 	State       state
 )
@@ -26,15 +24,5 @@ func Main() {
 	}
 
 	const port = 64646
-	go httpListenAndServe(port)
-	go browserLaunch(port)
-
-	for Exiting = false; !Exiting; time.Sleep(time.Second) {
-		Exiting = (browserPid == 0)
-	}
-	onExit()
-}
-
-func onExit() {
-	// _ = os.RemoveAll(browserTmpDirPath)
+	httpListenAndServe(port)
 }

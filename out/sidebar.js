@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NavCfg = exports.NavProjSites = exports.NavProjBooks = exports.NavProjColls = void 0;
+const utils = require("./utils");
 class NavProjColls {
     getTreeItem(element) {
         return element;
@@ -8,7 +9,7 @@ class NavProjColls {
     getChildren(element) {
         if (!element)
             return [
-                { id: "samplescoll", label: "short-stories", iconPath: "archive" },
+                { id: "samplescoll", label: "short-stories", iconPath: utils.iconPath('box-archive') },
             ];
         return [];
     }
@@ -39,7 +40,7 @@ class NavCfg {
     getChildren(element) {
         if (!element)
             return [
-                { id: "contentAuthoring", label: "Content Authoring", iconPath: "preview" },
+                { id: "contentAuthoring", label: "Content Authoring", iconPath: utils.iconPath('compass-drafting') },
             ];
         return [];
     }

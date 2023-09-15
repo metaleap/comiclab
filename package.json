@@ -22,8 +22,7 @@
       ]
     },
     "commands": [
-      { "command": "comiclab.appStateReload", "title": "comiclab.appStateReload" },
-      { "command": "comiclab.appStateSave", "title": "comiclab.appStateSave" }
+      { "command": "comiclab.appState", "title": "comiclab.appState" }
     ]
   },
   "scripts": {

@@ -1,7 +1,7 @@
 import * as vs from 'vscode'
+import * as utils from './utils'
 
 export class NavProjColls implements vs.TreeDataProvider<vs.TreeItem>{
-
     getTreeItem(element: vs.TreeItem): vs.TreeItem {
         return element
     }
@@ -9,16 +9,14 @@ export class NavProjColls implements vs.TreeDataProvider<vs.TreeItem>{
     getChildren(element?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]> {
         if (!element)
             return [
-                { id: "samplescoll", label: "short-stories", iconPath: "archive" },
+                { id: "samplescoll", label: "short-stories", iconPath: utils.iconPath('box-archive') },
             ]
 
         return []
     }
-
 }
 
 export class NavProjBooks implements vs.TreeDataProvider<vs.TreeItem>{
-
     getTreeItem(element: vs.TreeItem): vs.TreeItem {
         return element
     }
@@ -26,11 +24,9 @@ export class NavProjBooks implements vs.TreeDataProvider<vs.TreeItem>{
     getChildren(element?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]> {
         return [] // book
     }
-
 }
 
 export class NavProjSites implements vs.TreeDataProvider<vs.TreeItem>{
-
     getTreeItem(element: vs.TreeItem): vs.TreeItem {
         return element
     }
@@ -38,11 +34,9 @@ export class NavProjSites implements vs.TreeDataProvider<vs.TreeItem>{
     getChildren(element?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]> {
         return []  // globe
     }
-
 }
 
 export class NavCfg implements vs.TreeDataProvider<vs.TreeItem>{
-
     getTreeItem(element: vs.TreeItem): vs.TreeItem {
         return element
     }
@@ -50,10 +44,9 @@ export class NavCfg implements vs.TreeDataProvider<vs.TreeItem>{
     getChildren(element?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]> {
         if (!element)
             return [
-                { id: "contentAuthoring", label: "Content Authoring", iconPath: "preview" },
+                { id: "contentAuthoring", label: "Content Authoring", iconPath: utils.iconPath('compass-drafting') },
             ]
 
         return []
     }
-
 }
