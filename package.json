@@ -31,6 +31,12 @@
           "id": "comiclabExplorerProjSites",
           "name": "Sites",
           "icon": "media/svg/globe.svg"
+        },
+        {
+          "id": "comicLabConfigView",
+          "type": "webview",
+          "name": "Configuration",
+          "icon": "media/svg/screwdriver-wrench.svg"
         }
       ]
     },

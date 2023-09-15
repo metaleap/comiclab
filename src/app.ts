@@ -1,6 +1,7 @@
 import * as vs from 'vscode'
 import * as sidebar from './sidebar'
 import * as utils from './utils'
+import { ConfigView } from './config_view'
 
 import fetch from 'node-fetch'
 
@@ -30,6 +31,7 @@ const colorRed = new vs.ThemeColor('charts.red')
 export let dirtyCfg: boolean = false
 export let dirtyProj: boolean = false
 let statusBarItem: vs.StatusBarItem
+let configView: ConfigView
 
 
 
@@ -46,6 +48,7 @@ export function activate(context: vs.ExtensionContext) {
 	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjColls', new sidebar.NavProjColls()))
 	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjBooks', new sidebar.NavProjBooks()))
 	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjSites', new sidebar.NavProjSites()))
+	utils.disp(vs.window.registerWebviewViewProvider('comicLabConfigView', configView = new ConfigView(context.extensionUri)))
 
 	appStateReload(true, true)
 }
@@ -72,6 +75,7 @@ function mainMenu() {
 	vs.window.showQuickPick(items, { title: "ComicLab" }).then((item) => {
 		switch (item) {
 			case itemConfig:
+				configView.webView?.show(false)
 				break
 			case itemReloadBoth:
 				appStateReload(true, true)
