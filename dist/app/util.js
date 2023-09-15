@@ -142,7 +142,6 @@ export function newForm(name, onDirty, fields, extras) {
         record: {},
         onChange(evt) {
             const errs = this.validate(false)
-
             if (errs && errs.length && errs.length > 0) {
                 evt.preventDefault()
                 this.setValue(errs[0].field.field, evt.detail?.value?.previous)
@@ -151,7 +150,7 @@ export function newForm(name, onDirty, fields, extras) {
             } else {
                 onDirty(true)
                 if (evt.detail.field == 'id' && extras?.isSidebarObj && evt.detail.value?.current != evt.detail.value?.previous)
-                    setTimeout(() => { app_sidebar.dataToUI(true) }, 123)
+                    setTimeout(() => { app_sidebar.dataToUI(true) }, 22)
             }
         },
     }
@@ -186,34 +185,33 @@ export function newForm(name, onDirty, fields, extras) {
             init[key] = extras[key]
 
     const ret = new w2form(init)
-    ret.refreshLookupHints = () => {
-        const field = this.get(evt.detail.field)
-        if (field && field.type == 'combo' && field.lookupDict && field.$el) {
-            evt.done(() => console.log(w2tooltip.show({
-                anchor: field.$el[0],
-                html: 'noice',
-                class: 'w2ui-white',
-                arrowSize: 11,
-                position: 'right',
-                align: 'none',
-            })))
+    ret.refreshLookupHints = (recClean) => {
+        for (const field of ret.fields) {
+            if (field && field.type == 'combo' && field.lookupDict) {
+                console.log(field.el.id)
+                const dict = field.lookupDict()
+                if (dict && dict[recClean[field.field]])
+                    field.el.title = dict[recClean[field.field]]
+            }
         }
     }
     ret.onDataToUI = (f) => {
-        console.log("d2u")
-        const rec = f ? f(ret.getCleanRecord(true)) : ret.getCleanRecord(true)
+        const rec_clean = ret.getCleanRecord(true)
+        const rec = f ? f(rec_clean) : rec_clean
         for (const field in rec)
             ret.setValue(field, rec[field], true)
-        ret.refresh()
-        ret.refreshLookupHints()
+        setTimeout(() => {
+            ret.refreshLookupHints(rec_clean)
+            ret.refresh()
+        }, 11)
     }
     ret.onDataFromUI = (f) => {
-        console.log("u2d")
         ret.refresh()
         setTimeout(() => {
-            f(ret.getCleanRecord(true))
-            ret.refreshLookupHints()
-        }, 123)
+            const rec_clean = ret.getCleanRecord(true)
+            ret.refreshLookupHints(rec_clean)
+            f(rec_clean)
+        }, 11)
     }
     return ret
 }

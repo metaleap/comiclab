@@ -7,7 +7,7 @@ const tab_collection_details = {
     text: 'Collection Info',
     ctl: newForm('tab_collection_details_form', (dirty) => proj_collection.onDirty(dirty), [
         { field: 'id', type: 'text', required: true, html: { label: 'Collection ID' } },
-        { field: 'author', type: 'combo', html: { label: 'Author', text: 'Foo Bar' }, lookupDict: () => appState.config.contentAuthoring.authors },
+        { field: 'author', type: 'combo', html: { label: 'Author' }, lookupDict: () => appState.config.contentAuthoring.authors },
     ], {
         isSidebarObj: true,
         onValidate(evt) {
