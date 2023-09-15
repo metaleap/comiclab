@@ -1,0 +1,57 @@
+{
+  "name": "comiclab",
+  "displayName": "ComicLab",
+  "publisher": "metaleap",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "activationEvents": [],
+  "main": "./out/main.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "comiclabExplorer",
+          "title": "ComicLab",
+          "icon": "media/svg/comments.svg"
+        }
+      ]
+    },
+    "views": {
+      "comiclabExplorer": [
+        {
+          "id": "comiclabExplorerProj",
+          "name": "Project",
+          "icon": "media/svg/comments.svg",
+          "type": "tree"
+        },
+        {
+          "id": "comiclabExplorerCfg",
+          "name": "Config",
+          "icon": "media/svg/comments.svg",
+          "type": "tree"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "comiclab.helloWorld",
+        "title": "ComicLab Hello World"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.82.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "glob": "^10.3.3",
+    "mocha": "^10.2.0",
+    "typescript": "^5.1.6"
+  }
+}
