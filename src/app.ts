@@ -36,7 +36,6 @@ let sidebarWebViewProvider: SidebarWebViewProvider
 
 export function activate(context: vs.ExtensionContext) {
 	utils.onInit(context)
-	config_view.onInit()
 
 	utils.disp(vs.commands.registerCommand('comiclab.menu', mainMenu))
 	utils.disp(statusBarItem = vs.window.createStatusBarItem('id', vs.StatusBarAlignment.Left, 987654321))

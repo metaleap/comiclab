@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NavProjSites = exports.NavProjBooks = exports.NavProjColls = void 0;
-const utils = require("./utils");
+const tslib_1 = require("tslib");
+const utils = tslib_1.__importStar(require("./utils"));
 class NavProjColls {
     getTreeItem(element) {
         return element;
@@ -33,4 +34,3 @@ class NavProjSites {
     }
 }
 exports.NavProjSites = NavProjSites;
-//# sourceMappingURL=sidebar.js.map

@@ -1,0 +1,100 @@
+:root {
+    --container-padding: 20px;
+    --input-padding-vertical: 2px;
+    --input-padding-horizontal: 6px;
+}
+
+body {
+    padding: 0 var(--container-padding);
+    color: var(--vscode-foreground);
+    font-weight: var(--vscode-font-weight);
+    font-family: var(--vscode-font-family);
+    background-color: var(--vscode-editor-background);
+}
+
+ol,
+ul {
+    padding-left: var(--container-padding);
+}
+
+*:focus {
+    outline-color: var(--vscode-focusBorder) !important;
+}
+
+a {
+    color: var(--vscode-textLink-foreground);
+}
+
+a:hover,
+a:active {
+    color: var(--vscode-textLink-activeForeground);
+}
+
+code {
+    border-color: var(--vscode-input-border);
+    border-radius: 2px;
+    border-width: 1px;
+    font-size: var(--vscode-editor-font-size);
+    font-family: var(--vscode-editor-font-family);
+}
+
+button {
+    border: none;
+    border-radius: 2px;
+    padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+    text-align: center;
+    outline: 1px solid transparent;
+    outline-offset: 2px !important;
+    color: var(--vscode-button-foreground);
+    background: var(--vscode-button-background);
+}
+
+button:hover {
+    cursor: pointer;
+    background: var(--vscode-button-hoverBackground);
+}
+
+button:focus {
+    outline-color: var(--vscode-focusBorder);
+}
+
+button.secondary {
+    color: var(--vscode-button-secondaryForeground);
+    background: var(--vscode-button-secondaryBackground);
+}
+
+button.secondary:hover {
+    background: var(--vscode-button-secondaryHoverBackground);
+}
+
+select,
+option,
+button {
+    font-size: 1em;
+    border-color: var(--vscode-input-border);
+    border-radius: 2px;
+    font-family: var(--vscode-font-family);
+}
+
+input {
+    border-color: var(--vscode-input-border);
+    margin-right: 0.2em;
+}
+
+input[type='text'],
+textarea {
+    font-size: 1em;
+    border-color: var(--vscode-input-border);
+    border-radius: 2px;
+    border-width: 1px;
+    padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+    font-family: var(--vscode-font-family);
+    color: var(--vscode-input-foreground);
+    outline-color: var(--vscode-input-border);
+    background-color: var(--vscode-input-background);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--vscode-input-placeholderForeground);
+}

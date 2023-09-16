@@ -1,13 +1,9 @@
 import * as vs from 'vscode'
 import * as utils from './utils'
 
-import { provideVSCodeDesignSystem, vsCodeButton } from "@vscode/webview-ui-toolkit"
 
 let configWebviewPanel: vs.WebviewPanel | null
 
-export function onInit() {
-    provideVSCodeDesignSystem().register(vsCodeButton())
-}
 
 export function show(appState: any) {
     if (configWebviewPanel)
@@ -35,7 +31,9 @@ export function show(appState: any) {
     configWebviewPanel.webview.html = `<!DOCTYPE html>
             <html><head>
                 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>body { font-size: 1.11em }</style>
+                <link rel='stylesheet' type='text/css' href='${htmlUri(utils.cssPath('reset'))}'>
+                <link rel='stylesheet' type='text/css' href='${htmlUri(utils.cssPath('vscode'))}'>
+                <link rel='stylesheet' type='text/css' href='${htmlUri(utils.cssPath('main'))}'>
                 <script>
                     const vs = acquireVsCodeApi()
                 </script>
