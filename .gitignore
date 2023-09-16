@@ -1,4 +1,4 @@
-ui/vsc_ext/js
-ui/webviews/js
 node_modules
 package-lock.json
+js/
+js/
