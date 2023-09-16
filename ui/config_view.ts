@@ -42,7 +42,7 @@ export function show(appState: any) {
                 <hr>
                 <textarea height='77' width='90%' id='tmp'></textarea>
                 <hr>
-                <button>Click Dat</button>
+                <button onclick="vs.postMessage({'digit':'dis ROX'})">Click Dat</button>
                 <hr>
                 <input type='checkbox' id='chk'><label for='chk'>Check it</label>
                 <hr>
@@ -52,10 +52,9 @@ export function show(appState: any) {
                 <hr>
                 <select><option>Select Dis</option><option>Select Dat</option></select>
                 <script>
-                    vs.postMessage({'digit':'dis ROX'})
-                    window.addEventListener('message', (evt) => {
-                        document.getElementById('tmp').innerText = JSON.stringify(evt.data)
-                    })
+                window.addEventListener('message', (evt) => {
+                    document.getElementById('tmp').innerText = JSON.stringify(evt.data)
+                })
                 </script>
             </body></html>`
 }

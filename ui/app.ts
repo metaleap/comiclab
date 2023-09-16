@@ -51,8 +51,6 @@ export function activate(context: vs.ExtensionContext) {
 	appStateReload(true, true)
 }
 
-export function deactivate() { }
-
 function mainMenu() {
 	let itemSaveProj: vs.QuickPickItem = { label: "Save Project Changes", iconPath: utils.iconPath('floppy-disk'), alwaysShow: true }
 	let itemSaveCfg: vs.QuickPickItem = { label: "Save Config Changes", iconPath: utils.iconPath('floppy-disk'), alwaysShow: true }
