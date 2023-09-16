@@ -51,7 +51,7 @@
     "vscode:prepublish": "npm run compile_ui_vsc_ext && npm run compile_ui_webviews",
     "compile_ui_vsc_ext": "tsc -p ./ui/vsc_ext",
     "compile_ui_webviews": "tsc -p ./ui/webviews",
-    "watch": "tsc -p ./ui/webviews && tsc -watch -p ./ui/vsc_ext"
+    "watch": "(rm -rf ./ui/webviews/js/vanjs) && (mkdir -p ./ui/webviews/js/vanjs) && (cp -f ./ui/webviews/vanjs/* ./ui/webviews/js/vanjs/) && (tsc -p ./ui/webviews &) && (tsc -watch -p ./ui/vsc_ext)"
   },
   "engines": {
     "vscode": "^1.82.0"

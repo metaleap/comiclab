@@ -1,6 +1,9 @@
-import * as van from './vanjs/van-1.2.0'
+import * as van from './vanjs/van-1.2.0.js'
 
-export function onInit(vs: { postMessage: (_: any) => any }) {
+export let vs: { postMessage: (_: any) => any }
+
+export function onInitConfigView(vscode: { postMessage: (_: any) => any }) {
+    vs = vscode
     const wot = van.default.tags.a('yo')
-    vs.postMessage({ "fo": wot.innerHTML })
+    vs.postMessage({ "fooBarBazYa": wot.outerHTML })
 }

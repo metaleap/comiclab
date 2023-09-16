@@ -23,5 +23,5 @@ export function cssPath(name: string) {
 }
 
 export function jsPath(name: string) {
-    return vs.Uri.joinPath(extUri, 'ui', 'webviews', 'out', name + '.js')
+    return vs.Uri.joinPath(extUri, 'ui', 'webviews', 'js', name + '.js')
 }
