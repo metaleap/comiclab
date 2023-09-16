@@ -34,11 +34,10 @@ export function show(appState: any) {
                 <link rel='stylesheet' type='text/css' href='${htmlUri(utils.cssPath('reset'))}'>
                 <link rel='stylesheet' type='text/css' href='${htmlUri(utils.cssPath('vscode'))}'>
                 <link rel='stylesheet' type='text/css' href='${htmlUri(utils.cssPath('main'))}'>
-                </head><body>
-                <b>Config</b> Webview
+            </head><body>
                 <script type='module'>
-                import * as main from '${htmlUri(utils.jsPath('config-main'))}'
-                main.onInitConfigView(acquireVsCodeApi())
+                    import * as main from '${htmlUri(utils.jsPath('config-main'))}'
+                    main.onInitConfigView(acquireVsCodeApi())
                 </script>
             </body></html>`
 }
