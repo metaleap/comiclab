@@ -1,4 +1,50 @@
 body {
     font-size: 1.11em;
     background-color: transparent;
+    padding: 1em;
+}
+
+.tab-container {
+    display: block;
+    position: relative;
+}
+
+.tab-container>input[type="radio"] {
+    display: none;
+}
+
+.tab-page>label:first-child {
+    border-left: solid 1px var(--vscode-tab-lastPinnedBorder);
+}
+
+.tab-page>label {
+    float: left;
+    padding: 0.44em;
+    background-color: var(--vscode-tab-inactiveBackground);
+    color: var(--vscode-tab-inactiveForeground);
+    border-right: solid 1px var(--vscode-tab-lastPinnedBorder);
+    border-bottom: solid 1px var(--vscode-tab-lastPinnedBorder);
+    text-align: center;
+    vertical-align: middle;
+    height: 2em;
+}
+
+.tab-content {
+    position: absolute;
+    width: 100%;
+    top: 2em;
+    display: none;
+    border-left: solid 1px var(--vscode-tab-lastPinnedBorder);
+    border-right: solid 1px var(--vscode-tab-lastPinnedBorder);
+    border-bottom: solid 1px var(--vscode-tab-lastPinnedBorder);
+}
+
+.tab-container>input[type="radio"]:checked+.tab-page>.tab-content {
+    display: block;
+}
+
+.tab-container>input[type="radio"]:checked+.tab-page>label {
+    border-bottom: solid 1px var(--vscode-tab-activeBackground);
+    background-color: var(--vscode-tab-activeBackground);
+    color: var(--vscode-tab-activeForeground);
 }
