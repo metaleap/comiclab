@@ -1,24 +1,24 @@
 import * as vs from 'vscode'
 import * as utils from './utils'
 
-export class ConfigView implements vs.WebviewViewProvider {
-    webView?: vs.WebviewView
+let configWebviewPanel: vs.WebviewPanel | null
 
-    constructor(readonly extUri: vs.Uri) { }
-
-    resolveWebviewView(webviewView: vs.WebviewView, _: vs.WebviewViewResolveContext<unknown>) {
-        this.webView = webviewView
-        this.webView.description = "The Description"
-        this.webView.title = "ComicLab Configuration"
-        webviewView.webview.options = {
+export function show() {
+    if (configWebviewPanel)
+        configWebviewPanel.reveal(vs.ViewColumn.One)
+    else {
+        utils.disp(configWebviewPanel = vs.window.createWebviewPanel('comicLabConfig', 'The Title', vs.ViewColumn.One, { retainContextWhenHidden: true }))
+        configWebviewPanel.onDidDispose(() => { configWebviewPanel = null })
+        configWebviewPanel.iconPath = utils.iconPath('screwdriver-wrench')
+        configWebviewPanel.webview.options = {
             enableCommandUris: true,
             enableForms: true,
             enableScripts: true,
-            localResourceRoots: [this.extUri]
+            localResourceRoots: [utils.extUri]
         }
-        webviewView.webview.html = '<html><style>body { font-size: 1.11em }</style><body>hello <b>world</b></body></html>'
-        webviewView.webview.onDidReceiveMessage(data => {
+        configWebviewPanel.webview.onDidReceiveMessage(data => {
             vs.window.showInformationMessage(JSON.stringify(data))
         })
+        configWebviewPanel.webview.html = '<html><style>body { font-size: 1.11em }</style><body><b>Config</b> Webview</body></html>'
     }
 }

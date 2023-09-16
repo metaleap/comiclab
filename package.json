@@ -33,9 +33,9 @@
           "icon": "media/svg/globe.svg"
         },
         {
-          "id": "comicLabConfigView",
+          "id": "comicLabSidebarWebview",
           "type": "webview",
-          "name": "Configuration",
+          "name": "Sidebar Webview",
           "icon": "media/svg/screwdriver-wrench.svg"
         }
       ]

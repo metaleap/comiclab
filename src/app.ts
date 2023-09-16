@@ -1,7 +1,8 @@
 import * as vs from 'vscode'
 import * as sidebar from './sidebar'
 import * as utils from './utils'
-import { ConfigView } from './config_view'
+import { SidebarWebViewProvider } from './sidebar_webview'
+import * as config_view from './config_view'
 
 import fetch from 'node-fetch'
 
@@ -21,7 +22,6 @@ export type State = {
 export const state: State = { proj: {}, config: {} }
 
 const apiUri = 'http://localhost:64646'
-const colorBlue = new vs.ThemeColor('charts.blue')
 const colorGreen = new vs.ThemeColor('charts.green')
 const colorOrange = new vs.ThemeColor('charts.orange')
 const colorRed = new vs.ThemeColor('charts.red')
@@ -31,8 +31,7 @@ const colorRed = new vs.ThemeColor('charts.red')
 export let dirtyCfg: boolean = false
 export let dirtyProj: boolean = false
 let statusBarItem: vs.StatusBarItem
-let configView: ConfigView
-
+let sidebarWebViewProvider: SidebarWebViewProvider
 
 
 export function activate(context: vs.ExtensionContext) {
@@ -41,14 +40,13 @@ export function activate(context: vs.ExtensionContext) {
 	utils.disp(vs.commands.registerCommand('comiclab.menu', mainMenu))
 	utils.disp(statusBarItem = vs.window.createStatusBarItem('id', vs.StatusBarAlignment.Left, 987654321))
 	statusBarItem.text = "$(sync~spin) ComicLab loading..."
-	statusBarItem.color = colorBlue
 	statusBarItem.command = 'comiclab.menu'
 	statusBarItem.show()
 
 	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjColls', new sidebar.NavProjColls()))
 	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjBooks', new sidebar.NavProjBooks()))
 	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjSites', new sidebar.NavProjSites()))
-	utils.disp(vs.window.registerWebviewViewProvider('comicLabConfigView', configView = new ConfigView(context.extensionUri)))
+	utils.disp(vs.window.registerWebviewViewProvider('comicLabSidebarWebview', sidebarWebViewProvider = new SidebarWebViewProvider()))
 
 	appStateReload(true, true)
 }
@@ -75,7 +73,8 @@ function mainMenu() {
 	vs.window.showQuickPick(items, { title: "ComicLab" }).then((item) => {
 		switch (item) {
 			case itemConfig:
-				configView.webView?.show(false)
+				sidebarWebViewProvider.webView?.show(false)
+				config_view.show()
 				break
 			case itemReloadBoth:
 				appStateReload(true, true)
@@ -103,6 +102,7 @@ export function appStateReload(proj: boolean, cfg: boolean) {
 	const msgSuffix = ((proj && cfg) ? "project and config." : (proj ? "project." : (cfg ? "config." : "?!?!")))
 	statusBarItem.text = "$(sync~spin) ComicLab reloading " + msgSuffix + "..."
 	const req = prepFetch(proj, cfg)
+	// setTimeout(() => {
 	fetch(apiUri + '/appState', { method: 'POST' })
 		.then((resp) => {
 			if (!resp.ok)
@@ -126,14 +126,14 @@ export function appStateReload(proj: boolean, cfg: boolean) {
 		})
 		.catch(req.onErr)
 		.finally(req.onDone)
+	// }, 2345)
 }
 
 export function appStateSave(proj: boolean, cfg: boolean) {
-
 }
 
 function prepFetch(proj: boolean, cfg: boolean) {
-	statusBarItem.color = colorBlue
+	statusBarItem.color = undefined
 	statusBarItem.tooltip = ''
 	// if (proj)
 	// 	setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_proj', 'fa fa-spinner')
