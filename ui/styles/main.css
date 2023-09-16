@@ -33,6 +33,7 @@ body {
     position: absolute;
     width: 100%;
     top: 2em;
+    padding: 0.44em;
     display: none;
     border-left: solid 1px var(--vscode-tab-lastPinnedBorder);
     border-right: solid 1px var(--vscode-tab-lastPinnedBorder);

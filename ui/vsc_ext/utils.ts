@@ -25,3 +25,7 @@ export function cssPath(name: string) {
 export function jsPath(name: string) {
     return vs.Uri.joinPath(extUri, 'ui', 'webviews', 'js', name + '.js')
 }
+
+export function thenNow<T>(value: T): Thenable<T> {
+    return new Promise((resolve, _) => resolve(value))
+}

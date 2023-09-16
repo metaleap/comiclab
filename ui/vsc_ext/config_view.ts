@@ -1,11 +1,18 @@
 import * as vs from 'vscode'
 import * as utils from './utils'
+import { State, subscribe } from './_shared_types'
 
 
 let configWebviewPanel: vs.WebviewPanel | null
 
+function onCfgReloaded(appState: State): Thenable<boolean> {
+    return configWebviewPanel ?
+        configWebviewPanel.webview.postMessage({ ident: 'onAppStateCfgChanged', payload: appState.config })
+        : utils.thenNow(false)
+}
 
-export function show(appState: any) {
+export function show(appState: State) {
+    subscribe(appState.onCfgReloaded, onCfgReloaded)
     if (configWebviewPanel)
         return configWebviewPanel.reveal(vs.ViewColumn.One)
 
@@ -15,19 +22,8 @@ export function show(appState: any) {
         enableFindWidget: false,
         enableForms: true,
         enableScripts: true,
-        localResourceRoots: [],
-    }))
-    configWebviewPanel.onDidDispose(() => { configWebviewPanel = null })
-    configWebviewPanel.iconPath = utils.iconPath('screwdriver-wrench')
-    configWebviewPanel.webview.options = {
-        enableCommandUris: true,
-        enableForms: true,
-        enableScripts: true,
         localResourceRoots: [utils.extUri, utils.homeDirPath]
-    }
-    configWebviewPanel.webview.onDidReceiveMessage(data => {
-        vs.window.showInformationMessage(JSON.stringify(data))
-    })
+    }))
     configWebviewPanel.webview.html = `<!DOCTYPE html>
             <html><head>
                 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,6 +36,12 @@ export function show(appState: any) {
                     main.onInitConfigView(acquireVsCodeApi())
                 </script>
             </body></html>`
+    utils.disp(configWebviewPanel.webview.onDidReceiveMessage(data => {
+        vs.window.showInformationMessage(JSON.stringify(data))
+    }))
+    configWebviewPanel.iconPath = utils.iconPath('screwdriver-wrench')
+    onCfgReloaded(appState).then((b) => vs.window.showInformationMessage(b.toString()), (r) => vs.window.showErrorMessage(r.toString()))
+    utils.disp(configWebviewPanel.onDidDispose(() => { configWebviewPanel = null }))
 }
 
 function htmlUri(localUri: vs.Uri) {

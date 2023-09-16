@@ -1,6 +1,7 @@
 import * as vs from 'vscode'
-import * as sidebar from './sidebar'
+import { State, trigger } from './_shared_types'
 import * as utils from './utils'
+import * as sidebar from './sidebar'
 import { SidebarWebViewProvider } from './sidebar_webview'
 import * as config_view from './config_view'
 
@@ -8,18 +9,15 @@ import fetch from 'node-fetch'
 
 
 
-export type Proj = {}
-
-export type Config = {}
-
-export type State = {
-	proj: Proj
-	config: Config
+export const state: State = {
+	proj: {}, config: {},
+	dirtyProj: false,
+	dirtyCfg: false,
+	onProjReloaded: { handlers: [] },
+	onCfgReloaded: { handlers: [] },
+	onProjSaved: { handlers: [] },
+	onCfgSaved: { handlers: [] },
 }
-
-
-
-export const state: State = { proj: {}, config: {} }
 
 const apiUri = 'http://localhost:64646'
 const colorGreen = new vs.ThemeColor('charts.green')
@@ -28,8 +26,6 @@ const colorRed = new vs.ThemeColor('charts.red')
 
 
 
-export let dirtyCfg: boolean = false
-export let dirtyProj: boolean = false
 let statusBarItem: vs.StatusBarItem
 let sidebarWebViewProvider: SidebarWebViewProvider
 
@@ -60,11 +56,11 @@ function mainMenu() {
 	let itemReloadBoth: vs.QuickPickItem = { label: "Reload Both", iconPath: utils.iconPath('arrows-rotate'), alwaysShow: true }
 	let itemConfig: vs.QuickPickItem = { label: "Config...", iconPath: utils.iconPath('screwdriver-wrench'), alwaysShow: true }
 	let items = [itemConfig]
-	if (dirtyCfg && dirtyProj)
+	if (state.dirtyCfg && state.dirtyProj)
 		items.push(itemSaveBoth)
-	if (dirtyCfg)
+	if (state.dirtyCfg)
 		items.push(itemSaveCfg)
-	if (dirtyProj)
+	if (state.dirtyProj)
 		items.push(itemSaveProj)
 	items.push(itemReloadBoth, itemReloadProj, itemReloadCfg)
 
@@ -109,16 +105,18 @@ export function appStateReload(proj: boolean, cfg: boolean) {
 				.then((latestAppState) => {
 					if (!latestAppState)
 						return req.onErr("No error reported but nothing received, buggily. Frontend app state might be out of date, try again and fix that bug.")
+					statusBarItem.color = colorGreen
+					statusBarItem.text = "$(pass-filled) ComicLab reloaded " + msgSuffix
 					if (proj) {
 						state.proj = latestAppState.proj
-						dirtyProj = false
+						state.dirtyProj = false
+						trigger(state.onProjReloaded, state)
 					}
 					if (cfg) {
 						state.config = latestAppState.config
-						dirtyCfg = false
+						state.dirtyCfg = false
+						trigger(state.onCfgReloaded, state)
 					}
-					statusBarItem.color = colorGreen
-					statusBarItem.text = "$(pass-filled) ComicLab reloaded " + msgSuffix
 				})
 				.catch(req.onErr)
 		})
