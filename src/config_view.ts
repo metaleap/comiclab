@@ -1,8 +1,13 @@
 import * as vs from 'vscode'
 import * as utils from './utils'
 
+import { provideVSCodeDesignSystem, vsCodeButton } from "@vscode/webview-ui-toolkit"
 
 let configWebviewPanel: vs.WebviewPanel | null
+
+export function onInit() {
+    provideVSCodeDesignSystem().register(vsCodeButton())
+}
 
 export function show(appState: any) {
     if (configWebviewPanel)
@@ -38,6 +43,16 @@ export function show(appState: any) {
                 <b>Config</b> Webview
                 <hr>
                 <textarea height='77' width='90%' id='tmp'></textarea>
+                <hr>
+                <button>Click Dat</button>
+                <hr>
+                <input type='checkbox' id='chk'><label for='chk'>Check it</label>
+                <hr>
+                <input type='radio' id='rad'><label for='rad'>Rad it</label>
+                <hr>
+                <input type='text' id='txt'><label for='txt'>Text it</label>
+                <hr>
+                <select><option>Select Dis</option><option>Select Dat</option></select>
                 <script>
                     vs.postMessage({'digit':'dis ROX'})
                     window.addEventListener('message', (evt) => {

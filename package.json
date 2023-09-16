@@ -3,7 +3,7 @@
   "displayName": "ComicLab",
   "publisher": "metaleap",
   "version": "0.0.1",
-  "activationEvents": [ ],
+  "activationEvents": [],
   "main": "./out/app.js",
   "contributes": {
     "viewsContainers": {
@@ -66,8 +66,5 @@
     "mocha": "^10.2.0",
     "node-fetch": "^2.7.0",
     "typescript": "^5.2.2"
-  },
-  "dependencies": {
-    "@vscode/webview-ui-toolkit": "^1.2.2"
   }
 }
