@@ -4,14 +4,15 @@ const html = van.tags
 
 export function newTabs(id: string, tabs: Record<string, ChildDom>) {
     const child_nodes: ChildDom[] = []
+    let tab_nr = 0
     for (const title in tabs) {
-        const tab_id = 'tabs_' + id + '_' + child_nodes.length.toString()
-        const radio = html.input({ 'type': 'radio', 'name': 'tabs_' + id, 'id': tab_id, 'value': title })
-        if (child_nodes.length == 0)
-            radio.checked = true
-        child_nodes.push(radio, html.div({ 'class': 'tab-page' },
-            html.label({ 'for': tab_id }, title),
-            html.div({ 'class': 'tab-content' }, tabs[title])))
+        const tab_id = id + '_' + tab_nr
+        child_nodes.push(
+            html.input({ 'type': 'radio', 'name': 'tabs_' + id, 'id': tab_id, 'value': title, checked: (tab_nr == 0) }),
+            html.div({ 'class': 'tab-page' },
+                html.label({ 'for': tab_id }, title),
+                html.div({ 'class': 'tab-content' }, tabs[title])))
+        tab_nr++
     }
-    return html.div({ 'class': 'tab-container' }, ...child_nodes)
+    return html.div({ 'id': id, 'class': 'tab-container' }, ...child_nodes)
 }
