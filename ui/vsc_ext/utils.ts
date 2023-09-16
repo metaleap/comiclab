@@ -15,9 +15,13 @@ export function iconPath(name: string) {
 }
 
 export function imgPath(name: string) {
-    return vs.Uri.joinPath(extUri, 'ui', 'svg', name + '.svg')
+    return vs.Uri.joinPath(extUri, 'ui', 'icons', name + '.svg')
 }
 
 export function cssPath(name: string) {
-    return vs.Uri.joinPath(extUri, 'ui', 'css', name + '.css')
+    return vs.Uri.joinPath(extUri, 'ui', 'styles', name + '.css')
+}
+
+export function jsPath(name: string) {
+    return vs.Uri.joinPath(extUri, 'ui', 'webviews', 'out', name + '.js')
 }

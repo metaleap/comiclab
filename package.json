@@ -4,14 +4,14 @@
   "publisher": "metaleap",
   "version": "0.0.1",
   "activationEvents": [ ],
-  "main": "./out/app.js",
+  "main": "ui/vsc_ext/out/app.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
           "id": "comiclabExplorer",
           "title": "ComicLab",
-          "icon": "ui/svg/comments.svg"
+          "icon": "ui/icons/comments.svg"
         }
       ]
     },
@@ -20,23 +20,23 @@
         {
           "id": "comiclabExplorerProjColls",
           "name": "Collections",
-          "icon": "ui/svg/box-archive.svg"
+          "icon": "ui/icons/box-archive.svg"
         },
         {
           "id": "comiclabExplorerProjBooks",
           "name": "Books",
-          "icon": "ui/svg/book.svg"
+          "icon": "ui/icons/book.svg"
         },
         {
           "id": "comiclabExplorerProjSites",
           "name": "Sites",
-          "icon": "ui/svg/globe.svg"
+          "icon": "ui/icons/globe.svg"
         },
         {
           "id": "comicLabSidebarWebview",
           "type": "webview",
           "name": "Sidebar Webview",
-          "icon": "ui/svg/screwdriver-wrench.svg"
+          "icon": "ui/icons/screwdriver-wrench.svg"
         }
       ]
     },
@@ -48,9 +48,10 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "vscode:prepublish": "npm run compile_ui_vsc_ext && npm run compile_ui_webviews",
+    "compile_ui_vsc_ext": "tsc -p ./ui/vsc_ext",
+    "compile_ui_webviews": "tsc -p ./ui/webviews",
+    "watch": "tsc -p ./ui/webviews && tsc -watch -p ./ui/vsc_ext"
   },
   "engines": {
     "vscode": "^1.82.0"

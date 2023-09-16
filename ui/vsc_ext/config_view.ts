@@ -37,6 +37,7 @@ export function show(appState: any) {
                 <script>
                     const vs = acquireVsCodeApi()
                 </script>
+                <script src='${htmlUri(utils.jsPath('config-main.js'))}'></script>
             </head><body>
                 <b>Config</b> Webview
                 <hr>

@@ -1,0 +1,10 @@
+{
+    "extends": "../tsconfigbase.json",
+    "compilerOptions": {
+        "outDir": "./out",
+        "lib": [ "dom", "es2020", "es6" ],
+        "target": "es2020",
+        "module": "es2020",
+        "moduleResolution": "node"
+    }
+}
