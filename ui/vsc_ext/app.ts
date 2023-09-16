@@ -10,14 +10,15 @@ import fetch from 'node-fetch'
 
 
 export const state: State = {
-	proj: {}, config: {},
-	dirtyProj: false,
-	dirtyCfg: false,
+	proj: {}, config: { contentAuthoring: {} },
 	onProjReloaded: { handlers: [] },
 	onCfgReloaded: { handlers: [] },
 	onProjSaved: { handlers: [] },
 	onCfgSaved: { handlers: [] },
 }
+let dirtyProj = false
+let dirtyCfg = false
+
 
 const apiUri = 'http://localhost:64646'
 const colorGreen = new vs.ThemeColor('charts.green')
@@ -29,6 +30,13 @@ const colorRed = new vs.ThemeColor('charts.red')
 let statusBarItem: vs.StatusBarItem
 let sidebarWebViewProvider: SidebarWebViewProvider
 
+
+function onDirty(proj: boolean, cfg: boolean) {
+	if ((dirtyCfg = cfg) || (dirtyProj = proj)) {
+		statusBarItem.color = colorOrange
+		statusBarItem.text = `$(save-as) Unsaved changes to ` + msgSuffix(proj, cfg)
+	}
+}
 
 export function activate(context: vs.ExtensionContext) {
 	utils.onInit(context)
@@ -56,11 +64,11 @@ function mainMenu() {
 	let itemReloadBoth: vs.QuickPickItem = { label: "Reload Both", iconPath: utils.iconPath('arrows-rotate'), alwaysShow: true }
 	let itemConfig: vs.QuickPickItem = { label: "Config...", iconPath: utils.iconPath('screwdriver-wrench'), alwaysShow: true }
 	let items = [itemConfig]
-	if (state.dirtyCfg && state.dirtyProj)
+	if (dirtyCfg && dirtyProj)
 		items.push(itemSaveBoth)
-	if (state.dirtyCfg)
+	if (dirtyCfg)
 		items.push(itemSaveCfg)
-	if (state.dirtyProj)
+	if (dirtyProj)
 		items.push(itemSaveProj)
 	items.push(itemReloadBoth, itemReloadProj, itemReloadCfg)
 
@@ -68,7 +76,11 @@ function mainMenu() {
 		switch (item) {
 			case itemConfig:
 				sidebarWebViewProvider.webView?.show(false)
-				config_view.show(state)
+				config_view.show(state, (modifiedCfg) => {
+					onDirty(dirtyProj, true)
+					state.config = modifiedCfg
+					trigger(state.onCfgReloaded, state)
+				})
 				break
 			case itemReloadBoth:
 				appStateReload(true, true)
@@ -92,9 +104,13 @@ function mainMenu() {
 	})
 }
 
+function msgSuffix(proj: boolean, cfg: boolean) {
+	return ((proj && cfg) ? "project and config." : (proj ? "project." : (cfg ? "config." : "?!?!")))
+}
+
 export function appStateReload(proj: boolean, cfg: boolean) {
-	const msgSuffix = ((proj && cfg) ? "project and config." : (proj ? "project." : (cfg ? "config." : "?!?!")))
-	statusBarItem.text = "$(sync~spin) ComicLab reloading " + msgSuffix + "..."
+	const msg_suffix = msgSuffix(proj, cfg)
+	statusBarItem.text = "$(sync~spin) ComicLab reloading " + msg_suffix + "..."
 	const req = prepFetch(proj, cfg)
 	// setTimeout(() => {
 	fetch(apiUri + '/appState', { method: 'POST' })
@@ -105,18 +121,18 @@ export function appStateReload(proj: boolean, cfg: boolean) {
 				.then((latestAppState) => {
 					if (!latestAppState)
 						return req.onErr("No error reported but nothing received, buggily. Frontend app state might be out of date, try again and fix that bug.")
-					statusBarItem.color = colorGreen
-					statusBarItem.text = "$(pass-filled) ComicLab reloaded " + msgSuffix
 					if (proj) {
 						state.proj = latestAppState.proj
-						state.dirtyProj = false
 						trigger(state.onProjReloaded, state)
 					}
 					if (cfg) {
 						state.config = latestAppState.config
-						state.dirtyCfg = false
 						trigger(state.onCfgReloaded, state)
 					}
+					onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg)
+					statusBarItem.text = "$(pass-filled) ComicLab reloaded " + msg_suffix
+					if (!(dirtyCfg || dirtyProj))
+						statusBarItem.color = colorGreen
 				})
 				.catch(req.onErr)
 		})

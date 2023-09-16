@@ -1,6 +1,6 @@
 import * as vs from 'vscode'
 import * as utils from './utils'
-import { State, subscribe, unsubscribe } from './_shared_types'
+import { State, Config, subscribe, unsubscribe } from './_shared_types'
 
 
 let configWebviewPanel: vs.WebviewPanel | null
@@ -11,7 +11,7 @@ function onCfgReloaded(appState: State) {
             .then(() => { }, console.error)
 }
 
-export function show(appState: State) {
+export function show(appState: State, onModified: (_: Config) => void) {
     subscribe(appState.onCfgReloaded, onCfgReloaded)
     if (configWebviewPanel)
         return configWebviewPanel.reveal(vs.ViewColumn.One)
@@ -36,8 +36,14 @@ export function show(appState: State) {
                     main.onInitConfigView(acquireVsCodeApi(), '${htmlUri(vs.Uri.joinPath(utils.extUri, 'ui'))?.toString()}')
                 </script>
             </body></html>`
-    utils.disp(configWebviewPanel.webview.onDidReceiveMessage(data => {
-        vs.window.showInformationMessage(JSON.stringify(data))
+    utils.disp(configWebviewPanel.webview.onDidReceiveMessage(msg => {
+        switch (msg.ident) {
+            case 'appStateCfgModified':
+                onModified(msg.payload as Config)
+                break
+            default:
+                vs.window.showInformationMessage(JSON.stringify(msg))
+        }
     }))
     configWebviewPanel.iconPath = utils.iconPath('screwdriver-wrench')
     utils.disp(configWebviewPanel.onDidDispose(() => {

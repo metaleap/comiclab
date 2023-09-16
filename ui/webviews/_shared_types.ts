@@ -20,8 +20,6 @@ export function trigger<T>(evt: Event<T>, arg: T) {
 export type State = {
     proj: Proj
     config: Config
-    dirtyProj: boolean
-    dirtyCfg: boolean
     onProjReloaded: Event<State>
     onCfgReloaded: Event<State>
     onProjSaved: Event<State>
@@ -33,7 +31,7 @@ export type Proj = {
 }
 
 export type Config = {
-    contentAuthoring?: {
+    contentAuthoring: {
         authors?: {
             [author_id: string]: string,
         }

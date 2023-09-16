@@ -6,8 +6,7 @@ export type Field = {
     id: string,
     title: string,
     readOnly?: boolean,
-    lookUp?: () => string[],
-    validate?: (curRec: Rec, fieldID: string, newValue: string) => Error
+    lookUp?: () => string[]
 }
 export type Rec = { id: string, [field_id: string]: string }
 export type DatasetFunc = (recs: Rec[]) => void
@@ -15,14 +14,48 @@ export type DatasetFunc = (recs: Rec[]) => void
 export function newInputGrid(id: string, fields: Field[], onDataUserModified: DatasetFunc): { ctl: ChildDom, onDataChangedAtSource: DatasetFunc } {
     const ths: ChildDom[] = []
     const add_rec_tds: ChildDom[] = []
+    let latestDataset: Rec[] = []
+
+    const disableInputGrid = function () {
+        (document.getElementById(id) as HTMLTableElement).style.visibility = 'hidden'
+    }
+
+    const addRec = (_: MouseEvent) => {
+        const added_rec: Rec = { id: (document.getElementById(id + '__' + 'id') as HTMLInputElement).value.trim() }
+        if (added_rec.id.length > 0 && !latestDataset.some(rec => (rec.id == added_rec.id))) {
+            disableInputGrid()
+            for (const field of fields) {
+                const field_input: HTMLInputElement = document.getElementById(id + '__' + field.id) as HTMLInputElement
+                added_rec[field.id] = field_input.value
+                field_input.value = ''
+            }
+            latestDataset.push(added_rec)
+            onDataUserModified(latestDataset)
+        }
+    }
+    const delRec = (recID: string) => {
+        latestDataset = latestDataset.filter(_ => (_.id != recID))
+        disableInputGrid()
+        onDataUserModified(latestDataset)
+    }
+
+    const changeRec = (recID: string, fieldID: string) => {
+        const new_value = (document.getElementById(id + '_' + recID + '_' + fieldID) as HTMLInputElement).value
+        disableInputGrid()
+        const rec = latestDataset.find(_ => (_.id == recID)) as Rec
+        rec[fieldID] = new_value
+        onDataUserModified(latestDataset)
+    }
+
     for (const field of fields) {
         ths.push(html.th({ 'class': 'input-grid-header', 'id': id + '_' + field.id, 'data-field-id': field.id }, field.title))
         add_rec_tds.push(html.td({ 'class': 'input-grid-cell' },
             html.input({ 'type': 'text', 'class': 'input-grid-cell', 'id': id + '__' + field.id, 'placeholder': '(Add Another Here)', 'data-field-id': field.id })))
     }
     ths.push(html.th({ 'class': 'input-grid-header', 'id': id + '_' }, ' '))
-    add_rec_tds.push(html.td({ 'class': 'input-grid-cell' },
-        html.a({ 'class': 'btn btn-circle-plus input-grid-cell', 'id': id + '__', alt: "Add", title: "Add" })))
+    const add_rec_btn = html.a({ 'class': 'btn btn-circle-plus input-grid-cell', 'id': id + '__', alt: "Add", title: "Add", href: '' })
+    add_rec_btn.onclick = addRec
+    add_rec_tds.push(html.td({ 'class': 'input-grid-cell' }, add_rec_btn))
 
     const table = html.table({ 'class': 'input-grid', 'id': id },
         html.tr({ 'class': 'input-grid-header' }, ...ths),
@@ -30,6 +63,7 @@ export function newInputGrid(id: string, fields: Field[], onDataUserModified: Da
     return {
         ctl: table,
         onDataChangedAtSource: (sourceDataset: Rec[]) => {
+            latestDataset = sourceDataset
             const rec_trs = table.querySelectorAll('tr.input-grid-record')
             rec_trs.forEach(tr => {
                 const rec_id_attr = tr.getAttributeNode('data_id')
@@ -44,9 +78,10 @@ export function newInputGrid(id: string, fields: Field[], onDataUserModified: Da
                     const cell_tds: ChildDom[] = []
                     for (const field of fields)
                         cell_tds.push(html.td({ 'class': 'input-grid-cell' },
-                            html.input({ 'type': 'text', 'class': 'input-grid-cell', 'id': id + '_' + rec.id + '_' + field.id, 'data-rec-id': rec.id, 'data-field-id': field.id })))
-                    cell_tds.push(html.td({ 'class': 'input-grid-cell' },
-                        html.a({ 'class': 'btn btn-circle-minus input-grid-cell', 'id': id + '_' + rec.id + '_', 'data-rec-id': rec.id, alt: "Delete", title: "Delete" })))
+                            html.input({ 'onchange': () => { changeRec(rec.id, field.id) }, 'type': 'text', 'class': 'input-grid-cell', 'id': id + '_' + rec.id + '_' + field.id, 'data-rec-id': rec.id, 'data-field-id': field.id, 'disabled': (field.id == 'id') })))
+                    const del_rec_btn = html.a({ 'class': 'btn btn-circle-minus input-grid-cell', 'id': id + '_' + rec.id + '_', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })
+                    del_rec_btn.onclick = (_) => delRec(rec.id)
+                    cell_tds.push(html.td({ 'class': 'input-grid-cell' }, del_rec_btn))
                     van.add(rec_tr, ...cell_tds)
                     new_rec_trs.push(rec_tr)
                 }
@@ -58,6 +93,7 @@ export function newInputGrid(id: string, fields: Field[], onDataUserModified: Da
                 }
             })
             van.add(table, ...new_rec_trs)
+            table.style.visibility = 'visible'
         }
     }
 }
