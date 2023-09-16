@@ -13,20 +13,20 @@ body {
     display: none;
 }
 
-.tab-page>label:first-child {
-    border-left: solid 1px var(--vscode-tab-lastPinnedBorder);
-}
-
 .tab-page>label {
     float: left;
     padding: 0.44em;
     background-color: var(--vscode-tab-inactiveBackground);
     color: var(--vscode-tab-inactiveForeground);
-    border-right: solid 1px var(--vscode-tab-lastPinnedBorder);
+    border-left: solid 1px var(--vscode-tab-lastPinnedBorder);
     border-bottom: solid 1px var(--vscode-tab-lastPinnedBorder);
     text-align: center;
     vertical-align: middle;
     height: 2em;
+}
+
+.tab-page:last-child>label {
+    border-right: solid 1px var(--vscode-tab-lastPinnedBorder);
 }
 
 .tab-content {
