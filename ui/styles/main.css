@@ -4,6 +4,29 @@ body {
     padding: 1em;
 }
 
+.btn {
+    cursor: pointer;
+}
+
+a.btn {
+    display: inline-block;
+    text-decoration: none;
+    margin: 0;
+    padding: 0;
+    width: 17px;
+    height: 17px;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+a.btn-circle-plus {
+    background-image: url('../icons/circle-plus.svg')
+}
+
+a.btn-circle-minus {
+    background-image: url('../icons/circle-minus.svg')
+}
+
 .tab-container {
     display: block;
     position: relative;

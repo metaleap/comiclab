@@ -18,7 +18,7 @@ let authors_grid = newInputGrid('config_authors', [
 
 })
 
-export function onInitConfigView(vscode: { postMessage: (_: any) => any }) {
+export function onInitConfigView(vscode: { postMessage: (_: any) => any }, baseUri: string) {
     vs = vscode
     window.addEventListener('message', (evt) => {
         const msg = evt.data;
@@ -26,8 +26,8 @@ export function onInitConfigView(vscode: { postMessage: (_: any) => any }) {
             case 'onAppStateCfgChanged':
                 appStateCfg = msg.payload as Config
                 let authors = appStateCfg.contentAuthoring?.authors
-                authors_grid.onDataChangedAtSource(toArray(authors, (k, v) => ({
-                    'id': k, 'author_full_name': v,
+                authors_grid.onDataChangedAtSource(toArray(authors, (key, value) => ({
+                    'id': key, 'author_full_name': value,
                 } as Rec)))
                 break
             default:

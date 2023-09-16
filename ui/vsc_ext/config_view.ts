@@ -1,14 +1,14 @@
 import * as vs from 'vscode'
 import * as utils from './utils'
-import { State, subscribe } from './_shared_types'
+import { State, subscribe, unsubscribe } from './_shared_types'
 
 
 let configWebviewPanel: vs.WebviewPanel | null
 
-function onCfgReloaded(appState: State): Thenable<boolean> {
-    return configWebviewPanel ?
+function onCfgReloaded(appState: State) {
+    if (configWebviewPanel)
         configWebviewPanel.webview.postMessage({ ident: 'onAppStateCfgChanged', payload: appState.config })
-        : utils.thenNow(false)
+            .then(() => { }, console.error)
 }
 
 export function show(appState: State) {
@@ -33,15 +33,18 @@ export function show(appState: State) {
             </head><body>
                 <script type='module'>
                     import * as main from '${htmlUri(utils.jsPath('config-main'))}'
-                    main.onInitConfigView(acquireVsCodeApi())
+                    main.onInitConfigView(acquireVsCodeApi(), '${htmlUri(vs.Uri.joinPath(utils.extUri, 'ui'))?.toString()}')
                 </script>
             </body></html>`
     utils.disp(configWebviewPanel.webview.onDidReceiveMessage(data => {
         vs.window.showInformationMessage(JSON.stringify(data))
     }))
     configWebviewPanel.iconPath = utils.iconPath('screwdriver-wrench')
-    onCfgReloaded(appState).then((b) => vs.window.showInformationMessage(b.toString()), (r) => vs.window.showErrorMessage(r.toString()))
-    utils.disp(configWebviewPanel.onDidDispose(() => { configWebviewPanel = null }))
+    utils.disp(configWebviewPanel.onDidDispose(() => {
+        unsubscribe(appState.onCfgReloaded, onCfgReloaded)
+        configWebviewPanel = null
+    }))
+    setTimeout(() => onCfgReloaded(appState), 234)
 }
 
 function htmlUri(localUri: vs.Uri) {
