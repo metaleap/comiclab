@@ -74,7 +74,7 @@ function mainMenu() {
 		switch (item) {
 			case itemConfig:
 				sidebarWebViewProvider.webView?.show(false)
-				config_view.show()
+				config_view.show(state)
 				break
 			case itemReloadBoth:
 				appStateReload(true, true)
@@ -158,7 +158,7 @@ function prepFetch(proj: boolean, cfg: boolean) {
 				statusBarItem.color = colorRed
 				statusBarItem.text = msg
 				statusBarItem.tooltip = msg
-				vs.window.showWarningMessage(msg)
+				vs.window.showErrorMessage(msg)
 			}
 			if (err.statusText && err.statusText.length && err.statusText.length > 0 && err.text)
 				err.text()

@@ -11,7 +11,7 @@ export class SidebarWebViewProvider implements vs.WebviewViewProvider {
             enableCommandUris: true,
             enableForms: true,
             enableScripts: true,
-            localResourceRoots: [utils.extUri]
+            localResourceRoots: [utils.extUri, utils.homeDirPath]
         }
         webviewView.webview.html = '<html><style>body { font-size: 1.11em }</style><body><b>Side</b> Webview</body></html>'
         webviewView.webview.onDidReceiveMessage(data => {
