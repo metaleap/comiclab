@@ -10,7 +10,7 @@ import fetch from 'node-fetch'
 
 
 export const state: State = {
-	proj: {}, config: { contentAuthoring: {} },
+	proj: { collections: [] }, config: { contentAuthoring: {} },
 	onProjRefreshed: { handlers: [] },
 	onCfgRefreshed: { handlers: [] },
 	onProjSaved: { handlers: [] },

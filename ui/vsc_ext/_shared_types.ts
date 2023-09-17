@@ -43,4 +43,44 @@ export type PaperFormat = {
 }
 
 export type Proj = {
+    collections: Collection[]
+}
+
+export type Collection = {
+    id: string,
+    contentFields: { [id: string]: { [lang_id: string]: string } },
+    authorID: string,
+    collections: Collection[],
+    pages: Page[],
+}
+
+export type Page = {
+    id: string,
+}
+
+export function walkCollections(state: State, perColl: (_: Collection[]) => any, parents?: Collection[]) {
+    const colls = (parents && parents.length) ? parents[0].collections : state.proj.collections
+    if (colls)
+        for (const coll of colls) {
+            const cur_path = parents ? [coll].concat(parents) : [coll]
+            let ret = perColl(cur_path)
+            if (ret || (ret = walkCollections(state, perColl, cur_path)))
+                return ret
+        }
+}
+
+export function collParents(state: State, coll: Collection): Collection[] {
+    return walkCollections(state, (path: Collection[]) => {
+        if (path[0] == coll)
+            return path.slice(1)
+        return undefined
+    })
+}
+
+export function pageParents(state: State, page: Page) {
+    return walkCollections(state, (path: Collection[]) => {
+        if (path[0].pages.includes(page))
+            return path
+        return undefined
+    })
 }

@@ -19,9 +19,6 @@ func init() {
 
 type Proj struct {
 	Collections []*Collection `json:"collections"`
-	Settings    struct {
-		DefaultLanguage string `json:"defaultLanguage,omitempty"`
-	} `json:"settings"`
 }
 
 func (me *Proj) FilePath() string { return filepath.Join(projDirPath, projFileName) }

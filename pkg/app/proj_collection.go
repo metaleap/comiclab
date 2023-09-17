@@ -3,7 +3,7 @@ package app
 type Collection struct {
 	ID            string                       `json:"id"`
 	ContentFields map[string]map[string]string `json:"contentFields,omitempty"`
-	Author        string                       `json:"author,omitempty"`
+	AuthorID      string                       `json:"authorID,omitempty"`
 	Collections   []*Collection                `json:"collections,omitempty"`
 	Pages         []*PageLayout                `json:"pages,omitempty"`
 }

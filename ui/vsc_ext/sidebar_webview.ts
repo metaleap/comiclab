@@ -6,7 +6,6 @@ export class SidebarWebViewProvider implements vs.WebviewViewProvider {
 
     resolveWebviewView(webviewView: vs.WebviewView, _: vs.WebviewViewResolveContext<unknown>) {
         this.webView = webviewView
-        this.webView.title = "Sidebar Webview!"
         webviewView.webview.options = {
             enableCommandUris: true,
             enableForms: true,

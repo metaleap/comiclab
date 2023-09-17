@@ -35,7 +35,7 @@
         {
           "id": "comicLabSidebarWebview",
           "type": "webview",
-          "name": "Sidebar Webview",
+          "name": "Project Defaults",
           "icon": "ui/icons/screwdriver-wrench.svg"
         }
       ]
