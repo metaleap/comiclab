@@ -43,9 +43,31 @@
     "commands": [
       {
         "command": "comiclab.menu",
-        "title": "ComicLab"
-      }
-    ]
+        "title": "ComicLab",
+        "icon": "ui/icons/comments.svg"
+      },
+      { "command": "comiclab.proj.colls.addPage", "title": "Add Page", "icon": "ui/icons/file-circle-plus.svg" },
+      { "command": "comiclab.proj.colls.addColl", "title": "Add Collection", "icon": "ui/icons/folder-plus.svg" },
+      { "command": "comiclab.proj.colls.delete", "title": "Delete", "icon": "ui/icons/trash.svg" },
+      { "command": "comiclab.proj.colls.moveUp", "title": "Move Up", "icon": "ui/icons/angle-up.svg" },
+      { "command": "comiclab.proj.colls.moveDn", "title": "Move Down", "icon": "ui/icons/angle-down.svg" },
+      { "command": "comiclab.proj.colls.moveTop", "title": "Move to Top", "icon": "ui/icons/angles-up.svg" },
+      { "command": "comiclab.proj.colls.moveEnd", "title": "Move to End", "icon": "ui/icons/angles-down.svg" }
+    ],
+    "menus": {
+      "view/title": [
+        { "command": "comiclab.proj.colls.addColl", "when": "view == comiclabExplorerProjColls", "group": "navigation" }
+      ],
+      "view/item/context": [
+        { "command": "comiclab.proj.colls.addColl", "group": "inline", "when": "view == comiclabExplorerProjColls && viewItem == coll" },
+        { "command": "comiclab.proj.colls.addPage", "group": "inline", "when": "view == comiclabExplorerProjColls && viewItem == coll" },
+        { "command": "comiclab.proj.colls.delete", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" },
+        { "command": "comiclab.proj.colls.moveUp", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" },
+        { "command": "comiclab.proj.colls.moveDn", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" },
+        { "command": "comiclab.proj.colls.moveTop", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" },
+        { "command": "comiclab.proj.colls.moveEnd", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile_ui_vsc_ext && npm run compile_ui_webviews",
