@@ -1,4 +1,4 @@
-import van, { ChildDom } from '../vanjs/van-1.2.0.js'
+import van, { ChildDom, Props } from '../vanjs/van-1.2.0.js'
 import * as utils from '../utils.js'
 
 const html = van.tags
@@ -6,7 +6,7 @@ const html = van.tags
 export type Field = {
     id: string,
     title: string,
-    number?: { min: number, max: number, step?: number },
+    number?: { min?: number, max?: number, step?: number },
     readOnly?: boolean,
     validators?: ValidateFunc[]
     lookUp?: () => string[]
@@ -60,8 +60,7 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
 
     for (const field of fields) {
         ths.push(html.th({ 'class': 'input-grid-header', 'id': id + '_' + field.id, 'data-field-id': field.id }, field.title))
-        add_rec_tds.push(html.td({ 'class': 'input-grid-cell' },
-            html.input({ 'type': 'text', 'class': 'input-grid-cell input-grid-cell-addrec', 'id': id + '__' + field.id, 'placeholder': '(Add Another Here)', 'data-field-id': field.id })))
+        add_rec_tds.push(html.td({ 'class': 'input-grid-cell' }, htmlInput(true, id, '', field)))
     }
     ths.push(html.th({ 'class': 'input-grid-header', 'id': id + '_' }, ' '))
     add_rec_tds.push(html.td({ 'class': 'input-grid-cell' }, html.a(
@@ -87,10 +86,9 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
                     rec_tr = html.tr({ 'class': 'input-grid-record', 'data-rec-id': rec.id })
                     const cell_tds: ChildDom[] = []
                     for (const field of fields)
-                        cell_tds.push(html.td({ 'class': 'input-grid-cell' }, html.input(
-                            { 'onchange': () => { recInput(rec.id, field.id) }, 'type': 'text', 'class': 'input-grid-cell', 'id': id + '_' + rec.id + '_' + field.id, 'data-rec-id': rec.id, 'data-field-id': field.id, 'disabled': (field.id == 'id') })))
+                        cell_tds.push(html.td({ 'class': 'input-grid-cell' }, htmlInput(false, id, rec.id, field, () => { recInput(rec.id, field.id) })))
                     cell_tds.push(html.td({ 'class': 'input-grid-cell' }, html.a(
-                        { 'onclick': (_) => recDel(rec.id), 'class': 'btn btn-circle-minus input-grid-cell', 'id': id + '_' + rec.id + '_', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })))
+                        { 'onclick': () => recDel(rec.id), 'class': 'btn btn-circle-minus input-grid-cell', 'id': id + '_' + rec.id + '_', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })))
                     van.add(rec_tr, ...cell_tds)
                     new_rec_trs.push(rec_tr)
                 }
@@ -105,6 +103,27 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
             table.style.visibility = 'visible'
         }
     }
+}
+
+function htmlInput(isAddRec: boolean, gridID: string, recID: string, field: Field, onChange?: (evt: Event) => any) {
+    const init: Props = {
+        'class': 'input-grid-cell' + (isAddRec ? ' input-grid-cell-addrec' : ''),
+        'id': gridID + '_' + recID + '_' + field.id,
+        'data-rec-id': recID,
+        'data-field-id': field.id,
+        'readOnly': field.readOnly || (field.id == 'id'),
+        'type': field.number ? 'number' : 'text',
+        'placeholder': isAddRec ? (`(New Entry's ${field.title})`) : field.title,
+    }
+    if (onChange)
+        init.onchange = onChange
+    if (field.number) {
+        const num: any = field.number as any
+        for (const prop of ['min', 'max', 'step'])
+            if (num[prop] !== undefined)
+                init[prop] = num[prop].toString()
+    }
+    return html.input(init)
 }
 
 function validate(rec: Rec, newValue: string | undefined, ...fields: Field[]) {
