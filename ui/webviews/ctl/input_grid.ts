@@ -25,6 +25,7 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
         onDataUserModified(latestDataset)
     }
     const id_field = fields.find(_ => _.id == 'id') as Field
+    id_field.readOnly = true
     if (!id_field.validators)
         id_field.validators = []
     id_field.validators.push(validatorNonEmpty(), validatorUnique(() => latestDataset))
@@ -115,7 +116,7 @@ function htmlInput(isAddRec: boolean, gridID: string, recID: string, field: Fiel
         'id': gridID + '_' + recID + '_' + field.id,
         'data-rec-id': recID,
         'data-field-id': field.id,
-        'readOnly': field.readOnly || (field.id == 'id'),
+        'readOnly': field.readOnly ? (!isAddRec) : false,
         'type': field.number ? 'number' : 'text',
         'placeholder': isAddRec ? (`(New Entry's ${field.title})`) : field.title,
     }

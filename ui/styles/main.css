@@ -27,16 +27,16 @@ a.btn-circle-minus {
     background-image: url('../icons/circle-minus.svg')
 }
 
-.tab-container {
+div.tab-container {
     display: block;
     position: relative;
 }
 
-.tab-container>input[type="radio"] {
+div.tab-container>input[type="radio"] {
     display: none;
 }
 
-.tab-page>label {
+div.tab-page>label {
     float: left;
     padding: 0.44em;
     background-color: var(--vscode-tab-inactiveBackground);
@@ -48,11 +48,11 @@ a.btn-circle-minus {
     height: 2em;
 }
 
-.tab-page:last-child>label {
+div.tab-page:last-child>label {
     border-right: solid 1px var(--vscode-tab-lastPinnedBorder);
 }
 
-.tab-content {
+div.tab-content {
     position: absolute;
     width: 100%;
     top: 2em;
@@ -63,17 +63,22 @@ a.btn-circle-minus {
     border-bottom: solid 1px var(--vscode-tab-lastPinnedBorder);
 }
 
-.tab-container>input[type="radio"]:checked+.tab-page>.tab-content {
+div.tab-container>input[type="radio"]:checked+div.tab-page>div.tab-content {
     display: block;
 }
 
-.tab-container>input[type="radio"]:checked+.tab-page>label {
+div.tab-container>input[type="radio"]:checked+div.tab-page>label {
     border-bottom: solid 1px var(--vscode-tab-activeBackground);
     background-color: var(--vscode-tab-activeBackground);
     color: var(--vscode-tab-activeForeground);
 }
 
-.input-grid-cell-addrec {
+input.input-grid-cell-addrec {
     font-style: italic;
     background-color: var(--vscode-inputValidation-infoBackground) !important;
+    transition: background-color 1000ms linear;
+}
+
+input.input-grid-cell-addrec:not(:placeholder-shown) {
+    background-color: var(--vscode-editor-stackFrameHighlightBackground) !important;
 }

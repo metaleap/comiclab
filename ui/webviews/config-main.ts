@@ -15,16 +15,18 @@ let authors_grid = ctl_inputgrid.create('config_authors', [
 ], (recs) => {
     setDisabled(true)
     appStateCfg.contentAuthoring.authors = utils.arrToDict(recs, (rec) => [rec.id, rec['author_full_name']])
+    console.log("MOD", appStateCfg.contentAuthoring.authors)
     utils.vs.postMessage({ ident: 'appStateCfgModified', payload: appStateCfg })
 })
 
 let paperformats_grid = ctl_inputgrid.create('config_paperformats', [
     { id: 'id', title: "Paper Format ID" }, // validators added by input_grid.create
-    { id: 'widthMm', title: 'Width (mm)', number: { min: 11, max: 1234 } },
-    { id: 'heightMm', title: 'Height (mm)', number: { min: 11, max: 1234 } },
+    { id: 'widthMm', title: 'Width (mm)', number: { min: 11, max: 1234 }, validators: [ctl_inputgrid.validatorNonEmpty()] },
+    { id: 'heightMm', title: 'Height (mm)', number: { min: 11, max: 1234 }, validators: [ctl_inputgrid.validatorNonEmpty()] },
 ], (recs) => {
     setDisabled(true)
     appStateCfg.contentAuthoring.paperFormats = utils.arrToDict(recs, (rec) => [rec.id, { widthMm: parseInt(rec.widthMm), heightMm: parseInt(rec.heightMm) }])
+    console.log("MOD", appStateCfg.contentAuthoring.paperFormats)
     utils.vs.postMessage({ ident: 'appStateCfgModified', payload: appStateCfg })
 })
 
@@ -41,12 +43,7 @@ export function onInitConfigView(vscode: { postMessage: (_: any) => any }, baseU
 }
 
 function setDisabled(disabled: boolean) {
-    (main_tabs as HTMLElement).querySelectorAll('input, textarea, select, option, button').forEach(el => {
-        if (disabled)
-            el.setAttribute("disabled", "disabled")
-        else
-            el.removeAttribute("disabled")
-    })
+    (main_tabs as HTMLElement).style.visibility = disabled ? 'hidden' : 'visible'
 }
 
 function onMessage(evt: MessageEvent) {
