@@ -60,8 +60,8 @@ export type Collection = {
     id: string,
     contentFields: { [id: string]: { [lang_id: string]: string } },
     authorID: string,
-    collections: Collection[],
-    pages: Page[],
+    collections?: Collection[],
+    pages?: Page[],
 }
 
 export type Page = {
@@ -89,7 +89,7 @@ export function collParents(coll: Collection): Collection[] {
 
 export function pageParents(page: Page) {
     return walkCollections((path: Collection[]) => {
-        if (path[0].pages.includes(page))
+        if (path[0].pages?.includes(page))
             return path
         return undefined
     })

@@ -14,6 +14,10 @@ export function iconPath(name: string) {
     return { light: imgPath(name), dark: imgPath(name) }
 }
 
+export function noneIn<T>(arr: T[] | null | undefined): boolean {
+    return (!arr) || (!arr.length) || (arr.length == 0)
+}
+
 export function imgPath(name: string) {
     return vs.Uri.joinPath(extUri, 'ui', 'icons', name + '.svg')
 }
