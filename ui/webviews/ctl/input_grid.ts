@@ -24,11 +24,16 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
         latestDataset = latestDataset.filter(_ => (_.id != recID))
         onDataUserModified(latestDataset)
     }
-    const id_field = fields.find(_ => _.id == 'id') as Field
-    id_field.readOnly = true
-    if (!id_field.validators)
-        id_field.validators = []
-    id_field.validators.push(validatorNonEmpty(), validatorUnique(() => latestDataset))
+    for (const field of fields) {
+        if (field.id == 'id') {
+            field.readOnly = true
+            if (!field.validators)
+                field.validators = []
+            field.validators.push(validatorNonEmpty(), validatorUnique(() => latestDataset))
+        }
+        if (field.number)
+            field.validators?.push(validatorNumeric(field.number.min, field.number.max, field.number.step))
+    }
 
     const recAdd = (_: MouseEvent) => {
         const added_rec: Rec = { id: (document.getElementById(id + '__' + 'id') as HTMLInputElement).value.trim() }
@@ -156,6 +161,26 @@ export function validatorUnique(fullDataset: () => Rec[]): ValidateFunc {
     return (curRec: Rec, field: Field, newFieldValue: string) => {
         if (fullDataset().some(_ => (_[field.id] == newFieldValue) && (_ != curRec) && (_.id != curRec.id || field.id == 'id')))
             return { name: 'Uniqueness', message: `another entry with '${field.title}' of '${newFieldValue}' already exists.` }
+        return undefined
+    }
+}
+
+export function validatorNumeric(min?: number, max?: number, step?: number): ValidateFunc {
+    return (curRec: Rec, field: Field, newFieldValue: string) => {
+        if (newFieldValue.length == 0)
+            return undefined
+        let n: number
+        try {
+            n = parseInt(newFieldValue)
+        } catch (err: any) {
+            return { name: 'Numeric', message: err.toString() }
+        }
+        if ((min !== undefined) && n < min)
+            return { name: 'Minimum', message: `${n} is less than the minimum of ${min}.` }
+        if ((max !== undefined) && n > max)
+            return { name: 'Maximum', message: `${n} exceeds the maximum of ${max}.` }
+        if ((step !== undefined) && (n % step) != 0)
+            return { name: 'Step', message: `${n} is not a multiple of ${step}.` }
         return undefined
     }
 }

@@ -11,11 +11,10 @@ let appStateCfg: Config = { contentAuthoring: {} }
 
 let authors_grid = ctl_inputgrid.create('config_authors', [
     { id: 'id', title: "Author ID" }, // validators added by input_grid.create
-    { id: 'author_full_name', title: "Full Name", validators: [ctl_inputgrid.validatorNonEmpty(), ctl_inputgrid.validatorUnique(curAuthors)] }
+    { id: 'author_full_name', title: "Full Name", validators: [ctl_inputgrid.validatorNonEmpty(), ctl_inputgrid.validatorUnique(curAuthors)] },
 ], (recs) => {
     setDisabled(true)
     appStateCfg.contentAuthoring.authors = utils.arrToDict(recs, (rec) => [rec.id, rec['author_full_name']])
-    console.log("MOD", appStateCfg.contentAuthoring.authors)
     utils.vs.postMessage({ ident: 'appStateCfgModified', payload: appStateCfg })
 })
 
@@ -26,14 +25,22 @@ let paperformats_grid = ctl_inputgrid.create('config_paperformats', [
 ], (recs) => {
     setDisabled(true)
     appStateCfg.contentAuthoring.paperFormats = utils.arrToDict(recs, (rec) => [rec.id, { widthMm: parseInt(rec.widthMm), heightMm: parseInt(rec.heightMm) }])
-    console.log("MOD", appStateCfg.contentAuthoring.paperFormats)
+    utils.vs.postMessage({ ident: 'appStateCfgModified', payload: appStateCfg })
+})
+
+let languages_grid = ctl_inputgrid.create('config_languages', [
+    { id: 'id', title: 'Language ID' }, // validators added by input_grid.create
+    { id: 'lang_name', title: 'Name', validators: [ctl_inputgrid.validatorNonEmpty(), ctl_inputgrid.validatorUnique(curLanguages)] },
+], (recs) => {
+    setDisabled(true)
+    appStateCfg.contentAuthoring.languages = utils.arrToDict(recs, (rec) => [rec.id, rec['lang_name']])
     utils.vs.postMessage({ ident: 'appStateCfgModified', payload: appStateCfg })
 })
 
 let main_tabs = ctl_tabs.create('config_main_tabs', {
-    "Paper Formats": html.div({}, paperformats_grid.ctl),
     "Authors": authors_grid.ctl,
-    "Localization": html.div("loc content"),
+    "Paper Formats": paperformats_grid.ctl,
+    "Localization": languages_grid.ctl,
 })
 
 export function onInitConfigView(vscode: { postMessage: (_: any) => any }, baseUri: string) {
@@ -53,6 +60,7 @@ function onMessage(evt: MessageEvent) {
             appStateCfg = msg.payload as Config
             authors_grid.onDataChangedAtSource(curAuthors())
             paperformats_grid.onDataChangedAtSource(curPaperFormats())
+            languages_grid.onDataChangedAtSource(curLanguages())
             setDisabled(false)
             break
         default:
@@ -64,6 +72,12 @@ function onMessage(evt: MessageEvent) {
 function curAuthors() {
     return utils.arrFromDict(appStateCfg.contentAuthoring?.authors, (key, value) => ({
         'id': key, 'author_full_name': value,
+    } as ctl_inputgrid.Rec))
+}
+
+function curLanguages() {
+    return utils.arrFromDict(appStateCfg.contentAuthoring?.languages, (key, value) => ({
+        'id': key, 'lang_name': value,
     } as ctl_inputgrid.Rec))
 }
 
