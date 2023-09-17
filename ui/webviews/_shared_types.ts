@@ -1,4 +1,14 @@
 
+export const appState: State = {
+    proj: { collections: [] }, config: { contentAuthoring: {} },
+    onProjRefreshed: { handlers: [] },
+    onCfgRefreshed: { handlers: [] },
+    onProjSaved: { handlers: [] },
+    onCfgSaved: { handlers: [] },
+    onCfgModified: { handlers: [] },
+    onProjModified: { handlers: [] },
+}
+
 export type Event<T> = {
     handlers: ((_: T) => void)[]
 }
@@ -58,27 +68,27 @@ export type Page = {
     id: string,
 }
 
-export function walkCollections(state: State, perColl: (_: Collection[]) => any, parents?: Collection[]) {
-    const colls = (parents && parents.length) ? parents[0].collections : state.proj.collections
+export function walkCollections(perColl: (_: Collection[]) => any, parents?: Collection[]) {
+    const colls = (parents && parents.length) ? parents[0].collections : appState.proj.collections
     if (colls)
         for (const coll of colls) {
             const cur_path = parents ? [coll].concat(parents) : [coll]
             let ret = perColl(cur_path)
-            if (ret || (ret = walkCollections(state, perColl, cur_path)))
+            if (ret || (ret = walkCollections(perColl, cur_path)))
                 return ret
         }
 }
 
-export function collParents(state: State, coll: Collection): Collection[] {
-    return walkCollections(state, (path: Collection[]) => {
+export function collParents(coll: Collection): Collection[] {
+    return walkCollections((path: Collection[]) => {
         if (path[0] == coll)
             return path.slice(1)
         return undefined
     })
 }
 
-export function pageParents(state: State, page: Page) {
-    return walkCollections(state, (path: Collection[]) => {
+export function pageParents(page: Page) {
+    return walkCollections((path: Collection[]) => {
         if (path[0].pages.includes(page))
             return path
         return undefined

@@ -1,5 +1,5 @@
 import * as vs from 'vscode'
-import { State, trigger, subscribe } from './_shared_types'
+import * as shared from './_shared_types'
 import * as utils from './utils'
 import * as sidebar from './sidebar'
 import { SidebarWebViewProvider } from './sidebar_webview'
@@ -9,15 +9,6 @@ import fetch from 'node-fetch'
 
 
 
-export const state: State = {
-	proj: { collections: [] }, config: { contentAuthoring: {} },
-	onProjRefreshed: { handlers: [] },
-	onCfgRefreshed: { handlers: [] },
-	onProjSaved: { handlers: [] },
-	onCfgSaved: { handlers: [] },
-	onCfgModified: { handlers: [] },
-	onProjModified: { handlers: [] },
-}
 let dirtyProj = false
 let dirtyCfg = false
 
@@ -50,15 +41,17 @@ export function activate(context: vs.ExtensionContext) {
 	statusBarItem.command = 'comiclab.menu'
 	statusBarItem.show()
 
-	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjColls', new sidebar.NavProjColls()))
+	const sideBarTreeColls = new sidebar.NavProjColls()
+	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjColls', sideBarTreeColls))
+	shared.subscribe(shared.appState.onProjRefreshed, (_) => sideBarTreeColls.refreshTriggerer.fire())
 	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjBooks', new sidebar.NavProjBooks()))
 	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjSites', new sidebar.NavProjSites()))
 	utils.disp(vs.window.registerWebviewViewProvider('comicLabSidebarWebview', sidebarWebViewProvider = new SidebarWebViewProvider()))
 
-	subscribe(state.onCfgModified, (modifiedCfg) => {
+	shared.subscribe(shared.appState.onCfgModified, (modifiedCfg) => {
 		onDirty(dirtyProj, true, false)
-		state.config = modifiedCfg
-		trigger(state.onCfgRefreshed, state)
+		shared.appState.config = modifiedCfg
+		shared.trigger(shared.appState.onCfgRefreshed, shared.appState)
 	})
 
 	appStateReload(true, true)
@@ -127,12 +120,12 @@ export function appStateReload(proj: boolean, cfg: boolean) {
 					if (!latestAppState)
 						return req.onErr("No error reported but nothing received, buggily. Frontend app state might be out of date, try again and fix that bug.")
 					if (proj) {
-						state.proj = latestAppState.proj
-						trigger(state.onProjRefreshed, state)
+						shared.appState.proj = latestAppState.proj
+						shared.trigger(shared.appState.onProjRefreshed, shared.appState)
 					}
 					if (cfg) {
-						state.config = latestAppState.config
-						trigger(state.onCfgRefreshed, state)
+						shared.appState.config = latestAppState.config
+						shared.trigger(shared.appState.onCfgRefreshed, shared.appState)
 					}
 					statusBarItem.text = "$(pass-filled) ComicLab reloaded " + msg_suffix
 				})
@@ -148,16 +141,16 @@ export function appStateSave(proj: boolean, cfg: boolean) {
 	const req = prepFetch(proj, cfg)
 	const postBody: any = {}
 	if (proj)
-		postBody.proj = state.proj
+		postBody.proj = shared.appState.proj
 	if (cfg)
-		postBody.config = state.config
+		postBody.config = shared.appState.config
 	fetch(apiUri + '/appState', { method: 'POST', body: JSON.stringify(postBody), headers: { "Content-Type": "application/json" }, })
 		.then((resp) => {
 			if (!resp.ok)
 				req.onErr(resp)
 			else {
-				if (proj) trigger(state.onProjSaved, state)
-				if (cfg) trigger(state.onCfgSaved, state)
+				if (proj) shared.trigger(shared.appState.onProjSaved, shared.appState)
+				if (cfg) shared.trigger(shared.appState.onCfgSaved, shared.appState)
 				statusBarItem.text = "$(pass-filled) ComicLab saved changes to " + msg_suffix
 			}
 		})

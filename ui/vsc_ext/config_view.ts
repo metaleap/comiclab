@@ -1,19 +1,19 @@
 import * as vs from 'vscode'
 import * as utils from './utils'
 import * as app from './app'
-import { State, Config, subscribe, unsubscribe, trigger } from './_shared_types'
+import * as shared from './_shared_types'
 
 
 let configWebviewPanel: vs.WebviewPanel | null
 
-function onCfgRefreshed(appState: State) {
+function onCfgRefreshed(appState: shared.State) {
     if (configWebviewPanel)
         configWebviewPanel.webview.postMessage({ ident: 'onAppStateCfgRefreshed', payload: appState.config })
             .then(() => { }, console.error)
 }
 
 export function show() {
-    subscribe(app.state.onCfgRefreshed, onCfgRefreshed)
+    shared.subscribe(shared.appState.onCfgRefreshed, onCfgRefreshed)
     if (configWebviewPanel)
         return configWebviewPanel.reveal(vs.ViewColumn.One)
 
@@ -40,10 +40,10 @@ export function show() {
     utils.disp(configWebviewPanel.webview.onDidReceiveMessage(onMessage))
     configWebviewPanel.iconPath = utils.iconPath('screwdriver-wrench')
     utils.disp(configWebviewPanel.onDidDispose(() => {
-        unsubscribe(app.state.onCfgRefreshed, onCfgRefreshed)
+        shared.unsubscribe(shared.appState.onCfgRefreshed, onCfgRefreshed)
         configWebviewPanel = null
     }))
-    setTimeout(() => onCfgRefreshed(app.state), 345)
+    setTimeout(() => onCfgRefreshed(shared.appState), 345)
 }
 
 function onMessage(msg: any) {
@@ -52,7 +52,7 @@ function onMessage(msg: any) {
             vs.window.showWarningMessage(msg.payload as string, { modal: true })
             break
         case 'appStateCfgModified':
-            trigger(app.state.onCfgModified, msg.payload as Config)
+            shared.trigger(shared.appState.onCfgModified, msg.payload as shared.Config)
             break
         default:
             vs.window.showInformationMessage(JSON.stringify(msg))
