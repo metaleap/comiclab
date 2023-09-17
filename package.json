@@ -48,6 +48,7 @@
       },
       { "command": "comiclab.proj.colls.addPage", "title": "Add Page", "icon": "ui/icons/file-circle-plus.svg" },
       { "command": "comiclab.proj.colls.addColl", "title": "Add Collection", "icon": "ui/icons/folder-plus.svg" },
+      { "command": "comiclab.proj.colls.rename", "title": "Rename", "icon": "ui/icons/pen.svg" },
       { "command": "comiclab.proj.colls.delete", "title": "Delete", "icon": "ui/icons/trash.svg" },
       { "command": "comiclab.proj.colls.moveUp", "title": "Move Up", "icon": "ui/icons/angle-up.svg" },
       { "command": "comiclab.proj.colls.moveDn", "title": "Move Down", "icon": "ui/icons/angle-down.svg" },
@@ -61,6 +62,7 @@
       "view/item/context": [
         { "command": "comiclab.proj.colls.addColl", "group": "inline", "when": "view == comiclabExplorerProjColls && viewItem == coll" },
         { "command": "comiclab.proj.colls.addPage", "group": "inline", "when": "view == comiclabExplorerProjColls && viewItem == coll" },
+        { "command": "comiclab.proj.colls.rename", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" },
         { "command": "comiclab.proj.colls.delete", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" },
         { "command": "comiclab.proj.colls.moveUp", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" },
         { "command": "comiclab.proj.colls.moveDn", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" },
