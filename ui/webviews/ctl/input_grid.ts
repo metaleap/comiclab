@@ -6,41 +6,54 @@ const html = van.tags
 export type Field = {
     id: string,
     title: string,
+    number?: { min: number, max: number, step?: number },
     readOnly?: boolean,
+    validators?: ValidateFunc[]
     lookUp?: () => string[]
 }
 export type Rec = { id: string, [field_id: string]: string }
 export type DatasetFunc = (recs: Rec[]) => void
+export type ValidateFunc = (curRec: Rec, field: Field, newFieldValue: string) => Error | undefined
 
-export function newInputGrid(id: string, fields: Field[], onDataUserModified: DatasetFunc): { ctl: ChildDom, onDataChangedAtSource: DatasetFunc } {
+export function create(id: string, fields: Field[], onDataUserModified: DatasetFunc): { ctl: ChildDom, onDataChangedAtSource: DatasetFunc } {
     const ths: ChildDom[] = []
     const add_rec_tds: ChildDom[] = []
     let latestDataset: Rec[] = []
 
-    const addRec = (_: MouseEvent) => {
-        const added_rec: Rec = { id: (document.getElementById(id + '__' + 'id') as HTMLInputElement).value.trim() }
-        if (added_rec.id.length == 0)
-            utils.alert('ID is required.')
-        else if (latestDataset.some(rec => (rec.id == added_rec.id)))
-            utils.alert('Another record with this ID already exists.')
-        else {
-            for (const field of fields) {
-                const field_input: HTMLInputElement = document.getElementById(id + '__' + field.id) as HTMLInputElement
-                added_rec[field.id] = field_input.value.trim()
-                field_input.value = ''
-            }
-            latestDataset.push(added_rec)
-            onDataUserModified(latestDataset)
-        }
-    }
-    const delRec = (recID: string) => {
+    const recDel = (recID: string) => {
         latestDataset = latestDataset.filter(_ => (_.id != recID))
         onDataUserModified(latestDataset)
     }
+    const id_field = fields.find(_ => _.id == 'id') as Field
+    if (!id_field.validators)
+        id_field.validators = []
+    id_field.validators.push(validatorNonEmpty(), validatorUnique(() => latestDataset))
 
-    const changeRec = (recID: string, fieldID: string) => {
-        const new_value = (document.getElementById(id + '_' + recID + '_' + fieldID) as HTMLInputElement).value.trim()
+    const recAdd = (_: MouseEvent) => {
+        const added_rec: Rec = { id: (document.getElementById(id + '__' + 'id') as HTMLInputElement).value.trim() }
+        const input_els: HTMLInputElement[] = []
+        for (const field of fields) {
+            const input_el: HTMLInputElement = (document.getElementById(id + '__' + field.id) as HTMLInputElement)
+            input_els.push(input_el)
+            const new_value = input_el.value.trim()
+            added_rec[field.id] = new_value
+        }
+        if (!validate(added_rec, undefined, ...fields))
+            return
+        input_els.forEach(_ => _.value = '')
+        latestDataset.push(added_rec)
+        onDataUserModified(latestDataset)
+    }
+
+    const recInput = (recID: string, fieldID: string) => {
+        const input_el: HTMLInputElement = document.getElementById(id + '_' + recID + '_' + fieldID) as HTMLInputElement
+        const new_value = input_el.value.trim()
         const rec = latestDataset.find(_ => (_.id == recID)) as Rec
+        const field: Field = fields.find(_ => (_.id == fieldID)) as Field
+        if (!validate(rec, new_value, field)) {
+            input_el.value = rec[fieldID]
+            return
+        }
         rec[fieldID] = new_value
         onDataUserModified(latestDataset)
     }
@@ -52,7 +65,7 @@ export function newInputGrid(id: string, fields: Field[], onDataUserModified: Da
     }
     ths.push(html.th({ 'class': 'input-grid-header', 'id': id + '_' }, ' '))
     add_rec_tds.push(html.td({ 'class': 'input-grid-cell' }, html.a(
-        { 'onclick': addRec, 'class': 'btn btn-circle-plus input-grid-cell', 'id': id + '__', alt: "Add", title: "Add", href: '' })))
+        { 'onclick': recAdd, 'class': 'btn btn-circle-plus input-grid-cell', 'id': id + '__', alt: "Add", title: "Add", href: '' })))
 
     const table = html.table({ 'class': 'input-grid', 'id': id },
         html.tr({ 'class': 'input-grid-header' }, ...ths),
@@ -75,9 +88,9 @@ export function newInputGrid(id: string, fields: Field[], onDataUserModified: Da
                     const cell_tds: ChildDom[] = []
                     for (const field of fields)
                         cell_tds.push(html.td({ 'class': 'input-grid-cell' }, html.input(
-                            { 'onchange': () => { changeRec(rec.id, field.id) }, 'type': 'text', 'class': 'input-grid-cell', 'id': id + '_' + rec.id + '_' + field.id, 'data-rec-id': rec.id, 'data-field-id': field.id, 'disabled': (field.id == 'id') })))
+                            { 'onchange': () => { recInput(rec.id, field.id) }, 'type': 'text', 'class': 'input-grid-cell', 'id': id + '_' + rec.id + '_' + field.id, 'data-rec-id': rec.id, 'data-field-id': field.id, 'disabled': (field.id == 'id') })))
                     cell_tds.push(html.td({ 'class': 'input-grid-cell' }, html.a(
-                        { 'onclick': (_) => delRec(rec.id), 'class': 'btn btn-circle-minus input-grid-cell', 'id': id + '_' + rec.id + '_', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })))
+                        { 'onclick': (_) => recDel(rec.id), 'class': 'btn btn-circle-minus input-grid-cell', 'id': id + '_' + rec.id + '_', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })))
                     van.add(rec_tr, ...cell_tds)
                     new_rec_trs.push(rec_tr)
                 }
@@ -91,5 +104,38 @@ export function newInputGrid(id: string, fields: Field[], onDataUserModified: Da
             van.add(table, ...new_rec_trs)
             table.style.visibility = 'visible'
         }
+    }
+}
+
+function validate(rec: Rec, newValue: string | undefined, ...fields: Field[]) {
+    for (const field of fields)
+        if (field?.validators)
+            for (const validator of field.validators) {
+                const err = validator(rec, field, (newValue === undefined) ? rec[field.id] : newValue)
+                if (err) {
+                    utils.alert((err.name ? (err.name + ': ') : '') + err.message)
+                    return false
+                }
+            }
+    return true
+}
+
+export function validatorNonEmpty(): ValidateFunc {
+    return (_: Rec, field: Field, newFieldValue: string) => {
+        if (newFieldValue.length == 0)
+            return { name: '', message: `'${field.title} is required and must not be left blank.` }
+        return undefined
+    }
+}
+
+export function validatorUnique(fullDataset: () => Rec[]): ValidateFunc {
+    return (curRec: Rec, field: Field, newFieldValue: string) => {
+        const full_dataset = fullDataset()
+        const already_existing = full_dataset.find(_ => (_[field.id] == newFieldValue) && (_ != curRec) && (_.id != curRec.id || field.id == 'id'))
+        console.log("FDS:", full_dataset)
+        console.log("AE:", already_existing)
+        if (already_existing)
+            return { name: '', message: `Another entry with '${field.title}' of '${newFieldValue}' already exists.` }
+        return undefined
     }
 }

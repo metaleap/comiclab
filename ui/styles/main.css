@@ -75,4 +75,5 @@ a.btn-circle-minus {
 
 .input-grid-cell-addrec {
     font-style: italic;
+    background-color: var(--vscode-inputValidation-infoBackground) !important;
 }

@@ -3,7 +3,7 @@
         "esModuleInterop": true,
         "importHelpers": false,
         "declaration": true,
-        "sourceMap": false,
+        "sourceMap": true,
         "noEmitOnError": true,
         "strict": true,
         "strictPropertyInitialization": false,
