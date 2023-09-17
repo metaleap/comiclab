@@ -72,3 +72,7 @@ a.btn-circle-minus {
     background-color: var(--vscode-tab-activeBackground);
     color: var(--vscode-tab-activeForeground);
 }
+
+.input-grid-cell-addrec {
+    font-style: italic;
+}

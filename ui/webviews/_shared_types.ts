@@ -20,14 +20,12 @@ export function trigger<T>(evt: Event<T>, arg: T) {
 export type State = {
     proj: Proj
     config: Config
-    onProjReloaded: Event<State>
-    onCfgReloaded: Event<State>
+    onProjRefreshed: Event<State>
+    onCfgRefreshed: Event<State>
     onProjSaved: Event<State>
     onCfgSaved: Event<State>
-}
-
-export type Proj = {
-
+    onProjModified: Event<Proj>
+    onCfgModified: Event<Config>
 }
 
 export type Config = {
@@ -36,4 +34,7 @@ export type Config = {
             [author_id: string]: string,
         }
     },
+}
+
+export type Proj = {
 }

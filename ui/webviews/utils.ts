@@ -1,3 +1,12 @@
+export let vs: { postMessage: (_: any) => any }
+
+export function onInit(vscode: { postMessage: (_: any) => any }) {
+    vs = vscode
+}
+
+export function alert(msg: string) {
+    vs.postMessage({ ident: 'alert', payload: msg })
+}
 
 export function arrFromDict<TArr, TDict>(obj: { [key: string]: TDict } | undefined, to: ((key: string, v: TDict) => TArr)): TArr[] {
     const ret: TArr[] = []

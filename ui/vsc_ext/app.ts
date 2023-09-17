@@ -1,5 +1,5 @@
 import * as vs from 'vscode'
-import { State, trigger } from './_shared_types'
+import { State, trigger, subscribe } from './_shared_types'
 import * as utils from './utils'
 import * as sidebar from './sidebar'
 import { SidebarWebViewProvider } from './sidebar_webview'
@@ -11,10 +11,12 @@ import fetch from 'node-fetch'
 
 export const state: State = {
 	proj: {}, config: { contentAuthoring: {} },
-	onProjReloaded: { handlers: [] },
-	onCfgReloaded: { handlers: [] },
+	onProjRefreshed: { handlers: [] },
+	onCfgRefreshed: { handlers: [] },
 	onProjSaved: { handlers: [] },
 	onCfgSaved: { handlers: [] },
+	onCfgModified: { handlers: [] },
+	onProjModified: { handlers: [] },
 }
 let dirtyProj = false
 let dirtyCfg = false
@@ -52,6 +54,12 @@ export function activate(context: vs.ExtensionContext) {
 	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjSites', new sidebar.NavProjSites()))
 	utils.disp(vs.window.registerWebviewViewProvider('comicLabSidebarWebview', sidebarWebViewProvider = new SidebarWebViewProvider()))
 
+	subscribe(state.onCfgModified, (modifiedCfg) => {
+		onDirty(dirtyProj, true)
+		state.config = modifiedCfg
+		trigger(state.onCfgRefreshed, state)
+	})
+
 	appStateReload(true, true)
 }
 
@@ -76,11 +84,7 @@ function mainMenu() {
 		switch (item) {
 			case itemConfig:
 				sidebarWebViewProvider.webView?.show(false)
-				config_view.show(state, (modifiedCfg) => {
-					onDirty(dirtyProj, true)
-					state.config = modifiedCfg
-					trigger(state.onCfgReloaded, state)
-				})
+				config_view.show()
 				break
 			case itemReloadBoth:
 				appStateReload(true, true)
@@ -123,11 +127,11 @@ export function appStateReload(proj: boolean, cfg: boolean) {
 						return req.onErr("No error reported but nothing received, buggily. Frontend app state might be out of date, try again and fix that bug.")
 					if (proj) {
 						state.proj = latestAppState.proj
-						trigger(state.onProjReloaded, state)
+						trigger(state.onProjRefreshed, state)
 					}
 					if (cfg) {
 						state.config = latestAppState.config
-						trigger(state.onCfgReloaded, state)
+						trigger(state.onCfgRefreshed, state)
 					}
 					onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg)
 					statusBarItem.text = "$(pass-filled) ComicLab reloaded " + msg_suffix
@@ -170,7 +174,7 @@ function prepFetch(proj: boolean, cfg: boolean) {
 				statusBarItem.color = colorRed
 				statusBarItem.text = msg
 				statusBarItem.tooltip = msg
-				vs.window.showErrorMessage(msg)
+				vs.window.showErrorMessage(msg, { modal: true })
 			}
 			if (err.statusText && err.statusText.length && err.statusText.length > 0 && err.text)
 				err.text()

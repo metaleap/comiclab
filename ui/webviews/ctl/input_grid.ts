@@ -1,4 +1,5 @@
 import van, { ChildDom } from '../vanjs/van-1.2.0.js'
+import * as utils from '../utils.js'
 
 const html = van.tags
 
@@ -16,17 +17,16 @@ export function newInputGrid(id: string, fields: Field[], onDataUserModified: Da
     const add_rec_tds: ChildDom[] = []
     let latestDataset: Rec[] = []
 
-    const disableInputGrid = function () {
-        (document.getElementById(id) as HTMLTableElement).style.visibility = 'hidden'
-    }
-
     const addRec = (_: MouseEvent) => {
         const added_rec: Rec = { id: (document.getElementById(id + '__' + 'id') as HTMLInputElement).value.trim() }
-        if (added_rec.id.length > 0 && !latestDataset.some(rec => (rec.id == added_rec.id))) {
-            disableInputGrid()
+        if (added_rec.id.length == 0)
+            utils.alert('ID is required.')
+        else if (latestDataset.some(rec => (rec.id == added_rec.id)))
+            utils.alert('Another record with this ID already exists.')
+        else {
             for (const field of fields) {
                 const field_input: HTMLInputElement = document.getElementById(id + '__' + field.id) as HTMLInputElement
-                added_rec[field.id] = field_input.value
+                added_rec[field.id] = field_input.value.trim()
                 field_input.value = ''
             }
             latestDataset.push(added_rec)
@@ -35,13 +35,11 @@ export function newInputGrid(id: string, fields: Field[], onDataUserModified: Da
     }
     const delRec = (recID: string) => {
         latestDataset = latestDataset.filter(_ => (_.id != recID))
-        disableInputGrid()
         onDataUserModified(latestDataset)
     }
 
     const changeRec = (recID: string, fieldID: string) => {
-        const new_value = (document.getElementById(id + '_' + recID + '_' + fieldID) as HTMLInputElement).value
-        disableInputGrid()
+        const new_value = (document.getElementById(id + '_' + recID + '_' + fieldID) as HTMLInputElement).value.trim()
         const rec = latestDataset.find(_ => (_.id == recID)) as Rec
         rec[fieldID] = new_value
         onDataUserModified(latestDataset)
@@ -50,12 +48,11 @@ export function newInputGrid(id: string, fields: Field[], onDataUserModified: Da
     for (const field of fields) {
         ths.push(html.th({ 'class': 'input-grid-header', 'id': id + '_' + field.id, 'data-field-id': field.id }, field.title))
         add_rec_tds.push(html.td({ 'class': 'input-grid-cell' },
-            html.input({ 'type': 'text', 'class': 'input-grid-cell', 'id': id + '__' + field.id, 'placeholder': '(Add Another Here)', 'data-field-id': field.id })))
+            html.input({ 'type': 'text', 'class': 'input-grid-cell input-grid-cell-addrec', 'id': id + '__' + field.id, 'placeholder': '(Add Another Here)', 'data-field-id': field.id })))
     }
     ths.push(html.th({ 'class': 'input-grid-header', 'id': id + '_' }, ' '))
-    const add_rec_btn = html.a({ 'class': 'btn btn-circle-plus input-grid-cell', 'id': id + '__', alt: "Add", title: "Add", href: '' })
-    add_rec_btn.onclick = addRec
-    add_rec_tds.push(html.td({ 'class': 'input-grid-cell' }, add_rec_btn))
+    add_rec_tds.push(html.td({ 'class': 'input-grid-cell' }, html.a(
+        { 'onclick': addRec, 'class': 'btn btn-circle-plus input-grid-cell', 'id': id + '__', alt: "Add", title: "Add", href: '' })))
 
     const table = html.table({ 'class': 'input-grid', 'id': id },
         html.tr({ 'class': 'input-grid-header' }, ...ths),
@@ -79,9 +76,8 @@ export function newInputGrid(id: string, fields: Field[], onDataUserModified: Da
                     for (const field of fields)
                         cell_tds.push(html.td({ 'class': 'input-grid-cell' },
                             html.input({ 'onchange': () => { changeRec(rec.id, field.id) }, 'type': 'text', 'class': 'input-grid-cell', 'id': id + '_' + rec.id + '_' + field.id, 'data-rec-id': rec.id, 'data-field-id': field.id, 'disabled': (field.id == 'id') })))
-                    const del_rec_btn = html.a({ 'class': 'btn btn-circle-minus input-grid-cell', 'id': id + '_' + rec.id + '_', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })
-                    del_rec_btn.onclick = (_) => delRec(rec.id)
-                    cell_tds.push(html.td({ 'class': 'input-grid-cell' }, del_rec_btn))
+                    cell_tds.push(html.td({ 'class': 'input-grid-cell' }, html.a(
+                        { 'onclick': (_) => delRec(rec.id), 'class': 'btn btn-circle-minus input-grid-cell', 'id': id + '_' + rec.id + '_', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })))
                     van.add(rec_tr, ...cell_tds)
                     new_rec_trs.push(rec_tr)
                 }

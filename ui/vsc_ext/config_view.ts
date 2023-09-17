@@ -1,18 +1,19 @@
 import * as vs from 'vscode'
 import * as utils from './utils'
-import { State, Config, subscribe, unsubscribe } from './_shared_types'
+import * as app from './app'
+import { State, Config, subscribe, unsubscribe, trigger } from './_shared_types'
 
 
 let configWebviewPanel: vs.WebviewPanel | null
 
-function onCfgReloaded(appState: State) {
+function onCfgRefreshed(appState: State) {
     if (configWebviewPanel)
-        configWebviewPanel.webview.postMessage({ ident: 'onAppStateCfgChanged', payload: appState.config })
+        configWebviewPanel.webview.postMessage({ ident: 'onAppStateCfgRefreshed', payload: appState.config })
             .then(() => { }, console.error)
 }
 
-export function show(appState: State, onModified: (_: Config) => void) {
-    subscribe(appState.onCfgReloaded, onCfgReloaded)
+export function show() {
+    subscribe(app.state.onCfgRefreshed, onCfgRefreshed)
     if (configWebviewPanel)
         return configWebviewPanel.reveal(vs.ViewColumn.One)
 
@@ -36,21 +37,26 @@ export function show(appState: State, onModified: (_: Config) => void) {
                     main.onInitConfigView(acquireVsCodeApi(), '${htmlUri(vs.Uri.joinPath(utils.extUri, 'ui'))?.toString()}')
                 </script>
             </body></html>`
-    utils.disp(configWebviewPanel.webview.onDidReceiveMessage(msg => {
-        switch (msg.ident) {
-            case 'appStateCfgModified':
-                onModified(msg.payload as Config)
-                break
-            default:
-                vs.window.showInformationMessage(JSON.stringify(msg))
-        }
-    }))
+    utils.disp(configWebviewPanel.webview.onDidReceiveMessage(onMessage))
     configWebviewPanel.iconPath = utils.iconPath('screwdriver-wrench')
     utils.disp(configWebviewPanel.onDidDispose(() => {
-        unsubscribe(appState.onCfgReloaded, onCfgReloaded)
+        unsubscribe(app.state.onCfgRefreshed, onCfgRefreshed)
         configWebviewPanel = null
     }))
-    setTimeout(() => onCfgReloaded(appState), 234)
+    setTimeout(() => onCfgRefreshed(app.state), 234)
+}
+
+function onMessage(msg: any) {
+    switch (msg.ident) {
+        case 'alert':
+            vs.window.showWarningMessage(msg.payload as string, { modal: true })
+            break
+        case 'appStateCfgModified':
+            trigger(app.state.onCfgModified, msg.payload as Config)
+            break
+        default:
+            vs.window.showInformationMessage(JSON.stringify(msg))
+    }
 }
 
 function htmlUri(localUri: vs.Uri) {
