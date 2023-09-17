@@ -30,10 +30,16 @@ export type State = {
 
 export type Config = {
     contentAuthoring: {
-        authors?: {
-            [author_id: string]: string,
-        }
+        authors?: { [id: string]: string },
+        paperFormats?: { [id: string]: PaperFormat },
+        languages?: { [id: string]: string },
+        contentFields?: string[],
     },
+}
+
+export type PaperFormat = {
+    widthMm: number,
+    heightMm: number,
 }
 
 export type Proj = {

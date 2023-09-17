@@ -2,7 +2,7 @@ import van, { ChildDom } from '../vanjs/van-1.2.0.js'
 
 const html = van.tags
 
-export function newTabs(id: string, tabs: Record<string, ChildDom>): ChildDom {
+export function create(id: string, tabs: Record<string, ChildDom>): ChildDom {
     const child_nodes: ChildDom[] = []
     let tab_nr = 0
     for (const title in tabs) {

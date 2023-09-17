@@ -81,8 +81,9 @@ input {
     margin-right: 0.2em;
 }
 
+textarea,
 input[type='text'],
-textarea {
+input[type='number'] {
     font-size: 1em;
     border-color: var(--vscode-input-border);
     border-radius: 2px;

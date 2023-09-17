@@ -75,15 +75,15 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
             latestDataset = sourceDataset
             const rec_trs = table.querySelectorAll('tr.input-grid-record')
             rec_trs.forEach(tr => {
-                const rec_id_attr = tr.getAttributeNode('data_id')
+                const rec_id_attr = tr.getAttributeNode('data-rec-id')
                 if (!sourceDataset.find(_ => _.id == rec_id_attr?.value))
                     tr.remove() // old record in grid is no longer in latest source dataset
             })
             const new_rec_trs: ChildDom[] = []
             sourceDataset.forEach(rec => {
-                let rec_tr = table.querySelector(`tr.input-grid-record[data-rec-id='${rec.id}']`)
+                let rec_tr = document.getElementById(id + '_tr_' + rec.id)
                 if (!rec_tr) {// new record, is not yet in grid
-                    rec_tr = html.tr({ 'class': 'input-grid-record', 'data-rec-id': rec.id })
+                    rec_tr = html.tr({ 'class': 'input-grid-record', 'id': id + '_tr_' + rec.id, 'data-rec-id': rec.id })
                     const cell_tds: ChildDom[] = []
                     for (const field of fields)
                         cell_tds.push(html.td({ 'class': 'input-grid-cell' }, htmlInput(false, id, rec.id, field, () => { recInput(rec.id, field.id) })))
@@ -92,14 +92,18 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
                     van.add(rec_tr, ...cell_tds)
                     new_rec_trs.push(rec_tr)
                 }
+
+                const rec_inputs: { [id: string]: HTMLInputElement } = {}
+                rec_tr.querySelectorAll('td > input').forEach(_ => rec_inputs[_.id] = _ as HTMLInputElement)
                 for (const field of fields) {
-                    const cell_input = rec_tr.querySelector('input#' + id + '_' + rec.id + '_' + field.id) as HTMLInputElement
+                    const cell_input = rec_inputs[id + '_' + rec.id + '_' + field.id]
                     const rec_field_value: string = rec[field.id]
                     if (cell_input.value != rec_field_value)
                         cell_input.value = rec_field_value
                 }
             })
-            van.add(table, ...new_rec_trs)
+            if (new_rec_trs.length > 0)
+                van.add(table, ...new_rec_trs)
             table.style.visibility = 'visible'
         }
     }
@@ -142,19 +146,15 @@ function validate(rec: Rec, newValue: string | undefined, ...fields: Field[]) {
 export function validatorNonEmpty(): ValidateFunc {
     return (_: Rec, field: Field, newFieldValue: string) => {
         if (newFieldValue.length == 0)
-            return { name: '', message: `'${field.title} is required and must not be left blank.` }
+            return { name: 'Required', message: `'${field.title} must not be blank.` }
         return undefined
     }
 }
 
 export function validatorUnique(fullDataset: () => Rec[]): ValidateFunc {
     return (curRec: Rec, field: Field, newFieldValue: string) => {
-        const full_dataset = fullDataset()
-        const already_existing = full_dataset.find(_ => (_[field.id] == newFieldValue) && (_ != curRec) && (_.id != curRec.id || field.id == 'id'))
-        console.log("FDS:", full_dataset)
-        console.log("AE:", already_existing)
-        if (already_existing)
-            return { name: '', message: `Another entry with '${field.title}' of '${newFieldValue}' already exists.` }
+        if (fullDataset().some(_ => (_[field.id] == newFieldValue) && (_ != curRec) && (_.id != curRec.id || field.id == 'id')))
+            return { name: 'Uniqueness', message: `another entry with '${field.title}' of '${newFieldValue}' already exists.` }
         return undefined
     }
 }
