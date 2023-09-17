@@ -33,10 +33,11 @@ let statusBarItem: vs.StatusBarItem
 let sidebarWebViewProvider: SidebarWebViewProvider
 
 
-function onDirty(proj: boolean, cfg: boolean) {
+function onDirty(proj: boolean, cfg: boolean, preserveStatusText: boolean) {
 	if ((dirtyCfg = cfg) || (dirtyProj = proj)) {
 		statusBarItem.color = colorOrange
-		statusBarItem.text = `$(save-as) Unsaved changes to ` + msgSuffix(proj, cfg)
+		if (!preserveStatusText)
+			statusBarItem.text = `$(save-as) Unsaved changes to ` + msgSuffix(proj, cfg)
 	}
 }
 
@@ -55,7 +56,7 @@ export function activate(context: vs.ExtensionContext) {
 	utils.disp(vs.window.registerWebviewViewProvider('comicLabSidebarWebview', sidebarWebViewProvider = new SidebarWebViewProvider()))
 
 	subscribe(state.onCfgModified, (modifiedCfg) => {
-		onDirty(dirtyProj, true)
+		onDirty(dirtyProj, true, false)
 		state.config = modifiedCfg
 		trigger(state.onCfgRefreshed, state)
 	})
@@ -64,6 +65,7 @@ export function activate(context: vs.ExtensionContext) {
 }
 
 function mainMenu() {
+	vs.commands.executeCommand('workbench.view.extension.comiclabExplorer')
 	let itemSaveProj: vs.QuickPickItem = { label: "Save Project Changes", iconPath: utils.iconPath('floppy-disk'), alwaysShow: true }
 	let itemSaveCfg: vs.QuickPickItem = { label: "Save Config Changes", iconPath: utils.iconPath('floppy-disk'), alwaysShow: true }
 	let itemSaveBoth: vs.QuickPickItem = { label: "Save Both", iconPath: utils.iconPath('floppy-disk'), alwaysShow: true }
@@ -116,7 +118,6 @@ export function appStateReload(proj: boolean, cfg: boolean) {
 	const msg_suffix = msgSuffix(proj, cfg)
 	statusBarItem.text = "$(sync~spin) ComicLab reloading " + msg_suffix + "..."
 	const req = prepFetch(proj, cfg)
-	// setTimeout(() => {
 	fetch(apiUri + '/appState', { method: 'POST' })
 		.then((resp) => {
 			if (!resp.ok)
@@ -133,39 +134,46 @@ export function appStateReload(proj: boolean, cfg: boolean) {
 						state.config = latestAppState.config
 						trigger(state.onCfgRefreshed, state)
 					}
-					onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg)
 					statusBarItem.text = "$(pass-filled) ComicLab reloaded " + msg_suffix
-					if (!(dirtyCfg || dirtyProj))
-						statusBarItem.color = colorGreen
 				})
 				.catch(req.onErr)
 		})
 		.catch(req.onErr)
 		.finally(req.onDone)
-	// }, 2345)
 }
 
 export function appStateSave(proj: boolean, cfg: boolean) {
+	const msg_suffix = msgSuffix(proj, cfg)
+	statusBarItem.text = "$(sync~spin) ComicLab saving changes to " + msg_suffix + "..."
+	const req = prepFetch(proj, cfg)
+	const postBody: any = {}
+	if (proj)
+		postBody.proj = state.proj
+	if (cfg)
+		postBody.config = state.config
+	fetch(apiUri + '/appState', { method: 'POST', body: JSON.stringify(postBody), headers: { "Content-Type": "application/json" }, })
+		.then((resp) => {
+			if (!resp.ok)
+				req.onErr(resp)
+			else {
+				if (proj) trigger(state.onProjSaved, state)
+				if (cfg) trigger(state.onCfgSaved, state)
+				statusBarItem.text = "$(pass-filled) ComicLab saved changes to " + msg_suffix
+			}
+		})
+		.catch(req.onErr)
+		.finally(req.onDone)
 }
 
 function prepFetch(proj: boolean, cfg: boolean) {
 	statusBarItem.color = undefined
 	statusBarItem.tooltip = ''
-	// if (proj)
-	// 	setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_proj', 'fa fa-spinner')
-	// if (cfg)
-	// 	setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_cfg', 'fa fa-spinner')
 	let failed = false
 	return {
 		onDone: () => {
-			if (proj) {
-				// onDirtyProj(failed)
-				// setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_proj', icon)
-			}
-			if (cfg) {
-				// onDirtyCfg(failed)
-				// setToolbarIcon(guiMain.layout.panels[0].toolbar, 'menu_cfg', icon)
-			}
+			onDirty(proj ? failed : dirtyProj, cfg ? failed : dirtyCfg, true)
+			if (!(dirtyCfg || dirtyProj))
+				statusBarItem.color = colorGreen
 		},
 		onErr: (err: any) => {
 			failed = true
@@ -179,7 +187,7 @@ function prepFetch(proj: boolean, cfg: boolean) {
 			if (err.statusText && err.statusText.length && err.statusText.length > 0 && err.text)
 				err.text()
 					.catch((_: any) => on_err(err.statusText))
-					.then((s: string) => on_err((s && s.length && s.length > 0) ? s : err.statusText))
+					.then((s: string) => on_err((s && s.length > 0) ? s : err.statusText))
 			else
 				on_err(err)
 		},

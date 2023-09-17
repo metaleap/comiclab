@@ -74,8 +74,8 @@ export function newInputGrid(id: string, fields: Field[], onDataUserModified: Da
                     rec_tr = html.tr({ 'class': 'input-grid-record', 'data-rec-id': rec.id })
                     const cell_tds: ChildDom[] = []
                     for (const field of fields)
-                        cell_tds.push(html.td({ 'class': 'input-grid-cell' },
-                            html.input({ 'onchange': () => { changeRec(rec.id, field.id) }, 'type': 'text', 'class': 'input-grid-cell', 'id': id + '_' + rec.id + '_' + field.id, 'data-rec-id': rec.id, 'data-field-id': field.id, 'disabled': (field.id == 'id') })))
+                        cell_tds.push(html.td({ 'class': 'input-grid-cell' }, html.input(
+                            { 'onchange': () => { changeRec(rec.id, field.id) }, 'type': 'text', 'class': 'input-grid-cell', 'id': id + '_' + rec.id + '_' + field.id, 'data-rec-id': rec.id, 'data-field-id': field.id, 'disabled': (field.id == 'id') })))
                     cell_tds.push(html.td({ 'class': 'input-grid-cell' }, html.a(
                         { 'onclick': (_) => delRec(rec.id), 'class': 'btn btn-circle-minus input-grid-cell', 'id': id + '_' + rec.id + '_', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })))
                     van.add(rec_tr, ...cell_tds)

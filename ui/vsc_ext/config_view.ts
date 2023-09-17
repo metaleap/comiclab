@@ -43,7 +43,7 @@ export function show() {
         unsubscribe(app.state.onCfgRefreshed, onCfgRefreshed)
         configWebviewPanel = null
     }))
-    setTimeout(() => onCfgRefreshed(app.state), 234)
+    setTimeout(() => onCfgRefreshed(app.state), 345)
 }
 
 function onMessage(msg: any) {
