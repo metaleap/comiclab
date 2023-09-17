@@ -64,22 +64,23 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
         onDataUserModified(latestDataset)
     }
 
+    const th_width = 100 / fields.length
     for (const field of fields) {
-        ths.push(html.th({ 'class': 'input-grid-header', 'id': id + '_' + field.id, 'data-field-id': field.id }, field.title))
-        add_rec_tds.push(html.td({ 'class': 'input-grid-cell' }, htmlInput(true, id, '', field)))
+        ths.push(html.th({ 'class': 'inputgrid-header', 'id': id + '_' + field.id, 'data-field-id': field.id, 'width': th_width + '%' }, field.title))
+        add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, htmlInput(true, id, '', field)))
     }
-    ths.push(html.th({ 'class': 'input-grid-header', 'id': id + '_' }, ' '))
-    add_rec_tds.push(html.td({ 'class': 'input-grid-cell' }, html.a(
-        { 'onclick': recAdd, 'class': 'btn btn-circle-plus input-grid-cell', 'id': id + '__', alt: "Add", title: "Add", href: '' })))
+    ths.push(html.th({ 'class': 'inputgrid-header', 'id': id + '_' }, ' '))
+    add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, html.a(
+        { 'onclick': recAdd, 'class': 'btn btn-circle-plus inputgrid-cell', 'id': id + '__', alt: "Add", title: "Add", href: '' })))
 
-    const table = html.table({ 'class': 'input-grid', 'id': id },
-        html.tr({ 'class': 'input-grid-header' }, ...ths),
-        html.tr({ 'class': 'input-grid-record-add' }, ...add_rec_tds))
+    const table = html.table({ 'class': 'inputgrid', 'id': id },
+        html.tr({ 'class': 'inputgrid-header' }, ...ths),
+        html.tr({ 'class': 'inputgrid-record-add' }, ...add_rec_tds))
     return {
         ctl: table,
         onDataChangedAtSource: (sourceDataset: Rec[]) => {
             latestDataset = sourceDataset
-            const rec_trs = table.querySelectorAll('tr.input-grid-record')
+            const rec_trs = table.querySelectorAll('tr.inputgrid-record')
             rec_trs.forEach(tr => {
                 const rec_id_attr = tr.getAttributeNode('data-rec-id')
                 if (!sourceDataset.find(_ => _.id == rec_id_attr?.value))
@@ -89,12 +90,12 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
             sourceDataset.forEach(rec => {
                 let rec_tr = document.getElementById(id + '_tr_' + rec.id)
                 if (!rec_tr) {// new record, is not yet in grid
-                    rec_tr = html.tr({ 'class': 'input-grid-record', 'id': id + '_tr_' + rec.id, 'data-rec-id': rec.id })
+                    rec_tr = html.tr({ 'class': 'inputgrid-record', 'id': id + '_tr_' + rec.id, 'data-rec-id': rec.id })
                     const cell_tds: ChildDom[] = []
                     for (const field of fields)
-                        cell_tds.push(html.td({ 'class': 'input-grid-cell' }, htmlInput(false, id, rec.id, field, () => { recInput(rec.id, field.id) })))
-                    cell_tds.push(html.td({ 'class': 'input-grid-cell' }, html.a(
-                        { 'onclick': () => recDel(rec.id), 'class': 'btn btn-circle-minus input-grid-cell', 'id': id + '_' + rec.id + '_', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })))
+                        cell_tds.push(html.td({ 'class': 'inputgrid-cell' }, htmlInput(false, id, rec.id, field, () => { recInput(rec.id, field.id) })))
+                    cell_tds.push(html.td({ 'class': 'inputgrid-cell' }, html.a(
+                        { 'onclick': () => recDel(rec.id), 'class': 'btn btn-circle-minus inputgrid-cell', 'id': id + '_' + rec.id + '_', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })))
                     van.add(rec_tr, ...cell_tds)
                     new_rec_trs.push(rec_tr)
                 }
@@ -117,7 +118,7 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
 
 function htmlInput(isAddRec: boolean, gridID: string, recID: string, field: Field, onChange?: (evt: Event) => any) {
     const init: Props = {
-        'class': 'input-grid-cell' + (isAddRec ? ' input-grid-cell-addrec' : ''),
+        'class': 'inputgrid-cell' + (isAddRec ? ' inputgrid-cell-addrec' : ''),
         'id': gridID + '_' + recID + '_' + field.id,
         'data-rec-id': recID,
         'data-field-id': field.id,

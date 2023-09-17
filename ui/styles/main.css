@@ -73,12 +73,27 @@ div.tab-container>input[type="radio"]:checked+div.tab-page>label {
     color: var(--vscode-tab-activeForeground);
 }
 
-input.input-grid-cell-addrec {
+input.inputgrid-cell {
+    width: 100%;
+}
+
+input.inputgrid-cell-addrec {
     font-style: italic;
     background-color: var(--vscode-inputValidation-infoBackground) !important;
     transition: background-color 1000ms linear;
 }
 
-input.input-grid-cell-addrec:not(:placeholder-shown) {
+input.inputgrid-cell-addrec:not(:placeholder-shown) {
     background-color: var(--vscode-editor-stackFrameHighlightBackground) !important;
+}
+
+div.multipanel>h3 {
+    margin-top: 1em;
+    color: var(--vscode-tab-inactiveForeground);
+    border-bottom: 1px solid var(--vscode-tab-inactiveForeground);
+}
+
+div.multipanel>span.multipanel-section {
+    display: block;
+    margin-bottom: 3em;
 }

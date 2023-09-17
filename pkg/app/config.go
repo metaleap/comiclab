@@ -11,7 +11,7 @@ type Config struct {
 		Authors       map[string]string       `json:"authors"`
 		PaperFormats  map[string]*PaperFormat `json:"paperFormats"`
 		Languages     map[string]string       `json:"languages"`
-		ContentFields []string                `json:"contentFields"`
+		ContentFields map[string]string       `json:"contentFields"`
 	} `json:"contentAuthoring"`
 }
 
