@@ -5,22 +5,22 @@ import * as sidebar from './sidebar'
 
 
 export class TreeColls extends sidebar.TreeDataProvider {
-    override getTreeItem(element: vs.TreeItem): vs.TreeItem {
-        return element
+    override getTreeItem(treeNode: vs.TreeItem): vs.TreeItem {
+        return treeNode
     }
 
-    override getChildren(element?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]> {
+    override getChildren(parentTreeNode?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]> {
         let colls = shared.appState.proj.collections
         let pages: shared.Page[] | undefined = []
-        if (element) {
-            const coll = collFromNodeId(element.id as string) as shared.Collection
+        if (parentTreeNode) {
+            const coll = collFromNodeId(parentTreeNode.id as string) as shared.Collection
             colls = coll.collections ?? []
             pages = coll.pages
         }
 
         const ret: vs.TreeItem[] = colls?.map(_ => ({
             collapsibleState: ((utils.noneIn(_.collections) && utils.noneIn(_.pages)) ? vs.TreeItemCollapsibleState.None
-                : (element ? vs.TreeItemCollapsibleState.Collapsed : vs.TreeItemCollapsibleState.Expanded)),
+                : (parentTreeNode ? vs.TreeItemCollapsibleState.Collapsed : vs.TreeItemCollapsibleState.Expanded)),
             iconPath: new vs.ThemeIcon('folder'),
             id: collToNodeId(_),
             contextValue: '_canRename_canDelete_canAddPage_canAddColl_',
@@ -34,16 +34,16 @@ export class TreeColls extends sidebar.TreeDataProvider {
                 contextValue: '_canRename_canDelete_',
                 label: _.id,
             } as vs.TreeItem)))
-        ret.forEach((treeItem: vs.TreeItem) => {
+        ret.forEach((treeNode: vs.TreeItem) => {
             const dict: { [_: string]: boolean } = {
-                "canMoveUp_": this.move(treeItem, -1, true),
-                "canMoveDn_": this.move(treeItem, 1, true),
-                "canMoveTop_": this.move(treeItem, 0, true),
-                "canMoveEnd_": this.move(treeItem, NaN, true),
+                "canMoveUp_": this.move(treeNode, -1, true),
+                "canMoveDn_": this.move(treeNode, 1, true),
+                "canMoveTop_": this.move(treeNode, 0, true),
+                "canMoveEnd_": this.move(treeNode, NaN, true),
             }
             for (const k in dict)
                 if (dict[k])
-                    treeItem.contextValue += k
+                    treeNode.contextValue += k
         })
         return ret
     }
@@ -54,7 +54,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
             ((addPage && coll) ? shared.collChildPage(coll, name) : shared.collChildColl(coll ? coll : shared.appState.proj, name))
         const desc_parent = coll ? (`'${coll.id}'`) : "the project"
         const desc_what = (addPage ? 'page' : 'collection')
-        let name_sugg = desc_what + ((((addPage && coll) ? coll.pages : (coll?.collections ?? shared.appState.proj.collections))?.length ?? 0) + 1).toString().padStart(addPage ? 3 : 2, "0")
+        let name_sugg = desc_what + ((((addPage && coll) ? coll.pages : (coll ? coll.collections : shared.appState.proj.collections))?.length ?? 0) + 1).toString().padStart(addPage ? 3 : 2, "0")
         if (nameConflicts(name_sugg))
             name_sugg = ''
         vs.window.showInputBox({
@@ -72,19 +72,22 @@ export class TreeColls extends sidebar.TreeDataProvider {
             if (name && ((name = name.trim()).length > 0)) {
                 if (addPage && coll)
                     coll.pages = (coll.pages ?? []).concat([{ id: name }])
-                else if (coll)
-                    coll.collections = (coll.collections ?? []).concat([{ id: name, collections: [], pages: [], authorID: '', contentFields: {} }])
-                else
-                    shared.appState.proj.collections = (shared.appState.proj.collections ?? []).concat([{ id: name, collections: [], pages: [], authorID: '', contentFields: {} }])
+                else {
+                    const new_coll = { id: name, collections: [], pages: [], authorID: '', contentFields: {} }
+                    if (coll)
+                        coll.collections = (coll.collections ?? []).concat([new_coll])
+                    else
+                        shared.appState.proj.collections = (shared.appState.proj.collections ?? []).concat([new_coll])
+                }
                 shared.trigger(shared.appState.onProjModified, shared.appState.proj)
             }
         })
     }
 
-    rename(item: vs.TreeItem) {
-        const old_name = item.label?.toString() ?? '?!bug!?'
-        const coll = (sidebar.treeNodeCat(item) == 'coll') ? collFromNodeId(item.id as string) : undefined
-        const page = (sidebar.treeNodeCat(item) == 'page') ? pageFromNodeId(item.id as string) : undefined
+    rename(treeNode: vs.TreeItem) {
+        const old_name = treeNode.label?.toString() ?? '?!bug!?'
+        const coll = (sidebar.treeNodeCat(treeNode) == 'coll') ? collFromNodeId(treeNode.id as string) : undefined
+        const page = (sidebar.treeNodeCat(treeNode) == 'page') ? pageFromNodeId(treeNode.id as string) : undefined
         const coll_parent = coll ? shared.collParent(coll) : undefined
         const page_parent = page ? shared.pageParent(page) : undefined
         vs.window.showInputBox({
@@ -110,8 +113,9 @@ export class TreeColls extends sidebar.TreeDataProvider {
         })
     }
 
-    deleteColl(item: vs.TreeItem) {
-        const coll = collFromNodeId(item.id as string)
+    private readonly deletionNote = 'This does not delete scans from the file system. If proceeding, the deletion still only becomes permanent when next saving the project.'
+    deleteColl(treeNode: vs.TreeItem) {
+        const coll = collFromNodeId(treeNode.id as string)
         if (coll)
             vs.window.showWarningMessage(`Really remove '${coll.id}' from the project?`, { modal: true, detail: this.deletionNote }, "OK").then((_) => {
                 if (_ == "OK") {
@@ -124,9 +128,8 @@ export class TreeColls extends sidebar.TreeDataProvider {
                 }
             })
     }
-    private readonly deletionNote = 'This does not delete scans from the file system. If proceeding, the deletion still only becomes permanent when next saving the project.'
-    deletePage(item: vs.TreeItem) {
-        const page = pageFromNodeId(item.id as string)
+    deletePage(treeNode: vs.TreeItem) {
+        const page = pageFromNodeId(treeNode.id as string)
         const coll = page ? shared.pageParent(page) : undefined
         if (page && coll)
             vs.window.showWarningMessage(`Really remove page '${page.id}' from collection '${coll.id}'?`, { modal: true, detail: this.deletionNote }, "OK").then((_) => {
@@ -137,10 +140,10 @@ export class TreeColls extends sidebar.TreeDataProvider {
             })
     }
 
-    move(item: vs.TreeItem, direction: number, dontDoIt?: boolean): boolean {
+    move(treeNode: vs.TreeItem, direction: number, dontDoIt?: boolean): boolean {
         let can_move: boolean = false
-        const coll = (sidebar.treeNodeCat(item) == 'coll') ? collFromNodeId(item.id as string) : undefined
-        const page = (sidebar.treeNodeCat(item) == 'page') ? pageFromNodeId(item.id as string) : undefined
+        const coll = (sidebar.treeNodeCat(treeNode) == 'coll') ? collFromNodeId(treeNode.id as string) : undefined
+        const page = (sidebar.treeNodeCat(treeNode) == 'page') ? pageFromNodeId(treeNode.id as string) : undefined
         const coll_parent = coll ? shared.collParent(coll) : undefined
         const page_parent = page ? shared.pageParent(page) : undefined
         const arr: any[] | undefined = (coll && coll_parent && coll_parent.collections) ? coll_parent.collections : ((page && page_parent && page_parent.pages) ? page_parent.pages : undefined)

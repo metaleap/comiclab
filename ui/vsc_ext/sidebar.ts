@@ -11,8 +11,8 @@ export abstract class TreeDataProvider implements vs.TreeDataProvider<vs.TreeIte
     refresh = new vs.EventEmitter<vs.TreeItem | undefined | null | void>()
     treeView: vs.TreeView<vs.TreeItem>
     onDidChangeTreeData: vs.Event<vs.TreeItem | undefined | null | void> = this.refresh.event
-    abstract getTreeItem(element: vs.TreeItem): vs.TreeItem;
-    abstract getChildren(element?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]>;
+    abstract getTreeItem(treeNode: vs.TreeItem): vs.TreeItem;
+    abstract getChildren(treeNode?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]>;
     onInit(treeView: vs.TreeView<vs.TreeItem>) {
         this.treeView = treeView
         return this.treeView
@@ -42,15 +42,13 @@ export function onInit(ctx: vs.ExtensionContext) {
     utils.disp(treeBooks.onInit(vs.window.createTreeView('comiclabExplorerProjBooks', { treeDataProvider: treeBooks, showCollapseAll: true })))
     utils.disp(treeSites.onInit(vs.window.createTreeView('comiclabExplorerProjSites', { treeDataProvider: treeSites, showCollapseAll: true })))
     shared.subscribe(shared.appState.onProjRefreshed, (_) => {
-        treeColls.refresh.fire()
-        treeBooks.refresh.fire()
-        treeSites.refresh.fire()
+        [treeColls, treeBooks, treeSites].forEach(_ => _.refresh.fire())
     })
 }
 
-export function treeNodeCat(item: vs.TreeItem): string {
-    const idx = item.id?.indexOf(':') as number
-    return (item.id as string).substring(0, idx)
+export function treeNodeCat(treeNode: vs.TreeItem): string {
+    const idx = treeNode.id?.indexOf(':') as number
+    return (treeNode.id as string).substring(0, idx)
 }
 
 function cmdAddPage(...args: any[]): any {
