@@ -37,27 +37,33 @@ export class TreeColls extends sidebar.TreeDataProvider {
         return ret
     }
 
+    private readonly deletionNote = 'This does not delete scans from the file system. If proceeding, the deletion still only becomes permanent when next saving the project.'
+
     deleteColl(item: vs.TreeItem) {
         const coll = collFromNodeId(item.id as string)
-        if (coll) {
-            const parents = shared.collParents(coll)
-            if (parents.length > 0)
-                parents[0].collections = parents[0].collections?.filter(_ => (_ != coll))
-            else
-                shared.appState.proj.collections = shared.appState.proj.collections?.filter(_ => (_ != coll))
-            shared.trigger(shared.appState.onProjModified, shared.appState.proj)
-        }
+        if (coll)
+            vs.window.showWarningMessage(`Really remove '${coll.id}' from the project?`, { modal: true, detail: this.deletionNote }, "OK").then((_) => {
+                if (_ == "OK") {
+                    const parents = shared.collParents(coll)
+                    if (parents.length > 0)
+                        parents[0].collections = parents[0].collections?.filter(_ => (_ != coll))
+                    else
+                        shared.appState.proj.collections = shared.appState.proj.collections?.filter(_ => (_ != coll))
+                    shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+                }
+            })
     }
 
     deletePage(item: vs.TreeItem) {
         const page = pageFromNodeId(item.id as string)
-        if (page) {
-            const coll = shared.pageParent(page)
-            if (coll) {
-                coll.pages = coll.pages?.filter(_ => (_ != page))
-                shared.trigger(shared.appState.onProjModified, shared.appState.proj)
-            }
-        }
+        const coll = page ? shared.pageParent(page) : undefined
+        if (page && coll)
+            vs.window.showWarningMessage(`Really remove page '${page.id}' from collection '${coll.id}'?`, { modal: true, detail: this.deletionNote }, "OK").then((_) => {
+                if (_ == "OK") {
+                    coll.pages = coll.pages?.filter(_ => (_ != page))
+                    shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+                }
+            })
     }
 
     rename(item: vs.TreeItem) {
