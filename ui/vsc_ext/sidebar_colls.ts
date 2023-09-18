@@ -48,17 +48,66 @@ export class TreeColls extends sidebar.TreeDataProvider {
         return ret
     }
 
-    private readonly deletionNote = 'This does not delete scans from the file system. If proceeding, the deletion still only becomes permanent when next saving the project.'
-
-    addColl(parentTreeNode?: vs.TreeItem) {
-
+    addToColl(parentTreeNode: vs.TreeItem | null | undefined, addPage: boolean) {
+        const coll = parentTreeNode ? collFromNodeId(parentTreeNode.id as string) : undefined
+        const nameConflicts = (name: string) =>
+            ((addPage && coll) ? shared.collChildPage(coll, name) : shared.collChildColl(coll ? coll : shared.appState.proj, name))
+        const desc_parent = coll ? (`'${coll.id}'`) : "the project"
+        const desc_what = (addPage ? 'page' : 'collection')
+        let name_sugg = desc_what + ((((addPage && coll) ? coll.pages : (coll?.collections ?? shared.appState.proj.collections))?.length ?? 0) + 1).toString().padStart(addPage ? 3 : 2, "0")
+        if (nameConflicts(name_sugg))
+            name_sugg = ''
+        vs.window.showInputBox({
+            title: `Add ${desc_what} to ${desc_parent}:`,
+            value: name_sugg,
+            prompt: `Name the new ${desc_what}.`,
+            validateInput: (name) => {
+                if ((name = name.trim()).length > 0) {
+                    if (nameConflicts(name))
+                        return `Another ${desc_what} in ${desc_parent} is already named '${name}'.`
+                }
+                return undefined
+            }
+        }).then((name) => {
+            if (name && ((name = name.trim()).length > 0)) {
+                if (addPage && coll)
+                    coll.pages = (coll.pages ?? []).concat([{ id: name }])
+                else if (coll)
+                    coll.collections = (coll.collections ?? []).concat([{ id: name, collections: [], pages: [], authorID: '', contentFields: {} }])
+                else
+                    shared.appState.proj.collections = (shared.appState.proj.collections ?? []).concat([{ id: name, collections: [], pages: [], authorID: '', contentFields: {} }])
+                shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+            }
+        })
     }
 
-    addPage(parentTreeNode: vs.TreeItem) {
-        const coll = collFromNodeId(parentTreeNode.id as string)
-        if (coll) {
-
-        }
+    rename(item: vs.TreeItem) {
+        const old_name = item.label?.toString() ?? '?!bug!?'
+        const coll = (sidebar.treeNodeCat(item) == 'coll') ? collFromNodeId(item.id as string) : undefined
+        const page = (sidebar.treeNodeCat(item) == 'page') ? pageFromNodeId(item.id as string) : undefined
+        const coll_parent = coll ? shared.collParent(coll) : undefined
+        const page_parent = page ? shared.pageParent(page) : undefined
+        vs.window.showInputBox({
+            title: `Rename '${old_name}'`,
+            value: old_name,
+            validateInput: (newName) => {
+                if (((newName = newName.trim()).length > 0) && (newName != old_name)) {
+                    if (coll_parent && shared.collChildColl(coll_parent, newName))
+                        return `Another collection in ${((coll_parent.id) ? ("'" + coll_parent.id + "'") : "the project")} is already named '${newName}'.`
+                    if (page_parent && shared.collChildPage(page_parent, newName))
+                        return `Another page in '${page_parent.id}' is already named '${newName}'.`
+                }
+                return undefined
+            }
+        }).then((newName) => {
+            if (newName && ((newName = newName.trim()).length > 0) && (newName != old_name)) {
+                if (coll)
+                    coll.id = newName
+                else if (page)
+                    page.id = newName
+                shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+            }
+        })
     }
 
     deleteColl(item: vs.TreeItem) {
@@ -75,7 +124,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                 }
             })
     }
-
+    private readonly deletionNote = 'This does not delete scans from the file system. If proceeding, the deletion still only becomes permanent when next saving the project.'
     deletePage(item: vs.TreeItem) {
         const page = pageFromNodeId(item.id as string)
         const coll = page ? shared.pageParent(page) : undefined
@@ -86,33 +135,6 @@ export class TreeColls extends sidebar.TreeDataProvider {
                     shared.trigger(shared.appState.onProjModified, shared.appState.proj)
                 }
             })
-    }
-
-    rename(item: vs.TreeItem) {
-        const old_name = item.label?.toString() ?? '?!bug!?'
-        const coll = (sidebar.treeNodeCat(item) == 'coll') ? collFromNodeId(item.id as string) : undefined
-        const page = (sidebar.treeNodeCat(item) == 'page') ? pageFromNodeId(item.id as string) : undefined
-        const coll_parent = coll ? shared.collParent(coll) : undefined
-        const page_parent = page ? shared.pageParent(page) : undefined
-        vs.window.showInputBox({
-            title: 'Rename ' + old_name, value: old_name, validateInput: (newName) => {
-                if (((newName = newName.trim()).length > 0) && (newName != old_name)) {
-                    if (coll_parent && coll_parent.collections?.find(_ => (_ != coll && (_.id == newName))))
-                        return `Another collection in ${((coll_parent.id) ? ("'" + coll_parent.id + "'") : "the project")} is already named '${newName}'.`
-                    if (page_parent && page_parent.pages?.find(_ => (_ != page) && (_.id == newName)))
-                        return `Another page in '${page_parent.id}' is already named '${newName}'.`
-                }
-                return undefined
-            }
-        }).then((newName) => {
-            if (newName && ((newName = newName.trim()).length > 0) && (newName != old_name)) {
-                if (coll)
-                    coll.id = newName
-                else if (page)
-                    page.id = newName
-                shared.trigger(shared.appState.onProjModified, shared.appState.proj)
-            }
-        })
     }
 
     move(item: vs.TreeItem, direction: number, dontDoIt?: boolean): boolean {

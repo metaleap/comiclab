@@ -54,10 +54,10 @@ export function treeNodeCat(item: vs.TreeItem): string {
 }
 
 function cmdAddPage(...args: any[]): any {
-    treeColls.addPage(args[0] as vs.TreeItem)
+    treeColls.addToColl(args[0] as vs.TreeItem, true)
 }
 function cmdAddColl(...args: any[]): any {
-    treeColls.addColl((args && args.length > 0) ? (args[0] as vs.TreeItem) : undefined)
+    treeColls.addToColl(args[0], false)
 }
 function cmdDelete(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem

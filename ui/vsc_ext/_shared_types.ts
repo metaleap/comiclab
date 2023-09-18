@@ -52,6 +52,8 @@ export type PaperFormat = {
     heightMm: number,
 }
 
+export type CollOrProj = { id?: string, collections?: Collection[] }
+
 export type Proj = {
     collections?: Collection[]
 }
@@ -80,7 +82,7 @@ export function walkCollections<T>(perColl: (_: Collection[]) => any, parents?: 
     return undefined
 }
 
-export function collParent(coll: Collection): { id?: string, collections?: Collection[] } {
+export function collParent(coll: Collection): CollOrProj {
     const parents_path = collParents(coll)
     return (parents_path.length > 0) ? parents_path[0] : appState.proj
 }
@@ -104,4 +106,12 @@ export function pageParents(page: Page): Collection[] {
             return path
         return undefined
     }) ?? []
+}
+
+export function collChildPage(coll: Collection, id: string, ...ignore: Page[]): Page | undefined {
+    return coll.pages?.find(_ => (_.id == id) && !ignore.includes(_))
+}
+
+export function collChildColl(coll: CollOrProj, id: string, ...ignore: Collection[]): Collection | undefined {
+    return coll.collections?.find(_ => (_.id == id) && !ignore.includes(_))
 }
