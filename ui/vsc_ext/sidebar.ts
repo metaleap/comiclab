@@ -29,6 +29,8 @@ let treeSites = new TreeSites()
 export function onInit(ctx: vs.ExtensionContext) {
     utils.disp(vs.window.registerWebviewViewProvider('comicLabSidebarWebview', webviewProvider = new SidebarWebViewProvider()))
 
+    utils.disp(vs.commands.registerCommand('comiclab.proj.colls.addPage', cmdAddPage))
+    utils.disp(vs.commands.registerCommand('comiclab.proj.colls.addColl', cmdAddColl))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.delete', cmdDelete))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.rename', cmdRename))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.moveUp', cmdMoveUp))
@@ -51,6 +53,12 @@ export function treeNodeCat(item: vs.TreeItem): string {
     return (item.id as string).substring(0, idx)
 }
 
+function cmdAddPage(...args: any[]): any {
+    treeColls.addPage(args[0] as vs.TreeItem)
+}
+function cmdAddColl(...args: any[]): any {
+    treeColls.addColl((args && args.length > 0) ? (args[0] as vs.TreeItem) : undefined)
+}
 function cmdDelete(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
     switch (treeNodeCat(treeItem)) {

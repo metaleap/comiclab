@@ -50,6 +50,17 @@ export class TreeColls extends sidebar.TreeDataProvider {
 
     private readonly deletionNote = 'This does not delete scans from the file system. If proceeding, the deletion still only becomes permanent when next saving the project.'
 
+    addColl(parentTreeNode?: vs.TreeItem) {
+
+    }
+
+    addPage(parentTreeNode: vs.TreeItem) {
+        const coll = collFromNodeId(parentTreeNode.id as string)
+        if (coll) {
+
+        }
+    }
+
     deleteColl(item: vs.TreeItem) {
         const coll = collFromNodeId(item.id as string)
         if (coll)
