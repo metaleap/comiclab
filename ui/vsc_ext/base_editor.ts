@@ -8,10 +8,7 @@ export abstract class WebviewPanel {
     private webviewPanel: vs.WebviewPanel | null = null
 
     title() { return "TitleHere" }
-    htmlUri(localUri: vs.Uri) {
-        console.log("URI", localUri, this.webviewPanel ? "YO" : "NO")
-        return (this.webviewPanel as vs.WebviewPanel).webview.asWebviewUri(localUri)
-    }
+    htmlUri(localUri: vs.Uri) { return (this.webviewPanel as vs.WebviewPanel).webview.asWebviewUri(localUri) }
 
     onSaved() {
         if (this.webviewPanel)
@@ -38,13 +35,15 @@ export abstract class WebviewPanel {
     }
 
     show(proj: boolean, cfg: boolean, viewTypeIdent: string, codicon: string) {
+        const on_refreshed = () => this.onRefreshed()
+        const on_saved = () => this.onSaved()
         if (cfg) {
-            app.onCfgRefreshed.do(() => this.onRefreshed())
-            app.onCfgSaved.do(this.onSaved)
+            app.onCfgRefreshed.do(on_refreshed)
+            app.onCfgSaved.do(on_saved)
         }
         if (proj) {
-            app.onProjRefreshed.do(this.onRefreshed)
-            app.onProjSaved.do(this.onSaved)
+            app.onProjRefreshed.do(on_refreshed)
+            app.onProjSaved.do(on_saved)
         }
         if (this.webviewPanel)
             return this.webviewPanel.reveal(vs.ViewColumn.One)
@@ -69,20 +68,20 @@ export abstract class WebviewPanel {
                         main.onInit(acquireVsCodeApi(), '${this.htmlUri(vs.Uri.joinPath(utils.extUri, 'ui')).toString()}')
                     </script>
                 </body></html>`
-        utils.disp(this.webviewPanel.webview.onDidReceiveMessage(this.onMessage))
+        utils.disp(this.webviewPanel.webview.onDidReceiveMessage((msg) => this.onMessage(msg)))
         this.webviewPanel.iconPath = utils.codiconPath(codicon)
         utils.disp(this.webviewPanel.onDidDispose(() => {
             if (cfg) {
-                app.onCfgRefreshed.dont(this.onRefreshed)
-                app.onCfgSaved.dont(this.onSaved)
+                app.onCfgRefreshed.dont(on_refreshed)
+                app.onCfgSaved.dont(on_saved)
             }
             if (proj) {
-                app.onProjRefreshed.dont(this.onRefreshed)
-                app.onProjSaved.dont(this.onSaved)
+                app.onProjRefreshed.dont(on_refreshed)
+                app.onProjSaved.dont(on_saved)
             }
             this.webviewPanel = null
         }))
-        setTimeout(this.onRefreshed, 345) // below 3xx was sometimes to soon..
+        setTimeout(on_refreshed, 345) // below 3xx was sometimes to soon..
     }
 
 }
