@@ -10,9 +10,12 @@ export function onInit(context: vs.ExtensionContext) {
     extUri = context.extensionUri
 }
 
-// export function iconPath(name: string) {
-//     return { light: imgPath(name), dark: imgPath(name) }
-// }
+export function arrayMoveItem<T>(arr: T[], idxOld: number, idxNew: number): T[] {
+    const item = arr[idxOld]
+    arr.splice(idxOld, 1)
+    arr.splice(idxNew, 0, item)
+    return arr
+}
 
 export function noneIn<T>(arr: T[] | null | undefined): boolean {
     return (!arr) || (!arr.length) || (arr.length == 0)

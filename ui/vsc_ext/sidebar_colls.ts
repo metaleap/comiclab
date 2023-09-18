@@ -5,6 +5,24 @@ import * as sidebar from './sidebar'
 
 
 export class TreeColls extends sidebar.TreeDataProvider {
+    override onInit(treeView: vs.TreeView<vs.TreeItem>): vs.TreeView<vs.TreeItem> {
+        treeView = super.onInit(treeView)
+        treeView.onDidChangeSelection((evt) => {
+            let can_move_up = false, can_move_dn = false, can_move_top = false, can_move_end = false
+            if (evt.selection.length == 1) {
+                can_move_up = this.move(evt.selection[0], -1, true)
+                can_move_dn = this.move(evt.selection[0], 1, true)
+                can_move_top = this.move(evt.selection[0], 0, true)
+                can_move_end = this.move(evt.selection[0], NaN, true)
+            }
+            vs.commands.executeCommand('setContext', 'comiclab.canMoveUp', can_move_up)
+            vs.commands.executeCommand('setContext', 'comiclab.canMoveDn', can_move_dn)
+            vs.commands.executeCommand('setContext', 'comiclab.canMoveTop', can_move_top)
+            vs.commands.executeCommand('setContext', 'comiclab.canMoveEnd', can_move_end)
+        })
+        return treeView
+    }
+
     override getTreeItem(element: vs.TreeItem): vs.TreeItem {
         return element
     }
@@ -91,6 +109,33 @@ export class TreeColls extends sidebar.TreeDataProvider {
                 shared.trigger(shared.appState.onProjModified, shared.appState.proj)
             }
         })
+    }
+
+    move(item: vs.TreeItem, direction: number, dontDoIt?: boolean): boolean {
+        let can_move: boolean = false
+        const coll = (item.contextValue == 'coll') ? collFromNodeId(item.id as string) : undefined
+        const page = (item.contextValue == 'page') ? pageFromNodeId(item.id as string) : undefined
+        const coll_parent = coll ? shared.collParent(coll) : undefined
+        const page_parent = page ? shared.pageParent(page) : undefined
+        const arr: any[] | undefined = (coll && coll_parent && coll_parent.collections) ? coll_parent.collections : ((page && page_parent && page_parent.pages) ? page_parent.pages : undefined)
+        if (arr) {
+            can_move = (arr.length > 1)
+            const idx_cur = arr.indexOf(coll ?? page)
+            const idx_new =
+                (direction == 1) ? (idx_cur + 1)
+                    : ((direction == -1) ? (idx_cur - 1)
+                        : ((direction == 0) ? 0
+                            : (arr.length - 1)))
+            can_move = (idx_new != idx_cur) && (idx_new >= 0) && (idx_new < arr.length)
+            if (can_move && !dontDoIt) {
+                if (coll && coll_parent && coll_parent.collections)
+                    coll_parent.collections = utils.arrayMoveItem(coll_parent.collections, idx_cur, idx_new)
+                else if (page && page_parent && page_parent.pages)
+                    page_parent.pages = utils.arrayMoveItem(page_parent.pages, idx_cur, idx_new)
+                shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+            }
+        }
+        return can_move
     }
 }
 

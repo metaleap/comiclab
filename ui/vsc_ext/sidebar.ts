@@ -9,15 +9,18 @@ let webviewProvider: SidebarWebViewProvider
 
 export abstract class TreeDataProvider implements vs.TreeDataProvider<vs.TreeItem> {
     refresh = new vs.EventEmitter<vs.TreeItem | undefined | null | void>()
+    treeView: vs.TreeView<vs.TreeItem>
     onDidChangeTreeData: vs.Event<vs.TreeItem | undefined | null | void> = this.refresh.event
     abstract getTreeItem(element: vs.TreeItem): vs.TreeItem;
     abstract getChildren(element?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]>;
+    onInit(treeView: vs.TreeView<vs.TreeItem>) {
+        this.treeView = treeView
+        return this.treeView
+    }
 }
 import { TreeColls as TreeColls } from './sidebar_colls'
 import { TreeBooks as TreeBooks } from './sidebar_books'
 import { TreeSites as TreeSites } from './sidebar_sites'
-
-
 let treeColls = new TreeColls()
 let treeBooks = new TreeBooks()
 let treeSites = new TreeSites()
@@ -33,9 +36,9 @@ export function onInit(ctx: vs.ExtensionContext) {
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.moveTop', cmdMoveTop))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.moveEnd', cmdMoveEnd))
 
-    utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjColls', treeColls))
-    utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjBooks', treeBooks))
-    utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjSites', treeSites))
+    utils.disp(treeColls.onInit(vs.window.createTreeView('comiclabExplorerProjColls', { treeDataProvider: treeColls, showCollapseAll: true })))
+    utils.disp(treeBooks.onInit(vs.window.createTreeView('comiclabExplorerProjBooks', { treeDataProvider: treeBooks, showCollapseAll: true })))
+    utils.disp(treeSites.onInit(vs.window.createTreeView('comiclabExplorerProjSites', { treeDataProvider: treeSites, showCollapseAll: true })))
     shared.subscribe(shared.appState.onProjRefreshed, (_) => {
         treeColls.refresh.fire()
         treeBooks.refresh.fire()
@@ -62,12 +65,24 @@ function cmdRename(...args: any[]): any {
 }
 
 function cmdMoveUp(...args: any[]): any {
+    const treeItem = args[0] as vs.TreeItem
+    if (treeItem.contextValue == 'page' || treeItem.contextValue == 'coll')
+        treeColls.move(treeItem, -1)
 }
 function cmdMoveDn(...args: any[]): any {
+    const treeItem = args[0] as vs.TreeItem
+    if (treeItem.contextValue == 'page' || treeItem.contextValue == 'coll')
+        treeColls.move(treeItem, 1)
 }
 function cmdMoveTop(...args: any[]): any {
+    const treeItem = args[0] as vs.TreeItem
+    if (treeItem.contextValue == 'page' || treeItem.contextValue == 'coll')
+        treeColls.move(treeItem, 0)
 }
 function cmdMoveEnd(...args: any[]): any {
+    const treeItem = args[0] as vs.TreeItem
+    if (treeItem.contextValue == 'page' || treeItem.contextValue == 'coll')
+        treeColls.move(treeItem, NaN)
 }
 
 export function showWebview() {

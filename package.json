@@ -113,27 +113,22 @@
         },
         {
           "command": "comiclab.proj.colls.moveUp",
-          "group": "inline",
-          "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
+          "when": "view == comiclabExplorerProjColls && comiclab.canMoveUp && (viewItem == coll || viewItem == page)"
         },
         {
           "command": "comiclab.proj.colls.moveDn",
-          "group": "inline",
-          "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
+          "when": "view == comiclabExplorerProjColls && comiclab.canMoveDn && (viewItem == coll || viewItem == page)"
         },
         {
           "command": "comiclab.proj.colls.moveTop",
-          "group": "inline",
-          "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
+          "when": "view == comiclabExplorerProjColls && comiclab.canMoveTop && (viewItem == coll || viewItem == page)"
         },
         {
           "command": "comiclab.proj.colls.moveEnd",
-          "group": "inline",
-          "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
+          "when": "view == comiclabExplorerProjColls && comiclab.canMoveEnd && (viewItem == coll || viewItem == page)"
         },
         {
           "command": "comiclab.proj.colls.delete",
-          "group": "inline",
           "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
         }
       ]
