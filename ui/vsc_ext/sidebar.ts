@@ -32,7 +32,7 @@ let treeBooks = new TreeBooks()
 let treeSites = new TreeSites()
 
 
-export function onInit(ctx: vs.ExtensionContext) {
+export function onInit() {
     utils.disp(vs.window.registerWebviewViewProvider('comicLabSidebarWebview', webviewProvider = new SidebarWebViewProvider()))
 
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.addPage', cmdAddPage))

@@ -23,13 +23,10 @@ class ConfigEditor extends base_editor.WebviewPanel {
                 super.onMessage(msg)
         }
     }
-    show() {
-        super.show(false, true, 'config_editor', 'tools')
-    }
 }
 
 export function show() {
     if (!configEditor)
         configEditor = new ConfigEditor()
-    configEditor.show()
+    configEditor.show(false, true, 'config_editor', 'tools')
 }

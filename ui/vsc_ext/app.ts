@@ -3,6 +3,7 @@ import * as shared from './_shared_types'
 import * as utils from './utils'
 import * as sidebar from './sidebar'
 import * as config_editor from './config_editor'
+import * as coll_editor from './coll_editor'
 
 import fetch from 'node-fetch'
 
@@ -47,7 +48,8 @@ export function activate(context: vs.ExtensionContext) {
 	statusBarItem.command = 'comiclab.menu'
 	statusBarItem.show()
 
-	sidebar.onInit(context)
+	sidebar.onInit()
+	coll_editor.onInit()
 
 	onCfgModified.do((modifiedCfg) => {
 		onDirty(dirtyProj, true, false)

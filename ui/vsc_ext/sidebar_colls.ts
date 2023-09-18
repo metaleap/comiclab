@@ -30,6 +30,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
             iconPath: new vs.ThemeIcon('archive'),
             id: collToNodeId(_),
             contextValue: '_canRename_canDelete_canAddPage_canAddColl_',
+            command: { command: 'comiclab.proj.colls.openColl', arguments: [coll_editor.collToPath(_)] },
             label: _.id,
         } as vs.TreeItem)) ?? []
         if (pages)

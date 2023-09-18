@@ -46,6 +46,8 @@
         "title": "ComicLab",
         "icon": "ui/icons/comments.svg"
       },
+      { "command": "comiclab.proj.colls.openColl", "title": "Open Collection" },
+      { "command": "comiclab.proj.colls.openPage", "title": "Open Page" },
       {
         "command": "comiclab.proj.colls.addPage",
         "title": "Add Page...",
@@ -107,7 +109,9 @@
         { "command": "comiclab.proj.colls.moveEnd", "when": "false" },
         { "command": "comiclab.proj.colls.moveTop", "when": "false" },
         { "command": "comiclab.proj.colls.delete", "when": "false" },
-        { "command": "comiclab.proj.colls.rename", "when": "false" }
+        { "command": "comiclab.proj.colls.rename", "when": "false" },
+        { "command": "comiclab.proj.colls.openColl", "when": "false" },
+        { "command": "comiclab.proj.colls.openPage", "when": "false" }
       ],
       "view/title": [
         {

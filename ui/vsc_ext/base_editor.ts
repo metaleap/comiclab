@@ -35,6 +35,9 @@ export abstract class WebviewPanel {
     }
 
     show(proj: boolean, cfg: boolean, viewTypeIdent: string, codicon: string) {
+        if (this.webviewPanel)
+            return this.webviewPanel.reveal(vs.ViewColumn.One)
+
         const on_refreshed = () => this.onRefreshed()
         const on_saved = () => this.onSaved()
         if (cfg) {
@@ -45,9 +48,6 @@ export abstract class WebviewPanel {
             app.onProjRefreshed.do(on_refreshed)
             app.onProjSaved.do(on_saved)
         }
-        if (this.webviewPanel)
-            return this.webviewPanel.reveal(vs.ViewColumn.One)
-
         utils.disp(this.webviewPanel = vs.window.createWebviewPanel(viewTypeIdent, this.title(), vs.ViewColumn.One, {
             retainContextWhenHidden: true,
             enableCommandUris: true,
@@ -79,9 +79,13 @@ export abstract class WebviewPanel {
                 app.onProjRefreshed.dont(on_refreshed)
                 app.onProjSaved.dont(on_saved)
             }
-            this.webviewPanel = null
+            this.onDisposed()
         }))
         setTimeout(on_refreshed, 345) // below 3xx was sometimes to soon..
+    }
+
+    onDisposed() {
+        this.webviewPanel = null
     }
 
 }
