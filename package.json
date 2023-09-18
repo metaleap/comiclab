@@ -48,22 +48,27 @@
       },
       {
         "command": "comiclab.proj.colls.addPage",
-        "title": "Add Page",
+        "title": "Add Page...",
         "icon": "$(new-file)"
       },
       {
         "command": "comiclab.proj.colls.addColl",
-        "title": "Add Collection",
+        "title": "Add Collection...",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "comiclab.proj.colls.addCollTop",
+        "title": "Add Top-Level Collection...",
         "icon": "$(new-folder)"
       },
       {
         "command": "comiclab.proj.colls.rename",
-        "title": "Rename",
+        "title": "Rename...",
         "icon": "$(edit)"
       },
       {
         "command": "comiclab.proj.colls.delete",
-        "title": "Delete",
+        "title": "Delete...",
         "icon": "$(trash)"
       },
       {
@@ -90,6 +95,7 @@
     "menus": {
       "commandPalette": [
         { "command": "comiclab.proj.colls.addColl", "when": "false" },
+        { "command": "comiclab.proj.colls.addCollTop", "when": "false" },
         { "command": "comiclab.proj.colls.addPage", "when": "false" },
         { "command": "comiclab.proj.colls.moveDn", "when": "false" },
         { "command": "comiclab.proj.colls.moveUp", "when": "false" },
@@ -100,7 +106,7 @@
       ],
       "view/title": [
         {
-          "command": "comiclab.proj.colls.addColl",
+          "command": "comiclab.proj.colls.addCollTop",
           "when": "view == comiclabExplorerProjColls",
           "group": "navigation"
         }

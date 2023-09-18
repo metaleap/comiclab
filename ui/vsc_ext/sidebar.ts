@@ -31,6 +31,7 @@ export function onInit(ctx: vs.ExtensionContext) {
 
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.addPage', cmdAddPage))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.addColl', cmdAddColl))
+    utils.disp(vs.commands.registerCommand('comiclab.proj.colls.addCollTop', cmdAddCollTop))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.delete', cmdDelete))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.rename', cmdRename))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.moveUp', cmdMoveUp))
@@ -52,10 +53,13 @@ export function treeNodeCat(treeNode: vs.TreeItem): string {
 }
 
 function cmdAddPage(...args: any[]): any {
-    treeColls.addToColl(args[0] as vs.TreeItem, true)
+    treeColls.addNew(args[0] as vs.TreeItem, true)
 }
 function cmdAddColl(...args: any[]): any {
-    treeColls.addToColl(args[0], false)
+    treeColls.addNew(args[0], false)
+}
+function cmdAddCollTop(..._: any[]): any {
+    treeColls.addNew(null, false)
 }
 function cmdDelete(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem

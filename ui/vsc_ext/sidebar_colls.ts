@@ -48,13 +48,13 @@ export class TreeColls extends sidebar.TreeDataProvider {
         return ret
     }
 
-    addToColl(parentTreeNode: vs.TreeItem | null | undefined, addPage: boolean) {
+    addNew(parentTreeNode: vs.TreeItem | null | undefined, addNewPage: boolean) {
         const coll = parentTreeNode ? collFromNodeId(parentTreeNode.id as string) : undefined
         const nameConflicts = (name: string) =>
-            ((addPage && coll) ? shared.collChildPage(coll, name) : shared.collChildColl(coll ? coll : shared.appState.proj, name))
+            ((addNewPage && coll) ? shared.collChildPage(coll, name) : shared.collChildColl(coll ? coll : shared.appState.proj, name))
         const desc_parent = coll ? (`'${coll.id}'`) : "the project"
-        const desc_what = (addPage ? 'page' : 'collection')
-        let name_sugg = desc_what + ((((addPage && coll) ? coll.pages : (coll ? coll.collections : shared.appState.proj.collections))?.length ?? 0) + 1).toString().padStart(addPage ? 3 : 2, "0")
+        const desc_what = (addNewPage ? 'page' : 'collection')
+        let name_sugg = desc_what + ((((addNewPage && coll) ? coll.pages : (coll ? coll.collections : shared.appState.proj.collections))?.length ?? 0) + 1).toString().padStart(addNewPage ? 3 : 2, "0")
         if (nameConflicts(name_sugg))
             name_sugg = ''
         vs.window.showInputBox({
@@ -70,7 +70,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
             }
         }).then((name) => {
             if (name && ((name = name.trim()).length > 0)) {
-                if (addPage && coll)
+                if (addNewPage && coll)
                     coll.pages = (coll.pages ?? []).concat([{ id: name }])
                 else {
                     const new_coll = { id: name, collections: [], pages: [], authorID: '', contentFields: {} }
