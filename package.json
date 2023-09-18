@@ -11,7 +11,7 @@
         {
           "id": "comiclabExplorer",
           "title": "ComicLab",
-          "icon": "ui/icons/comments.svg"
+          "icon": "$(comment-discussion)"
         }
       ]
     },
@@ -20,23 +20,23 @@
         {
           "id": "comiclabExplorerProjColls",
           "name": "Collections",
-          "icon": "ui/icons/box-archive.svg"
+          "icon": "$(archive)"
         },
         {
           "id": "comiclabExplorerProjBooks",
           "name": "Books",
-          "icon": "ui/icons/book.svg"
+          "icon": "$(book)"
         },
         {
           "id": "comiclabExplorerProjSites",
           "name": "Sites",
-          "icon": "ui/icons/globe.svg"
+          "icon": "$(globe)"
         },
         {
           "id": "comicLabSidebarWebview",
           "type": "webview",
           "name": "Project Defaults",
-          "icon": "ui/icons/screwdriver-wrench.svg"
+          "icon": "$(settings)"
         }
       ]
     },
