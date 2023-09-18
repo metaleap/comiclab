@@ -6,12 +6,12 @@ import * as shared from './_shared_types'
 
 let configWebviewPanel: vs.WebviewPanel | null
 
-function onCfgSaved(appState: shared.State) {
+function onCfgSaved(appState: shared.AppState) {
     if (configWebviewPanel)
         configWebviewPanel.title = title()
 }
 
-function onCfgRefreshed(appState: shared.State) {
+function onCfgRefreshed(appState: shared.AppState) {
     if (configWebviewPanel) {
         configWebviewPanel.webview.postMessage({ ident: 'onAppStateCfgRefreshed', payload: appState.config })
             .then(() => { }, console.error)
@@ -20,7 +20,6 @@ function onCfgRefreshed(appState: shared.State) {
 }
 
 function title() {
-    console.log(app.dirtyCfg)
     let ret = "ComicLab Config"
     if (app.dirtyCfg)
         ret += "*"
@@ -28,8 +27,8 @@ function title() {
 }
 
 export function show() {
-    shared.subscribe(shared.appState.onCfgRefreshed, onCfgRefreshed)
-    shared.subscribe(shared.appState.onCfgSaved, onCfgSaved)
+    app.onCfgRefreshed.do(onCfgRefreshed)
+    app.onCfgSaved.do(onCfgSaved)
     if (configWebviewPanel)
         return configWebviewPanel.reveal(vs.ViewColumn.One)
 
@@ -56,10 +55,11 @@ export function show() {
     utils.disp(configWebviewPanel.webview.onDidReceiveMessage(onMessage))
     configWebviewPanel.iconPath = utils.codiconPath('tools')
     utils.disp(configWebviewPanel.onDidDispose(() => {
-        shared.unsubscribe(shared.appState.onCfgRefreshed, onCfgRefreshed)
+        app.onCfgRefreshed.dont(onCfgRefreshed)
+        app.onCfgSaved.dont(onCfgSaved)
         configWebviewPanel = null
     }))
-    setTimeout(() => onCfgRefreshed(shared.appState), 345)
+    setTimeout(() => onCfgRefreshed(shared.appState), 345) // below 3xx was sometimes to soon..
 }
 
 function onMessage(msg: any) {
@@ -69,7 +69,7 @@ function onMessage(msg: any) {
             break
         case 'appStateCfgModified':
             (configWebviewPanel as vs.WebviewPanel).title = title()
-            shared.trigger(shared.appState.onCfgModified, msg.payload as shared.Config)
+            app.onCfgModified.now(msg.payload as shared.Config)
             break
         default:
             vs.window.showInformationMessage(JSON.stringify(msg))

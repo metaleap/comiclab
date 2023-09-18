@@ -10,6 +10,12 @@ import fetch from 'node-fetch'
 
 export let dirtyProj = false
 export let dirtyCfg = false
+export let onProjRefreshed = new utils.Event<shared.AppState>()
+export let onCfgRefreshed = new utils.Event<shared.AppState>()
+export let onProjSaved = new utils.Event<shared.AppState>()
+export let onCfgSaved = new utils.Event<shared.AppState>()
+export let onProjModified = new utils.Event<shared.Proj>()
+export let onCfgModified = new utils.Event<shared.Config>()
 
 
 const apiUri = 'http://localhost:64646'
@@ -41,15 +47,15 @@ export function activate(context: vs.ExtensionContext) {
 
 	sidebar.onInit(context)
 
-	shared.subscribe(shared.appState.onCfgModified, (modifiedCfg) => {
+	onCfgModified.do((modifiedCfg) => {
 		onDirty(dirtyProj, true, false)
 		shared.appState.config = modifiedCfg
-		shared.trigger(shared.appState.onCfgRefreshed, shared.appState)
+		onCfgRefreshed.now(shared.appState)
 	})
-	shared.subscribe(shared.appState.onProjModified, (modifiedProj) => {
+	onProjModified.do((modifiedProj) => {
 		onDirty(true, dirtyCfg, false)
 		shared.appState.proj = modifiedProj
-		shared.trigger(shared.appState.onProjRefreshed, shared.appState)
+		onProjRefreshed.now(shared.appState)
 	})
 
 	appStateReload(true, true)
@@ -105,7 +111,7 @@ function msgSuffix(proj: boolean, cfg: boolean) {
 	return ((proj && cfg) ? "project and config." : (proj ? "project." : (cfg ? "config." : "?!?!")))
 }
 
-export function appStateReload(proj: boolean, cfg: boolean) {
+function appStateReload(proj: boolean, cfg: boolean) {
 	const msg_suffix = msgSuffix(proj, cfg)
 	statusBarItem.text = "$(sync~spin) ComicLab reloading " + msg_suffix + "..."
 	const req = prepFetch(proj, cfg)
@@ -120,11 +126,11 @@ export function appStateReload(proj: boolean, cfg: boolean) {
 					onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg, true) // happens in onDone for good, but also must occur before below event triggers
 					if (proj) {
 						shared.appState.proj = latestAppState.proj
-						shared.trigger(shared.appState.onProjRefreshed, shared.appState)
+						onProjRefreshed.now(shared.appState)
 					}
 					if (cfg) {
 						shared.appState.config = latestAppState.config
-						shared.trigger(shared.appState.onCfgRefreshed, shared.appState)
+						onCfgRefreshed.now(shared.appState)
 					}
 					statusBarItem.text = "$(pass-filled) ComicLab reloaded " + msg_suffix
 				})
@@ -134,7 +140,7 @@ export function appStateReload(proj: boolean, cfg: boolean) {
 		.finally(req.onDone)
 }
 
-export function appStateSave(proj: boolean, cfg: boolean) {
+function appStateSave(proj: boolean, cfg: boolean) {
 	const msg_suffix = msgSuffix(proj, cfg)
 	statusBarItem.text = "$(sync~spin) ComicLab saving changes to " + msg_suffix + "..."
 	const req = prepFetch(proj, cfg)
@@ -149,8 +155,8 @@ export function appStateSave(proj: boolean, cfg: boolean) {
 				req.onErr(resp)
 			else {
 				onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg, true) // happens in onDone for good, but also must occur before below event triggers
-				if (proj) shared.trigger(shared.appState.onProjSaved, shared.appState)
-				if (cfg) shared.trigger(shared.appState.onCfgSaved, shared.appState)
+				if (proj) onProjSaved.now(shared.appState)
+				if (cfg) onCfgSaved.now(shared.appState)
 				statusBarItem.text = "$(pass-filled) ComicLab saved changes to " + msg_suffix
 			}
 		})

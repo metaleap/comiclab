@@ -1,6 +1,7 @@
 import * as vs from 'vscode'
 import * as shared from './_shared_types'
 import * as utils from './utils'
+import * as app from './app'
 import * as sidebar from './sidebar'
 
 
@@ -84,7 +85,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                     else
                         shared.appState.proj.collections = (shared.appState.proj.collections ?? []).concat([new_coll])
                 }
-                shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+                app.onProjModified.now(shared.appState.proj)
             }
         })
     }
@@ -113,7 +114,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                     coll.id = newName
                 else if (page)
                     page.id = newName
-                shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+                app.onProjModified.now(shared.appState.proj)
             }
         })
     }
@@ -129,7 +130,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                         parents[0].collections = parents[0].collections.filter(_ => (_ != coll))
                     else
                         shared.appState.proj.collections = shared.appState.proj.collections.filter(_ => (_ != coll))
-                    shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+                    app.onProjModified.now(shared.appState.proj)
                 }
             })
     }
@@ -140,7 +141,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
             vs.window.showWarningMessage(`Really remove page '${page.id}' from collection '${coll.id}'?`, { modal: true, detail: this.deletionNote }, "OK").then((_) => {
                 if (_ == "OK") {
                     coll.pages = coll.pages.filter(_ => (_ != page))
-                    shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+                    app.onProjModified.now(shared.appState.proj)
                 }
             })
     }
@@ -171,7 +172,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                         shared.appState.proj.collections.push(coll)
                     else
                         (collFromNodeId(node_id_prefix_coll + path.substring(1)) as shared.Collection).collections.push(coll)
-                    shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+                    app.onProjModified.now(shared.appState.proj)
                 }
             })
         return new_parent_candidates
@@ -198,7 +199,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                     coll_parent.collections = utils.arrayMoveItem(coll_parent.collections, idx_cur, idx_new)
                 else if (page && page_parent && page_parent.pages)
                     page_parent.pages = utils.arrayMoveItem(page_parent.pages, idx_cur, idx_new)
-                shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+                app.onProjModified.now(shared.appState.proj)
             }
         }
         return can_move

@@ -5,6 +5,22 @@ export let disp: (...items: { dispose(): any; }[]) => number
 export let extUri: vs.Uri
 export let homeDirPath = vs.Uri.file(os.homedir())
 
+export class Event<T>  {
+    private handlers: ((_: T) => void)[] = []
+    do(eventHandler: (_: T) => void, first?: boolean) {
+        if (first)
+            this.handlers = [eventHandler].concat(this.handlers.filter(_ => (_ != eventHandler)))
+        else
+            this.handlers.push(eventHandler)
+    }
+    dont(eventHandler: (_: T) => void) {
+        this.handlers = this.handlers.filter(_ => (_ != eventHandler))
+    }
+    now(arg: T) {
+        this.handlers.forEach(_ => _(arg))
+    }
+}
+
 export function onInit(context: vs.ExtensionContext) {
     disp = (...items) => context.subscriptions.push(...items)
     extUri = context.extensionUri

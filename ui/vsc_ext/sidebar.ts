@@ -1,6 +1,7 @@
 import * as vs from 'vscode'
 import * as shared from './_shared_types'
 import * as utils from './utils'
+import * as app from './app'
 
 
 import { SidebarWebViewProvider } from './sidebar_webview'
@@ -10,12 +11,17 @@ let webviewProvider: SidebarWebViewProvider
 export abstract class TreeDataProvider implements vs.TreeDataProvider<vs.TreeItem> {
     refresh = new vs.EventEmitter<vs.TreeItem | undefined | null | void>()
     treeView: vs.TreeView<vs.TreeItem>
+    origTitle: string
     onDidChangeTreeData: vs.Event<vs.TreeItem | undefined | null | void> = this.refresh.event
     abstract getTreeItem(treeNode: vs.TreeItem): vs.TreeItem;
     abstract getChildren(treeNode?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]>;
     onInit(treeView: vs.TreeView<vs.TreeItem>) {
+        this.origTitle = treeView.title ?? '?!bug?!'
         this.treeView = treeView
         return this.treeView
+    }
+    refreshTitle() {
+        this.treeView.title = this.origTitle + (app.dirtyProj ? '*' : '')
     }
 }
 import { TreeColls as TreeColls } from './sidebar_colls'
@@ -43,8 +49,12 @@ export function onInit(ctx: vs.ExtensionContext) {
     utils.disp(treeColls.onInit(vs.window.createTreeView('comiclabExplorerProjColls', { treeDataProvider: treeColls, showCollapseAll: true })))
     utils.disp(treeBooks.onInit(vs.window.createTreeView('comiclabExplorerProjBooks', { treeDataProvider: treeBooks, showCollapseAll: true })))
     utils.disp(treeSites.onInit(vs.window.createTreeView('comiclabExplorerProjSites', { treeDataProvider: treeSites, showCollapseAll: true })))
-    shared.subscribe(shared.appState.onProjRefreshed, (_) => {
-        [treeColls, treeBooks, treeSites].forEach(_ => _.refresh.fire())
+    app.onProjSaved.do((_) => { [treeColls, treeBooks, treeSites].forEach(_ => _.refreshTitle()) })
+    app.onProjRefreshed.do((_) => {
+        [treeColls, treeBooks, treeSites].forEach(_ => {
+            _.refresh.fire()
+            _.refreshTitle()
+        })
     })
 }
 
