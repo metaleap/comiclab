@@ -25,7 +25,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
         const ret: vs.TreeItem[] = colls.map(_ => ({
             collapsibleState: ((utils.noneIn(_.collections) && utils.noneIn(_.pages)) ? vs.TreeItemCollapsibleState.None
                 : (parentTreeNode ? vs.TreeItemCollapsibleState.Collapsed : vs.TreeItemCollapsibleState.Expanded)),
-            iconPath: new vs.ThemeIcon('folder'),
+            iconPath: new vs.ThemeIcon('archive'),
             id: collToNodeId(_),
             contextValue: '_canRename_canDelete_canAddPage_canAddColl_',
             label: _.id,
@@ -147,28 +147,33 @@ export class TreeColls extends sidebar.TreeDataProvider {
 
     relocate(treeNode: vs.TreeItem, dontDoIt?: boolean): (shared.Collection | null)[] {
         const new_parent_candidates: (shared.Collection | null)[] = []
-        const coll = collFromNodeId(treeNode.id as string) as shared.Collection
+        const coll = collFromNodeId(treeNode.id as string)
+        if (!coll)
+            return []
         const coll_parents = shared.collParents(coll)
-        if (coll_parents.length > 0)
+        const coll_parent = (coll_parents.length > 0) ? coll_parents[0] : undefined
+        if (coll_parent)
             new_parent_candidates.push(null)
         shared.walkCollections((collCurPath) => {
-            if (!collCurPath.includes(coll))
+            if ((coll_parent != collCurPath[0]) && (!collCurPath.includes(coll)))
                 new_parent_candidates.push(collCurPath[0])
         })
-        if (!dontDoIt) {
+        if (!dontDoIt)
             vs.window.showQuickPick(new_parent_candidates.map(_ => {
                 return '/' + ((!_) ? '' : collToNodeId(_).substring(node_id_prefix_coll.length))
-            }), { placeHolder: 'placeholder', title: 'title' }).then((id) => {
-                if (id) {
-                    coll_parents[0].collections = coll_parents[0].collections.filter(_ => (_ != coll))
-                    if (id == '/')
+            }), { placeHolder: `Select the new parent collection for '${coll.id}':`, title: `Relocate '${coll.id}'` }).then((path) => {
+                if (path) {
+                    if (coll_parent)
+                        coll_parent.collections = coll_parent.collections.filter(_ => (_ != coll))
+                    else
+                        shared.appState.proj.collections = shared.appState.proj.collections.filter(_ => (_ != coll))
+                    if (path == '/')
                         shared.appState.proj.collections.push(coll)
                     else
-                        (collFromNodeId(id) as shared.Collection).collections.push(coll)
+                        (collFromNodeId(node_id_prefix_coll + path.substring(1)) as shared.Collection).collections.push(coll)
                     shared.trigger(shared.appState.onProjModified, shared.appState.proj)
                 }
             })
-        }
         return new_parent_candidates
     }
 
@@ -200,31 +205,34 @@ export class TreeColls extends sidebar.TreeDataProvider {
     }
 }
 
-function collFromNodeId(id: string) {
-    const parts = id.substring(node_id_prefix_coll.length).split('/')
-    let colls: shared.Collection[] = shared.appState.proj.collections
+function collFromNodeId(id: string): shared.Collection | undefined {
     let coll: shared.Collection | undefined
-    for (let i = 0; i < parts.length; i++)
-        if (coll = colls.find(_ => (_.id == parts[i])))
-            colls = coll.collections
-        else
-            break
+    if (id.startsWith(node_id_prefix_coll)) {
+        const parts = id.substring(node_id_prefix_coll.length).split('/')
+        let colls: shared.Collection[] = shared.appState.proj.collections
+        for (let i = 0; i < parts.length; i++)
+            if (coll = colls.find(_ => (_.id == parts[i])))
+                colls = coll.collections
+            else
+                break
+    }
     return coll
 }
 
-function pageFromNodeId(id: string) {
-    const parts = id.substring(node_id_prefix_page.length).split('/')
-    let colls: shared.Collection[] = shared.appState.proj.collections
-    let coll: shared.Collection | undefined
-    let page: shared.Page | undefined
-    for (let i = 0; i < parts.length; i++)
-        if (i == parts.length - 1)
-            return coll?.pages.find(_ => (_.id == parts[i]))
-        else if (coll = colls.find(_ => (_.id == parts[i])))
-            colls = coll.collections
-        else
-            break
-    return page
+function pageFromNodeId(id: string): shared.Page | undefined {
+    if (id.startsWith(node_id_prefix_page)) {
+        const parts = id.substring(node_id_prefix_page.length).split('/')
+        let colls: shared.Collection[] = shared.appState.proj.collections
+        let coll: shared.Collection | undefined
+        for (let i = 0; i < parts.length; i++)
+            if (i == parts.length - 1)
+                return coll?.pages.find(_ => (_.id == parts[i]))
+            else if (coll = colls.find(_ => (_.id == parts[i])))
+                colls = coll.collections
+            else
+                break
+    }
+    return undefined
 }
 
 function collToNodeId(coll: shared.Collection) {
