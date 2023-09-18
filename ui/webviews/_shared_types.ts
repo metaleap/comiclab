@@ -68,7 +68,7 @@ export type Page = {
     id: string,
 }
 
-export function walkCollections(perColl: (_: Collection[]) => any, parents?: Collection[]) {
+export function walkCollections<T>(perColl: (_: Collection[]) => any, parents?: Collection[]) {
     const colls = (parents && parents.length) ? parents[0].collections : appState.proj.collections
     if (colls)
         for (const coll of colls) {
@@ -77,6 +77,7 @@ export function walkCollections(perColl: (_: Collection[]) => any, parents?: Col
             if (ret || (ret = walkCollections(perColl, cur_path)))
                 return ret
         }
+    return undefined
 }
 
 export function collParents(coll: Collection): Collection[] {
@@ -84,13 +85,18 @@ export function collParents(coll: Collection): Collection[] {
         if (path[0] == coll)
             return path.slice(1)
         return undefined
-    })
+    }) ?? []
 }
 
-export function pageParents(page: Page) {
+export function pageParent(page: Page): Collection | undefined {
+    const parents_path = pageParents(page)
+    return (parents_path && parents_path.length) ? parents_path[0] : undefined
+}
+
+export function pageParents(page: Page): Collection[] {
     return walkCollections((path: Collection[]) => {
         if (path[0].pages?.includes(page))
             return path
         return undefined
-    })
+    }) ?? []
 }

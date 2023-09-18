@@ -47,8 +47,10 @@ function cmdDelete(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
     switch (treeItem.contextValue) {
         case 'coll':
+            treeColls.deleteColl(treeItem)
+            break
         case 'page':
-            treeColls.delete(treeItem)
+            treeColls.deletePage(treeItem)
             break
     }
 }

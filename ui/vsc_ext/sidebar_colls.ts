@@ -37,8 +37,19 @@ export class TreeColls extends sidebar.TreeDataProvider {
         return ret
     }
 
-    delete(item: vs.TreeItem) {
+    deleteColl(item: vs.TreeItem) {
 
+    }
+
+    deletePage(item: vs.TreeItem) {
+        const page = pageFromNodeId(item.id as string)
+        if (page) {
+            const coll = shared.pageParent(page)
+            if (coll) {
+                coll.pages = coll.pages?.filter(_ => (_ != page))
+                shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+            }
+        }
     }
 }
 

@@ -46,6 +46,11 @@ export function activate(context: vs.ExtensionContext) {
 		shared.appState.config = modifiedCfg
 		shared.trigger(shared.appState.onCfgRefreshed, shared.appState)
 	})
+	shared.subscribe(shared.appState.onProjModified, (modifiedProj) => {
+		onDirty(true, dirtyCfg, false)
+		shared.appState.proj = modifiedProj
+		shared.trigger(shared.appState.onProjRefreshed, shared.appState)
+	})
 
 	appStateReload(true, true)
 }
