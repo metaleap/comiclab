@@ -34,7 +34,7 @@ export function show() {
             </head><body>
                 <script type='module'>
                     import * as main from '${htmlUri(utils.jsPath('config-main'))}'
-                    main.onInitConfigView(acquireVsCodeApi(), '${htmlUri(vs.Uri.joinPath(utils.extUri, 'ui'))?.toString()}')
+                    main.onInitConfigView(acquireVsCodeApi(), '${htmlUri(vs.Uri.joinPath(utils.extUri, 'ui')).toString()}')
                 </script>
             </body></html>`
     utils.disp(configWebviewPanel.webview.onDidReceiveMessage(onMessage))
@@ -60,5 +60,5 @@ function onMessage(msg: any) {
 }
 
 function htmlUri(localUri: vs.Uri) {
-    return configWebviewPanel?.webview.asWebviewUri(localUri)
+    return (configWebviewPanel as vs.WebviewPanel).webview.asWebviewUri(localUri)
 }

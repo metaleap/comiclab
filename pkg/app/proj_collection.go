@@ -4,8 +4,8 @@ type Collection struct {
 	ID            string                       `json:"id"`
 	ContentFields map[string]map[string]string `json:"contentFields,omitempty"`
 	AuthorID      string                       `json:"authorID,omitempty"`
-	Collections   []*Collection                `json:"collections,omitempty"`
-	Pages         []*PageLayout                `json:"pages,omitempty"`
+	Collections   []*Collection                `json:"collections"`
+	Pages         []*PageLayout                `json:"pages"`
 }
 
 type PageLayout struct {

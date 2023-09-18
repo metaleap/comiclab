@@ -34,6 +34,7 @@ export function onInit(ctx: vs.ExtensionContext) {
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.addCollTop', cmdAddCollTop))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.delete', cmdDelete))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.rename', cmdRename))
+    utils.disp(vs.commands.registerCommand('comiclab.proj.colls.moveTo', cmdMoveTo))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.moveUp', cmdMoveUp))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.moveDn', cmdMoveDn))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.moveTop', cmdMoveTop))
@@ -48,7 +49,7 @@ export function onInit(ctx: vs.ExtensionContext) {
 }
 
 export function treeNodeCat(treeNode: vs.TreeItem): string {
-    const idx = treeNode.id?.indexOf(':') as number
+    const idx = (treeNode.id as string).indexOf(':') as number
     return (treeNode.id as string).substring(0, idx)
 }
 
@@ -96,6 +97,11 @@ function cmdMoveEnd(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
     if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
         treeColls.move(treeItem, NaN)
+}
+function cmdMoveTo(...args: any[]): any {
+    const treeItem = args[0] as vs.TreeItem
+    if (treeNodeCat(treeItem) == 'coll')
+        treeColls.relocate(treeItem)
 }
 
 export function showWebview() {

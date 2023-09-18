@@ -14,7 +14,7 @@ let languages_grid = gridStringTupNew('config_languages', 'Language', 'lang_name
 let contentfields_grid = gridStringTupNew('config_contentfields', 'Content Field', 'title', 'Title', curContentFields, (dict) => { shared.appState.config.contentAuthoring.contentFields = dict })
 
 let paperformats_grid = ctl_inputgrid.create('config_paperformats', [
-    { id: 'id', title: "Paper Format ID" }, // validators added by input_grid.create
+    { id: 'id', title: "Paper Format ID", validators: [/*validators added by input_grid.create*/] },
     { id: 'widthMm', title: 'Width (mm)', number: { min: 11, max: 1234 }, validators: [ctl_inputgrid.validatorNonEmpty()] },
     { id: 'heightMm', title: 'Height (mm)', number: { min: 11, max: 1234 }, validators: [ctl_inputgrid.validatorNonEmpty()] },
 ], (recs) => {
@@ -63,7 +63,7 @@ function onMessage(evt: MessageEvent) {
 
 function gridStringTupNew(id: string, title: string, valueName: string, valueTitle: string, cur: () => ctl_inputgrid.Rec[], set: (_: { [_: string]: string }) => void) {
     return ctl_inputgrid.create(id, [
-        { id: 'id', title: title + " ID" }, // validators added by input_grid.create
+        { id: 'id', title: title + " ID", validators: [/*validators added by input_grid.create*/] },
         { id: valueName, title: valueTitle, validators: [ctl_inputgrid.validatorNonEmpty(), ctl_inputgrid.validatorUnique(cur)] },
     ], (recs) => {
         setDisabled(true)
@@ -73,25 +73,25 @@ function gridStringTupNew(id: string, title: string, valueName: string, valueTit
 }
 
 function curAuthors() {
-    return utils.arrFromDict(shared.appState.config.contentAuthoring?.authors, (key, value) => ({
+    return utils.arrFromDict(shared.appState.config.contentAuthoring.authors, (key, value) => ({
         'id': key, 'author_full_name': value,
     } as ctl_inputgrid.Rec))
 }
 
 function curContentFields() {
-    return utils.arrFromDict(shared.appState.config.contentAuthoring?.contentFields, (key, value) => ({
+    return utils.arrFromDict(shared.appState.config.contentAuthoring.contentFields, (key, value) => ({
         'id': key, 'title': value,
     } as ctl_inputgrid.Rec))
 }
 
 function curLanguages() {
-    return utils.arrFromDict(shared.appState.config.contentAuthoring?.languages, (key, value) => ({
+    return utils.arrFromDict(shared.appState.config.contentAuthoring.languages, (key, value) => ({
         'id': key, 'lang_name': value,
     } as ctl_inputgrid.Rec))
 }
 
 function curPaperFormats() {
-    return utils.arrFromDict(shared.appState.config.contentAuthoring?.paperFormats, (key, value) => ({
+    return utils.arrFromDict(shared.appState.config.contentAuthoring.paperFormats, (key, value) => ({
         'id': key, 'widthMm': value.widthMm.toString(), 'heightMm': value.heightMm.toString(),
     } as ctl_inputgrid.Rec))
 }

@@ -52,18 +52,18 @@ export type PaperFormat = {
     heightMm: number,
 }
 
-export type CollOrProj = { id?: string, collections?: Collection[] }
+export type CollOrProj = { id?: string, collections: Collection[] }
 
 export type Proj = {
-    collections?: Collection[]
+    collections: Collection[]
 }
 
 export type Collection = {
     id: string,
     contentFields: { [id: string]: { [lang_id: string]: string } },
     authorID: string,
-    collections?: Collection[],
-    pages?: Page[],
+    collections: Collection[],
+    pages: Page[],
 }
 
 export type Page = {
@@ -102,16 +102,16 @@ export function pageParent(page: Page): Collection | undefined {
 
 export function pageParents(page: Page): Collection[] {
     return walkCollections((path: Collection[]) => {
-        if (path[0].pages?.includes(page))
+        if (path[0].pages.includes(page))
             return path
         return undefined
     }) ?? []
 }
 
 export function collChildPage(coll: Collection, id: string, ...ignore: Page[]): Page | undefined {
-    return coll.pages?.find(_ => (_.id == id) && !ignore.includes(_))
+    return coll.pages.find(_ => (_.id == id) && !ignore.includes(_))
 }
 
 export function collChildColl(coll: CollOrProj, id: string, ...ignore: Collection[]): Collection | undefined {
-    return coll.collections?.find(_ => (_.id == id) && !ignore.includes(_))
+    return coll.collections.find(_ => (_.id == id) && !ignore.includes(_))
 }

@@ -8,7 +8,7 @@ export type Field = {
     title: string,
     number?: { min?: number, max?: number, step?: number },
     readOnly?: boolean,
-    validators?: ValidateFunc[]
+    validators: ValidateFunc[]
     lookUp?: () => string[]
 }
 export type Rec = { id: string, [field_id: string]: string }
@@ -27,12 +27,10 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
     for (const field of fields) {
         if (field.id == 'id') {
             field.readOnly = true
-            if (!field.validators)
-                field.validators = []
             field.validators.push(validatorNonEmpty(), validatorUnique(() => latestDataset))
         }
         if (field.number)
-            field.validators?.push(validatorNumeric(field.number.min, field.number.max, field.number.step))
+            field.validators.push(validatorNumeric(field.number.min, field.number.max, field.number.step))
     }
 
     const recAdd = (_: MouseEvent) => {
@@ -83,7 +81,7 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
             const rec_trs = table.querySelectorAll('tr.inputgrid-record')
             rec_trs.forEach(tr => {
                 const rec_id_attr = tr.getAttributeNode('data-rec-id')
-                if (!sourceDataset.find(_ => _.id == rec_id_attr?.value))
+                if (rec_id_attr && !sourceDataset.find(_ => (_.id == rec_id_attr.value)))
                     tr.remove() // old record in grid is no longer in latest source dataset
             })
             const new_rec_trs: ChildDom[] = []
@@ -139,7 +137,7 @@ function htmlInput(isAddRec: boolean, gridID: string, recID: string, field: Fiel
 
 function validate(rec: Rec, newValue: string | undefined, ...fields: Field[]) {
     for (const field of fields)
-        if (field?.validators)
+        if (field.validators)
             for (const validator of field.validators) {
                 const err = validator(rec, field, (newValue === undefined) ? rec[field.id] : newValue)
                 if (err) {

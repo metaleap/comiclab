@@ -72,6 +72,11 @@
         "icon": "$(trash)"
       },
       {
+        "command": "comiclab.proj.colls.moveTo",
+        "title": "Move To...",
+        "icon": "$(send)"
+      },
+      {
         "command": "comiclab.proj.colls.moveUp",
         "title": "Move Up",
         "icon": "$(chevron-up)"
@@ -95,8 +100,8 @@
     "menus": {
       "commandPalette": [
         { "command": "comiclab.proj.colls.addColl", "when": "false" },
-        { "command": "comiclab.proj.colls.addCollTop", "when": "false" },
         { "command": "comiclab.proj.colls.addPage", "when": "false" },
+        { "command": "comiclab.proj.colls.moveTo", "when": "false" },
         { "command": "comiclab.proj.colls.moveDn", "when": "false" },
         { "command": "comiclab.proj.colls.moveUp", "when": "false" },
         { "command": "comiclab.proj.colls.moveEnd", "when": "false" },
@@ -125,6 +130,10 @@
         {
           "command": "comiclab.proj.colls.rename",
           "when": "view == comiclabExplorerProjColls && viewItem =~ /.*_canRename_.*/"
+        },
+        {
+          "command": "comiclab.proj.colls.moveTo",
+          "when": "view == comiclabExplorerProjColls && viewItem =~ /.*_canMoveTo_.*/"
         },
         {
           "command": "comiclab.proj.colls.moveUp",

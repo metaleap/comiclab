@@ -17,10 +17,20 @@ var (
 func Main() {
 	var err error
 	if State.Config, err = readJSONFile(State.Config.FilePath(), &Config{}); err != nil {
-		panic(err)
+		if !os.IsNotExist(err) {
+			panic(err)
+		} else {
+			State.Config = &Config{}
+			State.Config.ContentAuthoring.Authors, State.Config.ContentAuthoring.Languages, State.Config.ContentAuthoring.ContentFields = map[string]string{}, map[string]string{}, map[string]string{}
+			State.Config.ContentAuthoring.PaperFormats = map[string]*PaperFormat{}
+		}
 	}
 	if State.Proj, err = readJSONFile(State.Proj.FilePath(), &Proj{}); err != nil {
-		panic(err)
+		if !os.IsNotExist(err) {
+			panic(err)
+		} else {
+			State.Proj = &Proj{Collections: []*Collection{}}
+		}
 	}
 
 	const port = 64646
