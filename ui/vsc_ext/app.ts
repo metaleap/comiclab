@@ -29,7 +29,9 @@ let statusBarItem: vs.StatusBarItem
 
 
 function onDirty(proj: boolean, cfg: boolean, preserveStatusText: boolean) {
-	if ((dirtyCfg = cfg) || (dirtyProj = proj)) {
+	dirtyCfg = cfg
+	dirtyProj = proj
+	if (dirtyCfg || dirtyProj) {
 		statusBarItem.color = colorOrange
 		if (!preserveStatusText)
 			statusBarItem.text = `$(save-as) Unsaved changes to ` + msgSuffix(proj, cfg)

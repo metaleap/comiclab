@@ -20,10 +20,7 @@ function onCfgRefreshed(appState: shared.AppState) {
 }
 
 function title() {
-    let ret = "ComicLab Config"
-    if (app.dirtyCfg)
-        ret += "*"
-    return ret
+    return "ComicLab Config" + (app.dirtyCfg ? "*" : "")
 }
 
 export function show() {
