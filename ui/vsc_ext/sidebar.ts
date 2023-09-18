@@ -46,9 +46,14 @@ export function onInit(ctx: vs.ExtensionContext) {
     })
 }
 
+export function treeNodeCat(item: vs.TreeItem): string {
+    const idx = item.id?.indexOf(':') as number
+    return (item.id as string).substring(0, idx)
+}
+
 function cmdDelete(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
-    switch (treeItem.contextValue) {
+    switch (treeNodeCat(treeItem)) {
         case 'coll':
             treeColls.deleteColl(treeItem)
             break
@@ -57,31 +62,29 @@ function cmdDelete(...args: any[]): any {
             break
     }
 }
-
 function cmdRename(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
-    if (treeItem.contextValue == 'page' || treeItem.contextValue == 'coll')
+    if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
         treeColls.rename(treeItem)
 }
-
 function cmdMoveUp(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
-    if (treeItem.contextValue == 'page' || treeItem.contextValue == 'coll')
+    if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
         treeColls.move(treeItem, -1)
 }
 function cmdMoveDn(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
-    if (treeItem.contextValue == 'page' || treeItem.contextValue == 'coll')
+    if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
         treeColls.move(treeItem, 1)
 }
 function cmdMoveTop(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
-    if (treeItem.contextValue == 'page' || treeItem.contextValue == 'coll')
+    if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
         treeColls.move(treeItem, 0)
 }
 function cmdMoveEnd(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
-    if (treeItem.contextValue == 'page' || treeItem.contextValue == 'coll')
+    if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
         treeColls.move(treeItem, NaN)
 }
 

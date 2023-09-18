@@ -99,37 +99,36 @@
         {
           "command": "comiclab.proj.colls.addColl",
           "group": "inline",
-          "when": "view == comiclabExplorerProjColls && viewItem == coll"
+          "when": "view == comiclabExplorerProjColls && viewItem =~ /.*_canAddColl_.*/"
         },
         {
           "command": "comiclab.proj.colls.addPage",
           "group": "inline",
-          "when": "view == comiclabExplorerProjColls && viewItem == coll"
+          "when": "view == comiclabExplorerProjColls && viewItem =~ /.*_canAddPage_.*/"
         },
         {
           "command": "comiclab.proj.colls.rename",
-          "group": "inline",
-          "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
+          "when": "view == comiclabExplorerProjColls && viewItem =~ /.*_canRename_.*/"
         },
         {
           "command": "comiclab.proj.colls.moveUp",
-          "when": "view == comiclabExplorerProjColls && comiclab.canMoveUp && (viewItem == coll || viewItem == page)"
+          "when": "view == comiclabExplorerProjColls && viewItem =~ /.*_canMoveUp_.*/"
         },
         {
           "command": "comiclab.proj.colls.moveDn",
-          "when": "view == comiclabExplorerProjColls && comiclab.canMoveDn && (viewItem == coll || viewItem == page)"
+          "when": "view == comiclabExplorerProjColls && viewItem =~ /.*_canMoveDn_.*/"
         },
         {
           "command": "comiclab.proj.colls.moveTop",
-          "when": "view == comiclabExplorerProjColls && comiclab.canMoveTop && (viewItem == coll || viewItem == page)"
+          "when": "view == comiclabExplorerProjColls && viewItem =~ /.*_canMoveTop_.*/"
         },
         {
           "command": "comiclab.proj.colls.moveEnd",
-          "when": "view == comiclabExplorerProjColls && comiclab.canMoveEnd && (viewItem == coll || viewItem == page)"
+          "when": "view == comiclabExplorerProjColls && viewItem =~ /.*_canMoveEnd_.*/"
         },
         {
           "command": "comiclab.proj.colls.delete",
-          "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
+          "when": "view == comiclabExplorerProjColls && viewItem =~ /.*_canDelete_.*/"
         }
       ]
     },

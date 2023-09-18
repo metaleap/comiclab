@@ -64,14 +64,14 @@ function cmdMainMenu() {
 	let itemReloadCfg: vs.QuickPickItem = { label: "Reload Config", iconPath: new vs.ThemeIcon('refresh'), alwaysShow: true }
 	let itemReloadBoth: vs.QuickPickItem = { label: "Reload Both", iconPath: new vs.ThemeIcon('refresh'), alwaysShow: true }
 	let itemConfig: vs.QuickPickItem = { label: "Config...", iconPath: new vs.ThemeIcon('tools'), alwaysShow: true }
-	let items = [itemConfig]
+	let items: vs.QuickPickItem[] = []
 	if (dirtyCfg && dirtyProj)
 		items.push(itemSaveBoth)
 	if (dirtyCfg)
 		items.push(itemSaveCfg)
 	if (dirtyProj)
 		items.push(itemSaveProj)
-	items.push(itemReloadBoth, itemReloadProj, itemReloadCfg)
+	items.push(itemReloadBoth, itemReloadProj, itemReloadCfg, itemConfig)
 
 	vs.window.showQuickPick(items, { title: "ComicLab" }).then((item) => {
 		switch (item) {

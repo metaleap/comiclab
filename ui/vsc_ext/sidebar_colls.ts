@@ -5,24 +5,6 @@ import * as sidebar from './sidebar'
 
 
 export class TreeColls extends sidebar.TreeDataProvider {
-    override onInit(treeView: vs.TreeView<vs.TreeItem>): vs.TreeView<vs.TreeItem> {
-        treeView = super.onInit(treeView)
-        treeView.onDidChangeSelection((evt) => {
-            let can_move_up = false, can_move_dn = false, can_move_top = false, can_move_end = false
-            if (evt.selection.length == 1) {
-                can_move_up = this.move(evt.selection[0], -1, true)
-                can_move_dn = this.move(evt.selection[0], 1, true)
-                can_move_top = this.move(evt.selection[0], 0, true)
-                can_move_end = this.move(evt.selection[0], NaN, true)
-            }
-            vs.commands.executeCommand('setContext', 'comiclab.canMoveUp', can_move_up)
-            vs.commands.executeCommand('setContext', 'comiclab.canMoveDn', can_move_dn)
-            vs.commands.executeCommand('setContext', 'comiclab.canMoveTop', can_move_top)
-            vs.commands.executeCommand('setContext', 'comiclab.canMoveEnd', can_move_end)
-        })
-        return treeView
-    }
-
     override getTreeItem(element: vs.TreeItem): vs.TreeItem {
         return element
     }
@@ -39,19 +21,30 @@ export class TreeColls extends sidebar.TreeDataProvider {
         const ret: vs.TreeItem[] = colls?.map(_ => ({
             collapsibleState: ((utils.noneIn(_.collections) && utils.noneIn(_.pages)) ? vs.TreeItemCollapsibleState.None
                 : (element ? vs.TreeItemCollapsibleState.Collapsed : vs.TreeItemCollapsibleState.Expanded)),
-            contextValue: 'coll',
             iconPath: new vs.ThemeIcon('folder'),
             id: collToNodeId(_),
+            contextValue: '_canRename_canDelete_canAddPage_canAddColl_',
             label: _.id,
         } as vs.TreeItem)) ?? []
         if (pages)
             ret.push(...pages.map(_ => ({
                 collapsibleState: vs.TreeItemCollapsibleState.None,
-                contextValue: 'page',
                 iconPath: new vs.ThemeIcon('file'),
                 id: pageToNodeId(_),
+                contextValue: '_canRename_canDelete_',
                 label: _.id,
             } as vs.TreeItem)))
+        ret.forEach((treeItem: vs.TreeItem) => {
+            const dict: { [_: string]: boolean } = {
+                "canMoveUp_": this.move(treeItem, -1, true),
+                "canMoveDn_": this.move(treeItem, 1, true),
+                "canMoveTop_": this.move(treeItem, 0, true),
+                "canMoveEnd_": this.move(treeItem, NaN, true),
+            }
+            for (const k in dict)
+                if (dict[k])
+                    treeItem.contextValue += k
+        })
         return ret
     }
 
@@ -86,8 +79,8 @@ export class TreeColls extends sidebar.TreeDataProvider {
 
     rename(item: vs.TreeItem) {
         const old_name = item.label?.toString() ?? '?!bug!?'
-        const coll = (item.contextValue == 'coll') ? collFromNodeId(item.id as string) : undefined
-        const page = (item.contextValue == 'page') ? pageFromNodeId(item.id as string) : undefined
+        const coll = (sidebar.treeNodeCat(item) == 'coll') ? collFromNodeId(item.id as string) : undefined
+        const page = (sidebar.treeNodeCat(item) == 'page') ? pageFromNodeId(item.id as string) : undefined
         const coll_parent = coll ? shared.collParent(coll) : undefined
         const page_parent = page ? shared.pageParent(page) : undefined
         vs.window.showInputBox({
@@ -113,8 +106,8 @@ export class TreeColls extends sidebar.TreeDataProvider {
 
     move(item: vs.TreeItem, direction: number, dontDoIt?: boolean): boolean {
         let can_move: boolean = false
-        const coll = (item.contextValue == 'coll') ? collFromNodeId(item.id as string) : undefined
-        const page = (item.contextValue == 'page') ? pageFromNodeId(item.id as string) : undefined
+        const coll = (sidebar.treeNodeCat(item) == 'coll') ? collFromNodeId(item.id as string) : undefined
+        const page = (sidebar.treeNodeCat(item) == 'page') ? pageFromNodeId(item.id as string) : undefined
         const coll_parent = coll ? shared.collParent(coll) : undefined
         const page_parent = page ? shared.pageParent(page) : undefined
         const arr: any[] | undefined = (coll && coll_parent && coll_parent.collections) ? coll_parent.collections : ((page && page_parent && page_parent.pages) ? page_parent.pages : undefined)
@@ -140,8 +133,6 @@ export class TreeColls extends sidebar.TreeDataProvider {
 }
 
 function collFromNodeId(id: string) {
-    if (!id.startsWith('coll:'))
-        throw id
     const parts = id.substring('coll:'.length).split('/')
     let colls: shared.Collection[] | undefined = shared.appState.proj.collections
     let coll: shared.Collection | undefined
@@ -154,8 +145,6 @@ function collFromNodeId(id: string) {
 }
 
 function pageFromNodeId(id: string) {
-    if (!id.startsWith('page:'))
-        throw id
     const parts = id.substring('page:'.length).split('/')
     let colls: shared.Collection[] | undefined = shared.appState.proj.collections
     let coll: shared.Collection | undefined
