@@ -38,7 +38,7 @@ export function show() {
                 </script>
             </body></html>`
     utils.disp(configWebviewPanel.webview.onDidReceiveMessage(onMessage))
-    configWebviewPanel.iconPath = utils.iconPath('screwdriver-wrench')
+    configWebviewPanel.iconPath = utils.codiconPath('tools')
     utils.disp(configWebviewPanel.onDidDispose(() => {
         shared.unsubscribe(shared.appState.onCfgRefreshed, onCfgRefreshed)
         configWebviewPanel = null

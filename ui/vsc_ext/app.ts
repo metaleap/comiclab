@@ -59,13 +59,13 @@ export function activate(context: vs.ExtensionContext) {
 
 function mainMenu() {
 	vs.commands.executeCommand('workbench.view.extension.comiclabExplorer')
-	let itemSaveProj: vs.QuickPickItem = { label: "Save Project Changes", iconPath: utils.iconPath('floppy-disk'), alwaysShow: true }
-	let itemSaveCfg: vs.QuickPickItem = { label: "Save Config Changes", iconPath: utils.iconPath('floppy-disk'), alwaysShow: true }
-	let itemSaveBoth: vs.QuickPickItem = { label: "Save Both", iconPath: utils.iconPath('floppy-disk'), alwaysShow: true }
-	let itemReloadProj: vs.QuickPickItem = { label: "Reload Project", iconPath: utils.iconPath('arrows-rotate'), alwaysShow: true }
-	let itemReloadCfg: vs.QuickPickItem = { label: "Reload Config", iconPath: utils.iconPath('arrows-rotate'), alwaysShow: true }
-	let itemReloadBoth: vs.QuickPickItem = { label: "Reload Both", iconPath: utils.iconPath('arrows-rotate'), alwaysShow: true }
-	let itemConfig: vs.QuickPickItem = { label: "Config...", iconPath: utils.iconPath('screwdriver-wrench'), alwaysShow: true }
+	let itemSaveProj: vs.QuickPickItem = { label: "Save Project Changes", iconPath: new vs.ThemeIcon('save'), alwaysShow: true }
+	let itemSaveCfg: vs.QuickPickItem = { label: "Save Config Changes", iconPath: new vs.ThemeIcon('save'), alwaysShow: true }
+	let itemSaveBoth: vs.QuickPickItem = { label: "Save Both", iconPath: new vs.ThemeIcon('save-all'), alwaysShow: true }
+	let itemReloadProj: vs.QuickPickItem = { label: "Reload Project", iconPath: new vs.ThemeIcon('refresh'), alwaysShow: true }
+	let itemReloadCfg: vs.QuickPickItem = { label: "Reload Config", iconPath: new vs.ThemeIcon('refresh'), alwaysShow: true }
+	let itemReloadBoth: vs.QuickPickItem = { label: "Reload Both", iconPath: new vs.ThemeIcon('refresh'), alwaysShow: true }
+	let itemConfig: vs.QuickPickItem = { label: "Config...", iconPath: new vs.ThemeIcon('tools'), alwaysShow: true }
 	let items = [itemConfig]
 	if (dirtyCfg && dirtyProj)
 		items.push(itemSaveBoth)

@@ -10,24 +10,32 @@ export function onInit(context: vs.ExtensionContext) {
     extUri = context.extensionUri
 }
 
-export function iconPath(name: string) {
-    return { light: imgPath(name), dark: imgPath(name) }
-}
+// export function iconPath(name: string) {
+//     return { light: imgPath(name), dark: imgPath(name) }
+// }
 
 export function noneIn<T>(arr: T[] | null | undefined): boolean {
     return (!arr) || (!arr.length) || (arr.length == 0)
 }
 
+export function extPath(...pathSegments: string[]) {
+    return vs.Uri.joinPath(extUri, ...pathSegments)
+}
+
+export function codiconPath(name: string) {
+    return extPath('node_modules', '@vscode', 'codicons', 'src', 'icons', name + '.svg')
+}
+
 export function imgPath(name: string) {
-    return vs.Uri.joinPath(extUri, 'ui', 'icons', name + '.svg')
+    return extPath('ui', 'icons', name + '.svg')
 }
 
 export function cssPath(name: string) {
-    return vs.Uri.joinPath(extUri, 'ui', 'styles', name + '.css')
+    return extPath('ui', 'styles', name + '.css')
 }
 
 export function jsPath(name: string) {
-    return vs.Uri.joinPath(extUri, 'ui', 'webviews', 'js', name + '.js')
+    return extPath('ui', 'webviews', 'js', name + '.js')
 }
 
 export function thenNow<T>(value: T): Thenable<T> {

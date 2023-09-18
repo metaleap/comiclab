@@ -46,28 +46,96 @@
         "title": "ComicLab",
         "icon": "ui/icons/comments.svg"
       },
-      { "command": "comiclab.proj.colls.addPage", "title": "Add Page", "icon": "ui/icons/file-circle-plus.svg" },
-      { "command": "comiclab.proj.colls.addColl", "title": "Add Collection", "icon": "ui/icons/folder-plus.svg" },
-      { "command": "comiclab.proj.colls.rename", "title": "Rename", "icon": "ui/icons/pen.svg" },
-      { "command": "comiclab.proj.colls.delete", "title": "Delete", "icon": "ui/icons/trash.svg" },
-      { "command": "comiclab.proj.colls.moveUp", "title": "Move Up", "icon": "ui/icons/angle-up.svg" },
-      { "command": "comiclab.proj.colls.moveDn", "title": "Move Down", "icon": "ui/icons/angle-down.svg" },
-      { "command": "comiclab.proj.colls.moveTop", "title": "Move to Top", "icon": "ui/icons/angles-up.svg" },
-      { "command": "comiclab.proj.colls.moveEnd", "title": "Move to End", "icon": "ui/icons/angles-down.svg" }
+      {
+        "command": "comiclab.proj.colls.addPage",
+        "title": "Add Page",
+        "icon": "$(new-file)"
+      },
+      {
+        "command": "comiclab.proj.colls.addColl",
+        "title": "Add Collection",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "comiclab.proj.colls.rename",
+        "title": "Rename",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "comiclab.proj.colls.delete",
+        "title": "Delete",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "comiclab.proj.colls.moveUp",
+        "title": "Move Up",
+        "icon": "$(chevron-up)"
+      },
+      {
+        "command": "comiclab.proj.colls.moveDn",
+        "title": "Move Down",
+        "icon": "$(chevron-down)"
+      },
+      {
+        "command": "comiclab.proj.colls.moveTop",
+        "title": "Move to Top",
+        "icon": "$(fold-up)"
+      },
+      {
+        "command": "comiclab.proj.colls.moveEnd",
+        "title": "Move to End",
+        "icon": "$(fold-down)"
+      }
     ],
     "menus": {
       "view/title": [
-        { "command": "comiclab.proj.colls.addColl", "when": "view == comiclabExplorerProjColls", "group": "navigation" }
+        {
+          "command": "comiclab.proj.colls.addColl",
+          "when": "view == comiclabExplorerProjColls",
+          "group": "navigation"
+        }
       ],
       "view/item/context": [
-        { "command": "comiclab.proj.colls.addColl", "group": "inline", "when": "view == comiclabExplorerProjColls && viewItem == coll" },
-        { "command": "comiclab.proj.colls.addPage", "group": "inline", "when": "view == comiclabExplorerProjColls && viewItem == coll" },
-        { "command": "comiclab.proj.colls.rename", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" },
-        { "command": "comiclab.proj.colls.delete", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" },
-        { "command": "comiclab.proj.colls.moveUp", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" },
-        { "command": "comiclab.proj.colls.moveDn", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" },
-        { "command": "comiclab.proj.colls.moveTop", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" },
-        { "command": "comiclab.proj.colls.moveEnd", "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)" }
+        {
+          "command": "comiclab.proj.colls.addColl",
+          "group": "inline",
+          "when": "view == comiclabExplorerProjColls && viewItem == coll"
+        },
+        {
+          "command": "comiclab.proj.colls.addPage",
+          "group": "inline",
+          "when": "view == comiclabExplorerProjColls && viewItem == coll"
+        },
+        {
+          "command": "comiclab.proj.colls.rename",
+          "group": "inline",
+          "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
+        },
+        {
+          "command": "comiclab.proj.colls.moveUp",
+          "group": "inline",
+          "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
+        },
+        {
+          "command": "comiclab.proj.colls.moveDn",
+          "group": "inline",
+          "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
+        },
+        {
+          "command": "comiclab.proj.colls.moveTop",
+          "group": "inline",
+          "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
+        },
+        {
+          "command": "comiclab.proj.colls.moveEnd",
+          "group": "inline",
+          "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
+        },
+        {
+          "command": "comiclab.proj.colls.delete",
+          "group": "inline",
+          "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
+        }
       ]
     }
   },
@@ -89,6 +157,7 @@
     "glob": "^10.3.4",
     "mocha": "^10.2.0",
     "node-fetch": "^2.7.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "@vscode/codicons": "^0.0.33"
   }
 }

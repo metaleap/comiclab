@@ -24,7 +24,7 @@ export class NavProjColls implements vs.TreeDataProvider<vs.TreeItem>{
             collapsibleState: ((utils.noneIn(_.collections) && utils.noneIn(_.pages)) ? vs.TreeItemCollapsibleState.None
                 : (element ? vs.TreeItemCollapsibleState.Collapsed : vs.TreeItemCollapsibleState.Expanded)),
             contextValue: 'coll',
-            iconPath: utils.iconPath('box-archive'),
+            iconPath: new vs.ThemeIcon('folder'),
             id: collToNodeId(_),
             label: _.id,
         } as vs.TreeItem))
@@ -32,7 +32,7 @@ export class NavProjColls implements vs.TreeDataProvider<vs.TreeItem>{
             ret.push(...pages.map(_ => ({
                 collapsibleState: vs.TreeItemCollapsibleState.None,
                 contextValue: 'page',
-                iconPath: utils.iconPath('border-all'),
+                iconPath: new vs.ThemeIcon('file'),
                 id: pageToNodeId(_),
                 label: _.id,
             } as vs.TreeItem)))
