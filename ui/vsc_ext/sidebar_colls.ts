@@ -4,7 +4,7 @@ import * as utils from './utils'
 import * as sidebar from './sidebar'
 
 
-export class NavProjColls extends sidebar.TreeDataProvider {
+export class TreeColls extends sidebar.TreeDataProvider {
     override getTreeItem(element: vs.TreeItem): vs.TreeItem {
         return element
     }
@@ -35,6 +35,10 @@ export class NavProjColls extends sidebar.TreeDataProvider {
                 label: _.id,
             } as vs.TreeItem)))
         return ret
+    }
+
+    delete(item: vs.TreeItem) {
+
     }
 }
 

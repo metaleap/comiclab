@@ -33,7 +33,7 @@ function onDirty(proj: boolean, cfg: boolean, preserveStatusText: boolean) {
 export function activate(context: vs.ExtensionContext) {
 	utils.onInit(context)
 
-	utils.disp(vs.commands.registerCommand('comiclab.menu', mainMenu))
+	utils.disp(vs.commands.registerCommand('comiclab.menu', cmdMainMenu))
 	utils.disp(statusBarItem = vs.window.createStatusBarItem('id', vs.StatusBarAlignment.Left, 987654321))
 	statusBarItem.text = "$(sync~spin) ComicLab loading..."
 	statusBarItem.command = 'comiclab.menu'
@@ -50,7 +50,7 @@ export function activate(context: vs.ExtensionContext) {
 	appStateReload(true, true)
 }
 
-function mainMenu() {
+function cmdMainMenu() {
 	vs.commands.executeCommand('workbench.view.extension.comiclabExplorer')
 	let itemSaveProj: vs.QuickPickItem = { label: "Save Project Changes", iconPath: new vs.ThemeIcon('save'), alwaysShow: true }
 	let itemSaveCfg: vs.QuickPickItem = { label: "Save Config Changes", iconPath: new vs.ThemeIcon('save'), alwaysShow: true }

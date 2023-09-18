@@ -137,6 +137,33 @@
           "when": "view == comiclabExplorerProjColls && (viewItem == coll || viewItem == page)"
         }
       ]
+    },
+    "_menus_samples": {
+      "editor/title": [
+        {
+          "_": "(editor-or-webview toolbar, or its menu if no 'group')",
+          "command": "comiclab.proj.colls.addColl",
+          "group": "navigation"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "_": "(editor-or-webview tab's context menu)",
+          "command": "comiclab.proj.colls.rename"
+        }
+      ],
+      "editor/context": [
+        {
+          "_": "(file editor's context menu)",
+          "command": "comiclab.proj.colls.addPage"
+        }
+      ],
+      "webview/context": [
+        {
+          "command": "comiclab.proj.colls.moveTop",
+          "group": "navigation"
+        }
+      ]
     }
   },
   "scripts": {

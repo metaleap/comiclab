@@ -4,7 +4,7 @@ import * as utils from './utils'
 import * as sidebar from './sidebar'
 
 
-export class NavProjSites extends sidebar.TreeDataProvider {
+export class TreeSites extends sidebar.TreeDataProvider {
     override getTreeItem(element: vs.TreeItem): vs.TreeItem {
         return element
     }
