@@ -10,10 +10,10 @@ import fetch from 'node-fetch'
 
 export let dirtyProj = false
 export let dirtyCfg = false
-export let onProjRefreshed = new utils.Event<shared.AppState>()
-export let onCfgRefreshed = new utils.Event<shared.AppState>()
-export let onProjSaved = new utils.Event<shared.AppState>()
-export let onCfgSaved = new utils.Event<shared.AppState>()
+export let onProjRefreshed = new utils.Event<shared.Proj>()
+export let onCfgRefreshed = new utils.Event<shared.Config>()
+export let onProjSaved = new utils.Event<shared.Proj>()
+export let onCfgSaved = new utils.Event<shared.Config>()
 export let onProjModified = new utils.Event<shared.Proj>()
 export let onCfgModified = new utils.Event<shared.Config>()
 
@@ -52,12 +52,12 @@ export function activate(context: vs.ExtensionContext) {
 	onCfgModified.do((modifiedCfg) => {
 		onDirty(dirtyProj, true, false)
 		shared.appState.config = modifiedCfg
-		onCfgRefreshed.now(shared.appState)
+		onCfgRefreshed.now(shared.appState.config)
 	})
 	onProjModified.do((modifiedProj) => {
 		onDirty(true, dirtyCfg, false)
 		shared.appState.proj = modifiedProj
-		onProjRefreshed.now(shared.appState)
+		onProjRefreshed.now(shared.appState.proj)
 	})
 
 	appStateReload(true, true)
@@ -128,11 +128,11 @@ function appStateReload(proj: boolean, cfg: boolean) {
 					onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg, true) // happens in onDone for good, but also must occur before below event triggers
 					if (proj) {
 						shared.appState.proj = latestAppState.proj
-						onProjRefreshed.now(shared.appState)
+						onProjRefreshed.now(shared.appState.proj)
 					}
 					if (cfg) {
 						shared.appState.config = latestAppState.config
-						onCfgRefreshed.now(shared.appState)
+						onCfgRefreshed.now(shared.appState.config)
 					}
 					statusBarItem.text = "$(pass-filled) ComicLab reloaded " + msg_suffix
 				})
@@ -157,8 +157,8 @@ function appStateSave(proj: boolean, cfg: boolean) {
 				req.onErr(resp)
 			else {
 				onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg, true) // happens in onDone for good, but also must occur before below event triggers
-				if (proj) onProjSaved.now(shared.appState)
-				if (cfg) onCfgSaved.now(shared.appState)
+				if (proj) onProjSaved.now(shared.appState.proj)
+				if (cfg) onCfgSaved.now(shared.appState.config)
 				statusBarItem.text = "$(pass-filled) ComicLab saved changes to " + msg_suffix
 			}
 		})

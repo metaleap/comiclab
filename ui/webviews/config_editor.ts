@@ -34,7 +34,7 @@ let main_tabs = ctl_tabs.create('config_main_tabs', {
     }),
 })
 
-export function onInitConfigView(vscode: { postMessage: (_: any) => any }, baseUri: string) {
+export function onInit(vscode: { postMessage: (_: any) => any }, baseUri: string) {
     utils.onInit(vscode)
     window.addEventListener('message', onMessage)
     van.add(document.body, main_tabs)

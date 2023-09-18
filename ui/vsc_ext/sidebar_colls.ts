@@ -3,6 +3,7 @@ import * as shared from './_shared_types'
 import * as utils from './utils'
 import * as app from './app'
 import * as sidebar from './sidebar'
+import * as coll_editor from './coll_editor'
 
 
 const node_id_prefix_coll = 'coll:'
@@ -161,7 +162,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
         })
         if (!dontDoIt)
             vs.window.showQuickPick(new_parent_candidates.map(_ => {
-                return '/' + ((!_) ? '' : collToNodeId(_).substring(node_id_prefix_coll.length))
+                return '/' + ((!_) ? '' : coll_editor.collToPath(_))
             }), { placeHolder: `Select the new parent collection for '${coll.id}':`, title: `Relocate '${coll.id}'` }).then((path) => {
                 if (path) {
                     if (coll_parent)
@@ -171,7 +172,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                     if (path == '/')
                         shared.appState.proj.collections.push(coll)
                     else
-                        (collFromNodeId(node_id_prefix_coll + path.substring(1)) as shared.Collection).collections.push(coll)
+                        (coll_editor.collFromPath(path.substring(1)) as shared.Collection).collections.push(coll)
                     app.onProjModified.now(shared.appState.proj)
                 }
             })
@@ -206,18 +207,18 @@ export class TreeColls extends sidebar.TreeDataProvider {
     }
 }
 
+function collToNodeId(coll: shared.Collection) {
+    return node_id_prefix_coll + coll_editor.collToPath(coll)
+}
+
 function collFromNodeId(id: string): shared.Collection | undefined {
-    let coll: shared.Collection | undefined
-    if (id.startsWith(node_id_prefix_coll)) {
-        const parts = id.substring(node_id_prefix_coll.length).split('/')
-        let colls: shared.Collection[] = shared.appState.proj.collections
-        for (let i = 0; i < parts.length; i++)
-            if (coll = colls.find(_ => (_.id == parts[i])))
-                colls = coll.collections
-            else
-                break
-    }
-    return coll
+    return (!id.startsWith(node_id_prefix_coll)) ? undefined
+        : coll_editor.collFromPath(id.substring(node_id_prefix_coll.length))
+}
+
+function pageToNodeId(page: shared.Page) {
+    const coll_path = shared.pageParents(page)
+    return node_id_prefix_page + [page].concat(coll_path).reverse().map(_ => _.id).join('/')
 }
 
 function pageFromNodeId(id: string): shared.Page | undefined {
@@ -234,14 +235,4 @@ function pageFromNodeId(id: string): shared.Page | undefined {
                 break
     }
     return undefined
-}
-
-function collToNodeId(coll: shared.Collection) {
-    const coll_path = shared.collParents(coll)
-    return node_id_prefix_coll + [coll].concat(coll_path).reverse().map(_ => _.id).join('/')
-}
-
-function pageToNodeId(page: shared.Page) {
-    const coll_path = shared.pageParents(page)
-    return node_id_prefix_page + [page].concat(coll_path).reverse().map(_ => _.id).join('/')
 }
