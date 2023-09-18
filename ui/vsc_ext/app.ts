@@ -2,7 +2,6 @@ import * as vs from 'vscode'
 import * as shared from './_shared_types'
 import * as utils from './utils'
 import * as sidebar from './sidebar'
-import { SidebarWebViewProvider } from './sidebar_webview'
 import * as config_view from './config_view'
 
 import fetch from 'node-fetch'
@@ -21,7 +20,6 @@ const colorRed = new vs.ThemeColor('charts.red')
 
 
 let statusBarItem: vs.StatusBarItem
-let sidebarWebViewProvider: SidebarWebViewProvider
 
 
 function onDirty(proj: boolean, cfg: boolean, preserveStatusText: boolean) {
@@ -41,12 +39,7 @@ export function activate(context: vs.ExtensionContext) {
 	statusBarItem.command = 'comiclab.menu'
 	statusBarItem.show()
 
-	const sideBarTreeColls = new sidebar.NavProjColls()
-	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjColls', sideBarTreeColls))
-	shared.subscribe(shared.appState.onProjRefreshed, (_) => sideBarTreeColls.refreshTriggerer.fire())
-	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjBooks', new sidebar.NavProjBooks()))
-	utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjSites', new sidebar.NavProjSites()))
-	utils.disp(vs.window.registerWebviewViewProvider('comicLabSidebarWebview', sidebarWebViewProvider = new SidebarWebViewProvider()))
+	sidebar.onInit(context)
 
 	shared.subscribe(shared.appState.onCfgModified, (modifiedCfg) => {
 		onDirty(dirtyProj, true, false)
@@ -78,7 +71,7 @@ function mainMenu() {
 	vs.window.showQuickPick(items, { title: "ComicLab" }).then((item) => {
 		switch (item) {
 			case itemConfig:
-				sidebarWebViewProvider.webView?.show(false)
+				sidebar.showWebview()
 				config_view.show()
 				break
 			case itemReloadBoth:

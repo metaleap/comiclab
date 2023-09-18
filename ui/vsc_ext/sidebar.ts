@@ -1,102 +1,39 @@
 import * as vs from 'vscode'
 import * as shared from './_shared_types'
 import * as utils from './utils'
+import { SidebarWebViewProvider } from './sidebar_webview'
+import { NavProjColls } from './sidebar_colls'
+import { NavProjBooks } from './sidebar_books'
+import { NavProjSites } from './sidebar_sites'
 
 
-export class NavProjColls implements vs.TreeDataProvider<vs.TreeItem>{
-    refreshTriggerer = new vs.EventEmitter<vs.TreeItem | undefined | null | void>()
-    onDidChangeTreeData: vs.Event<vs.TreeItem | undefined | null | void> = this.refreshTriggerer.event
+let webviewProvider: SidebarWebViewProvider
 
-    getTreeItem(element: vs.TreeItem): vs.TreeItem {
-        return element
-    }
+export function onInit(ctx: vs.ExtensionContext) {
+    utils.disp(vs.window.registerWebviewViewProvider('comicLabSidebarWebview', webviewProvider = new SidebarWebViewProvider()))
 
-    getChildren(element?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]> {
-        let colls: shared.Collection[] = shared.appState.proj.collections
-        let pages: shared.Page[] | undefined = []
-        if (element) {
-            const coll = collFromNodeId(element.id as string) as shared.Collection
-            colls = coll.collections ?? []
-            pages = coll.pages
-        }
-
-        const ret: vs.TreeItem[] = colls.map(_ => ({
-            collapsibleState: ((utils.noneIn(_.collections) && utils.noneIn(_.pages)) ? vs.TreeItemCollapsibleState.None
-                : (element ? vs.TreeItemCollapsibleState.Collapsed : vs.TreeItemCollapsibleState.Expanded)),
-            contextValue: 'coll',
-            iconPath: new vs.ThemeIcon('folder'),
-            id: collToNodeId(_),
-            label: _.id,
-        } as vs.TreeItem))
-        if (pages)
-            ret.push(...pages.map(_ => ({
-                collapsibleState: vs.TreeItemCollapsibleState.None,
-                contextValue: 'page',
-                iconPath: new vs.ThemeIcon('file'),
-                id: pageToNodeId(_),
-                label: _.id,
-            } as vs.TreeItem)))
-        return ret
-    }
+    utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjColls', sideBarTreeColls))
+    utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjBooks', sideBarTreeBooks))
+    utils.disp(vs.window.registerTreeDataProvider('comiclabExplorerProjSites', sideBarTreeSites))
+    shared.subscribe(shared.appState.onProjRefreshed, (_) => {
+        sideBarTreeColls.refresh.fire()
+        sideBarTreeBooks.refresh.fire()
+        sideBarTreeSites.refresh.fire()
+    })
 }
 
-export class NavProjBooks implements vs.TreeDataProvider<vs.TreeItem>{
-    getTreeItem(element: vs.TreeItem): vs.TreeItem {
-        return element
-    }
-
-    getChildren(element?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]> {
-        return [] // book
-    }
+export abstract class TreeDataProvider implements vs.TreeDataProvider<vs.TreeItem> {
+    refresh = new vs.EventEmitter<vs.TreeItem | undefined | null | void>()
+    onDidChangeTreeData: vs.Event<vs.TreeItem | undefined | null | void> = this.refresh.event
+    abstract getTreeItem(element: vs.TreeItem): vs.TreeItem;
+    abstract getChildren(element?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]>;
 }
 
-export class NavProjSites implements vs.TreeDataProvider<vs.TreeItem>{
-    getTreeItem(element: vs.TreeItem): vs.TreeItem {
-        return element
-    }
 
-    getChildren(element?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]> {
-        return []  // globe
-    }
-}
+let sideBarTreeColls = new NavProjColls()
+let sideBarTreeBooks = new NavProjBooks()
+let sideBarTreeSites = new NavProjSites()
 
-function collFromNodeId(id: string) {
-    if (!id.startsWith('coll:'))
-        throw id
-    const parts = id.substring('coll:'.length).split('/')
-    let colls: shared.Collection[] | undefined = shared.appState.proj.collections
-    let coll: shared.Collection | undefined
-    for (let i = 0; i < parts.length; i++)
-        if (coll = colls?.find(_ => (_.id == parts[i])))
-            colls = coll?.collections
-        else
-            break
-    return coll
-}
-
-function pageFromNodeId(id: string) {
-    if (!id.startsWith('page:'))
-        throw id
-    const parts = id.substring('page:'.length).split('/')
-    let colls: shared.Collection[] | undefined = shared.appState.proj.collections
-    let coll: shared.Collection | undefined
-    let page: shared.Page | undefined
-    for (let i = 0; i < parts.length; i++)
-        if (i == parts.length - 1)
-            return coll?.pages?.find(_ => (_.id == parts[i]))
-        else if (coll = colls?.find(_ => (_.id == parts[i])))
-            colls = coll?.collections
-        else
-            break
-    return page
-}
-
-function collToNodeId(coll: shared.Collection) {
-    const coll_path = shared.collParents(coll)
-    return 'coll:' + [coll].concat(coll_path).reverse().map(_ => _.id).join('/')
-}
-
-function pageToNodeId(page: shared.Page) {
-    const coll_path = shared.pageParents(page)
-    return 'page:' + [page].concat(coll_path).reverse().map(_ => _.id).join('/')
+export function showWebview() {
+    webviewProvider.webView?.show(true)
 }
