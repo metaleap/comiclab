@@ -53,7 +53,7 @@ export type PaperFormat = {
 }
 
 export type Proj = {
-    collections: Collection[]
+    collections?: Collection[]
 }
 
 export type Collection = {
@@ -78,6 +78,11 @@ export function walkCollections<T>(perColl: (_: Collection[]) => any, parents?: 
                 return ret
         }
     return undefined
+}
+
+export function collParent(coll: Collection): { id?: string, collections?: Collection[] } {
+    const parents_path = collParents(coll)
+    return (parents_path.length > 0) ? parents_path[0] : appState.proj
 }
 
 export function collParents(coll: Collection): Collection[] {

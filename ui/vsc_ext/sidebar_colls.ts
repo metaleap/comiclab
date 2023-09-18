@@ -10,7 +10,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
     }
 
     override getChildren(element?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]> {
-        let colls: shared.Collection[] = shared.appState.proj.collections
+        let colls = shared.appState.proj.collections
         let pages: shared.Page[] | undefined = []
         if (element) {
             const coll = collFromNodeId(element.id as string) as shared.Collection
@@ -18,14 +18,14 @@ export class TreeColls extends sidebar.TreeDataProvider {
             pages = coll.pages
         }
 
-        const ret: vs.TreeItem[] = colls.map(_ => ({
+        const ret: vs.TreeItem[] = colls?.map(_ => ({
             collapsibleState: ((utils.noneIn(_.collections) && utils.noneIn(_.pages)) ? vs.TreeItemCollapsibleState.None
                 : (element ? vs.TreeItemCollapsibleState.Collapsed : vs.TreeItemCollapsibleState.Expanded)),
             contextValue: 'coll',
             iconPath: new vs.ThemeIcon('folder'),
             id: collToNodeId(_),
             label: _.id,
-        } as vs.TreeItem))
+        } as vs.TreeItem)) ?? []
         if (pages)
             ret.push(...pages.map(_ => ({
                 collapsibleState: vs.TreeItemCollapsibleState.None,
@@ -38,7 +38,15 @@ export class TreeColls extends sidebar.TreeDataProvider {
     }
 
     deleteColl(item: vs.TreeItem) {
-
+        const coll = collFromNodeId(item.id as string)
+        if (coll) {
+            const parents = shared.collParents(coll)
+            if (parents.length > 0)
+                parents[0].collections = parents[0].collections?.filter(_ => (_ != coll))
+            else
+                shared.appState.proj.collections = shared.appState.proj.collections?.filter(_ => (_ != coll))
+            shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+        }
     }
 
     deletePage(item: vs.TreeItem) {
@@ -50,6 +58,33 @@ export class TreeColls extends sidebar.TreeDataProvider {
                 shared.trigger(shared.appState.onProjModified, shared.appState.proj)
             }
         }
+    }
+
+    rename(item: vs.TreeItem) {
+        const old_name = item.label?.toString() ?? '?!bug!?'
+        const coll = (item.contextValue == 'coll') ? collFromNodeId(item.id as string) : undefined
+        const page = (item.contextValue == 'page') ? pageFromNodeId(item.id as string) : undefined
+        const coll_parent = coll ? shared.collParent(coll) : undefined
+        const page_parent = page ? shared.pageParent(page) : undefined
+        vs.window.showInputBox({
+            title: 'Rename ' + old_name, value: old_name, validateInput: (newName) => {
+                if (((newName = newName.trim()).length > 0) && (newName != old_name)) {
+                    if (coll_parent && coll_parent.collections?.find(_ => (_ != coll && (_.id == newName))))
+                        return `Another collection in ${((coll_parent.id) ? ("'" + coll_parent.id + "'") : "the project")} is already named '${newName}'.`
+                    if (page_parent && page_parent.pages?.find(_ => (_ != page) && (_.id == newName)))
+                        return `Another page in '${page_parent.id}' is already named '${newName}'.`
+                }
+                return undefined
+            }
+        }).then((newName) => {
+            if (newName && ((newName = newName.trim()).length > 0) && (newName != old_name)) {
+                if (coll)
+                    coll.id = newName
+                else if (page)
+                    page.id = newName
+                shared.trigger(shared.appState.onProjModified, shared.appState.proj)
+            }
+        })
     }
 }
 

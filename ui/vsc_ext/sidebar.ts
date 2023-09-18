@@ -56,6 +56,9 @@ function cmdDelete(...args: any[]): any {
 }
 
 function cmdRename(...args: any[]): any {
+    const treeItem = args[0] as vs.TreeItem
+    if (treeItem.contextValue == 'page' || treeItem.contextValue == 'coll')
+        treeColls.rename(treeItem)
 }
 
 function cmdMoveUp(...args: any[]): any {
