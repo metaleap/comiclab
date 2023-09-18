@@ -2,14 +2,14 @@ import * as vs from 'vscode'
 import * as shared from './_shared_types'
 import * as utils from './utils'
 import * as sidebar from './sidebar'
-import * as config_view from './config_view'
+import * as config_editor from './config_editor'
 
 import fetch from 'node-fetch'
 
 
 
-let dirtyProj = false
-let dirtyCfg = false
+export let dirtyProj = false
+export let dirtyCfg = false
 
 
 const apiUri = 'http://localhost:64646'
@@ -77,7 +77,7 @@ function cmdMainMenu() {
 		switch (item) {
 			case itemConfig:
 				sidebar.showWebview()
-				config_view.show()
+				config_editor.show()
 				break
 			case itemReloadBoth:
 				appStateReload(true, true)
@@ -117,6 +117,7 @@ export function appStateReload(proj: boolean, cfg: boolean) {
 				.then((latestAppState) => {
 					if (!latestAppState)
 						return req.onErr("No error reported but nothing received, buggily. Frontend app state might be out of date, try again and fix that bug.")
+					onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg, true) // happens in onDone for good, but also must occur before below event triggers
 					if (proj) {
 						shared.appState.proj = latestAppState.proj
 						shared.trigger(shared.appState.onProjRefreshed, shared.appState)
@@ -147,6 +148,7 @@ export function appStateSave(proj: boolean, cfg: boolean) {
 			if (!resp.ok)
 				req.onErr(resp)
 			else {
+				onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg, true) // happens in onDone for good, but also must occur before below event triggers
 				if (proj) shared.trigger(shared.appState.onProjSaved, shared.appState)
 				if (cfg) shared.trigger(shared.appState.onCfgSaved, shared.appState)
 				statusBarItem.text = "$(pass-filled) ComicLab saved changes to " + msg_suffix

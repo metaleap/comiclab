@@ -6,18 +6,34 @@ import * as shared from './_shared_types'
 
 let configWebviewPanel: vs.WebviewPanel | null
 
-function onCfgRefreshed(appState: shared.State) {
+function onCfgSaved(appState: shared.State) {
     if (configWebviewPanel)
+        configWebviewPanel.title = title()
+}
+
+function onCfgRefreshed(appState: shared.State) {
+    if (configWebviewPanel) {
         configWebviewPanel.webview.postMessage({ ident: 'onAppStateCfgRefreshed', payload: appState.config })
             .then(() => { }, console.error)
+        configWebviewPanel.title = title()
+    }
+}
+
+function title() {
+    console.log(app.dirtyCfg)
+    let ret = "ComicLab Config"
+    if (app.dirtyCfg)
+        ret += "*"
+    return ret
 }
 
 export function show() {
     shared.subscribe(shared.appState.onCfgRefreshed, onCfgRefreshed)
+    shared.subscribe(shared.appState.onCfgSaved, onCfgSaved)
     if (configWebviewPanel)
         return configWebviewPanel.reveal(vs.ViewColumn.One)
 
-    utils.disp(configWebviewPanel = vs.window.createWebviewPanel('comicLabConfig', 'ComicLab Config', vs.ViewColumn.One, {
+    utils.disp(configWebviewPanel = vs.window.createWebviewPanel('comicLabConfig', title(), vs.ViewColumn.One, {
         retainContextWhenHidden: true,
         enableCommandUris: true,
         enableFindWidget: false,
@@ -52,6 +68,7 @@ function onMessage(msg: any) {
             vs.window.showWarningMessage(msg.payload as string, { modal: true })
             break
         case 'appStateCfgModified':
+            (configWebviewPanel as vs.WebviewPanel).title = title()
             shared.trigger(shared.appState.onCfgModified, msg.payload as shared.Config)
             break
         default:
