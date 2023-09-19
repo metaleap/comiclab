@@ -5,13 +5,14 @@ const html = van.tags
 
 export type Num = { min?: number, max?: number, step?: number }
 export type Rec = { id: string, [field_id: string]: string }
+export type Lookup = { [_: string]: string }
 export type Field = {
     id: string,
     title: string,
     num?: Num,
     readOnly?: boolean,
     validators: ValidateFunc[]
-    lookUp?: () => { [_: string]: string }
+    lookUp?: State<Lookup>
     placeHolder?: State<string>
 }
 export type ValidateFunc = (curRec: Rec, field: Field, newFieldValue: string) => Error | undefined
@@ -24,17 +25,19 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
     let latest: Rec
     for (const field of fields)
         trs.push(html.tr({},
-            html.td({ 'class': 'inputform-field-label' }, ([field.title] as any[]).concat(
-                field.lookUp ? [htmlDataList(ctlId, field)] : [])),
-            html.td({ 'class': 'inputform-field-input' }, htmlInput(false, ctlId, '', field, (evt) => {
-                const input_field = document.getElementById(htmlId(ctlId, '', field)) as HTMLInputElement
-                if (!validate(latest, input_field.value, field)) {
-                    input_field.value = latest[field.id]
-                    return
-                }
-                latest[field.id] = input_field.value
-                onDataUserModified(latest)
-            })),
+            html.td({ 'class': 'inputform-field-label' }, field.title),
+            html.td({ 'class': 'inputform-field-input' },
+                htmlDataList(ctlId, field),
+                htmlInput(false, ctlId, '', field, (evt) => {
+                    const input_field = document.getElementById(htmlId(ctlId, '', field)) as HTMLInputElement
+                    if (!validate(latest, input_field.value, field)) {
+                        input_field.value = latest[field.id]
+                        return
+                    }
+                    latest[field.id] = input_field.value
+                    onDataUserModified(latest)
+                }),
+            ),
         ))
     const table = html.table({ 'class': 'inputform', 'id': ctlId }, ...trs)
     return {
@@ -45,11 +48,6 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
                 const field_value = sourceObj[field.id]
                 const input_field = document.getElementById(htmlId(ctlId, '', field)) as HTMLInputElement
                 input_field.value = field_value
-                if (field.lookUp) {
-                    const new_datalist = htmlDataList(ctlId, field) as HTMLDataListElement
-                    const old_datalist = document.getElementById(new_datalist.id) as HTMLDataListElement
-                    old_datalist.innerHTML = new_datalist.innerHTML
-                }
             }
         }
     }
@@ -59,12 +57,13 @@ export function htmlId(ctlId: string, recId: string, field: Field, prefix?: stri
     return (prefix ? (prefix + '_') : '') + ctlId + '_' + recId + '_' + field.id
 }
 
-export function htmlDataList(ctlId: string, field: Field) {
-    const dict = (field.lookUp as () => { [_: string]: string })()
-    return html.datalist({ 'id': htmlId(ctlId, '', field, '_list') }, ...utils.dictToArr(dict, (k, v) => html.option({ 'value': k }, v)))
+export function htmlDataList(ctlId: string, field: Field): ChildDom {
+    if (field.lookUp)
+        return () => html.datalist({ 'id': htmlId(ctlId, '', field, '_list') }, ...utils.dictToArr(field.lookUp?.val, (k, v) => html.option({ 'value': k }, v)))
+    return null
 }
 
-export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field: Field, onChange?: (evt: Event) => any) {
+export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field: Field, onChange?: (evt: Event) => any): HTMLInputElement {
     const init: Props = {
         'class': 'inputfield' + (isAddRec ? ' inputfield-addrec' : ''),
         'id': htmlId(ctlId, recId, field),
@@ -77,7 +76,7 @@ export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field
     if (onChange)
         init.onchange = onChange
     if (field.lookUp)
-        init.list = htmlId(ctlId, recId, field, '_list')
+        init.list = htmlId(ctlId, '', field, '_list')
     if (field.num) {
         const num: any = field.num as any
         for (const prop of ['min', 'max', 'step'])
@@ -112,7 +111,7 @@ export let validatorNonEmpty: ValidateFunc = (_: Rec, field: Field, newFieldValu
 
 export let validatorLookup: ValidateFunc = (curRec: Rec, field: Field, newFieldValue: string) => {
     if (field.lookUp && newFieldValue.length > 0) {
-        const valid_values = utils.dictToArr(field.lookUp(), (k, v) => k)
+        const valid_values = utils.dictToArr(field.lookUp.val, (k, v) => k)
         if (!valid_values.includes(newFieldValue))
             return { name: 'Invalid', message: `'${field.title} must be one of: '${valid_values.join("' or '")}'` }
     }
@@ -139,6 +138,4 @@ export function validatorNumeric(min?: number, max?: number, step?: number): Val
     }
 }
 
-export function lookupBool() {
-    return { 'false': 'No', 'true': 'Yes' }
-}
+export let lookupBool: State<Lookup> = van.state({ 'false': 'No', 'true': 'Yes' } as Lookup)

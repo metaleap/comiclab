@@ -12,7 +12,8 @@ const html = van.tags
 
 let collPath: string = ''
 const authorFieldPlaceHolder = van.state('')
-const authorField: ctl_inputform.Field = { id: 'authorID', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: () => (º.appState.config.contentAuthoring.authors ?? {}), placeHolder: authorFieldPlaceHolder }
+const authorFieldLookup = van.state({} as ctl_inputform.Lookup)
+const authorField: ctl_inputform.Field = { id: 'authorID', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: authorFieldLookup }
 
 
 const main_form = ctl_inputform.create('coll_editor_form', [
@@ -60,6 +61,8 @@ function onMessage(evt: MessageEvent) {
 }
 
 function curProps() {
+    authorFieldLookup.val = º.appState.config.contentAuthoring.authors ?? {}
+
     const coll = º.collFromPath(collPath)
     let author_field_placeholder = ctl_inputform.htmlInputDefaultPlaceholder(authorField)
     if (coll) {
