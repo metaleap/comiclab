@@ -13,7 +13,7 @@ const html = van.tags
 let collPath: string = ''
 const authorFieldPlaceHolder = van.state('')
 const authorFieldLookup = van.state({} as ctl_inputform.Lookup)
-const authorField: ctl_inputform.Field = { id: 'authorID', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: authorFieldLookup }
+const authorField: ctl_inputform.Field = { id: 'authorID', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: authorFieldLookup, placeHolder: authorFieldPlaceHolder }
 
 
 const main_form = ctl_inputform.create('coll_editor_form', [
