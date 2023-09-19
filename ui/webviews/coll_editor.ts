@@ -11,10 +11,12 @@ const html = van.tags
 
 
 let collPath: string = ''
+const authorFieldPlaceHolder = van.state('')
+const authorField: ctl_inputform.Field = { id: 'authorID', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: () => (º.appState.config.contentAuthoring.authors ?? {}), placeHolder: authorFieldPlaceHolder }
 
 
 const main_form = ctl_inputform.create('coll_editor_form', [
-    { id: 'authorID', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: () => (º.appState.config.contentAuthoring.authors ?? {}), placeHolder: altAuthorPlaceholder }
+    authorField,
 ], (userModifiedRec) => {
     setDisabled(true)
     const coll = º.collFromPath(collPath) as º.Collection
@@ -59,20 +61,17 @@ function onMessage(evt: MessageEvent) {
 
 function curProps() {
     const coll = º.collFromPath(collPath)
+    let author_field_placeholder = ctl_inputform.htmlInputDefaultPlaceholder(authorField)
+    if (coll) {
+        const parent = º.collParent(coll) as º.Collection
+        if (parent && parent.props && parent.props.authorID) {
+            const full_name = º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[parent.props.authorID] ?? '') : ''
+            author_field_placeholder = (full_name.length > 0) ? full_name : parent.props.authorID
+        }
+    }
+    authorFieldPlaceHolder.val = author_field_placeholder
     return {
         'id': '',
         'authorID': coll?.props.authorID ?? "",
     } as ctl_inputform.Rec
-}
-
-function altAuthorPlaceholder() {
-    if (collPath != '') {
-        const coll = º.collFromPath(collPath) as º.Collection
-        const parent = º.collParent(coll) as º.Collection
-        if (parent && parent.props && parent.props.authorID) {
-            const full_name = º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[parent.props.authorID] ?? '') : ''
-            return (full_name.length > 0) ? full_name : parent.props.authorID
-        }
-    }
-    return undefined
 }

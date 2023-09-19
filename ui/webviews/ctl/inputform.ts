@@ -1,4 +1,4 @@
-import van, { ChildDom, Props } from '../vanjs/van-1.2.0.js'
+import van, { ChildDom, Props, State } from '../vanjs/van-1.2.0.js'
 import * as utils from '../utils.js'
 
 const html = van.tags
@@ -12,7 +12,7 @@ export type Field = {
     readOnly?: boolean,
     validators: ValidateFunc[]
     lookUp?: () => { [_: string]: string }
-    placeHolder?: () => string | undefined
+    placeHolder?: State<string>
 }
 export type ValidateFunc = (curRec: Rec, field: Field, newFieldValue: string) => Error | undefined
 export type RecFunc = (rec: Rec) => void
@@ -50,10 +50,6 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
                     const old_datalist = document.getElementById(new_datalist.id) as HTMLDataListElement
                     old_datalist.innerHTML = new_datalist.innerHTML
                 }
-                if (field.placeHolder) {
-                    const alt_placeholder = field.placeHolder()
-                    input_field.placeholder = alt_placeholder ? alt_placeholder : `(${field.title})`
-                }
             }
         }
     }
@@ -69,7 +65,6 @@ export function htmlDataList(ctlId: string, field: Field) {
 }
 
 export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field: Field, onChange?: (evt: Event) => any) {
-    const alt_placeholder = field.placeHolder ? field.placeHolder() : undefined
     const init: Props = {
         'class': 'inputfield' + (isAddRec ? ' inputfield-addrec' : ''),
         'id': htmlId(ctlId, recId, field),
@@ -77,7 +72,7 @@ export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field
         'data-field-id': field.id,
         'readOnly': field.readOnly ? (!isAddRec) : false,
         'type': (field.num ? 'number' : 'text'),
-        'placeholder': alt_placeholder ? alt_placeholder : ((!isAddRec) ? `(${field.title})` : "(New entry)"),
+        'placeholder': field.placeHolder ? field.placeHolder : htmlInputDefaultPlaceholder(field, isAddRec),
     }
     if (onChange)
         init.onchange = onChange
@@ -90,6 +85,10 @@ export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field
                 init[prop] = num[prop].toString()
     }
     return html.input(init)
+}
+
+export function htmlInputDefaultPlaceholder(field: Field, isAddRec?: boolean) {
+    return (!isAddRec) ? `(${field.title})` : "(New entry)"
 }
 
 export function validate(rec: Rec, newValue: string | undefined, ...fields: Field[]) {
@@ -139,7 +138,6 @@ export function validatorNumeric(min?: number, max?: number, step?: number): Val
         return undefined
     }
 }
-
 
 export function lookupBool() {
     return { 'false': 'No', 'true': 'Yes' }
