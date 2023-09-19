@@ -1,6 +1,6 @@
 import van, { ChildDom } from '../vanjs/van-1.2.0.js'
 import * as utils from '../utils.js'
-import { htmlInput, Rec, Field, RecsFunc, ValidateFunc, validate, validatorNonEmpty, validatorNumeric } from './inputform.js'
+import { htmlInput, htmlDataList, Rec, Field, RecsFunc, ValidateFunc, validate, validatorNonEmpty, validatorNumeric } from './inputform.js'
 
 
 const html = van.tags
@@ -56,7 +56,7 @@ export function create(id: string, fields: Field[], onDataUserModified: RecsFunc
     const add_rec_tds: ChildDom[] = []
     for (const field of fields) {
         if (field.lookUp)
-            ths_and_lists.push(html.datalist({ 'id': '_list_' + id + '_' + field.id }, ...utils.dictToArr(field.lookUp(), (k, v) => html.option({ 'value': k }, v))))
+            ths_and_lists.push(htmlDataList(id, field))
         ths_and_lists.push(html.th({ 'class': 'inputgrid-header', 'id': id + '_' + field.id, 'data-field-id': field.id, 'width': th_width + '%' }, field.title))
         add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, htmlInput(true, id, '', field)))
     }

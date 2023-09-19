@@ -16,7 +16,7 @@ export function onInit() {
 class CollEditor extends base_editor.WebviewPanel {
     readonly coll: º.Collection
     constructor(coll: º.Collection) {
-        super(true, false, viewTypeIdent, 'archive')
+        super(true, true, viewTypeIdent, 'archive')
         this.coll = coll
     }
     override title(): string {
@@ -24,11 +24,7 @@ class CollEditor extends base_editor.WebviewPanel {
     }
     override onRefreshedEventMessage(): any {
         return {
-            ident: 'onCollRefreshed', payload: {
-                'path': º.collToPath(this.coll),
-                'props': this.coll.props,
-                'pages': this.coll.pages,
-            }
+            ident: 'onAppStateRefreshed', payload: º.appState,
         }
     }
     override onMessage(msg: any): void {

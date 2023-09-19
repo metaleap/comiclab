@@ -20,18 +20,32 @@ export type RecsFunc = (recs: Rec[]) => void
 
 export function create(id: string, fields: Field[], onDataUserModified: RecFunc): { ctl: ChildDom, onDataChangedAtSource: RecFunc } {
     const trs: HTMLTableRowElement[] = []
-    for (const field of fields) {
+    for (const field of fields)
         trs.push(html.tr({},
-            html.td({ 'class': 'inputform-field-label' }, field.title),
+            html.td({ 'class': 'inputform-field-label' }, ([field.title] as any[]).concat(field.lookUp ? [htmlDataList(id, field)] : [])),
             html.td({ 'class': 'inputform-field-input' }, htmlInput(false, id, '', field)),
         ))
-    }
     const table = html.table({ 'class': 'inputform', 'id': id }, ...trs)
     return {
         ctl: table,
         onDataChangedAtSource: (sourceObj) => {
+            for (const field of fields) {
+                const field_value = sourceObj[field.id]
+                const input_field = document.getElementById(id + '__' + field.id) as HTMLInputElement
+                input_field.value = field_value
+                if (field.lookUp) {
+                    const new_datalist = htmlDataList(id, field) as HTMLDataListElement
+                    const old_datalist = document.getElementById(new_datalist.id) as HTMLDataListElement
+                    old_datalist.innerHTML = new_datalist.innerHTML
+                }
+            }
         }
     }
+}
+
+export function htmlDataList(ctlID: string, field: Field) {
+    const dict = (field.lookUp as () => { [_: string]: string })()
+    return html.datalist({ 'id': '_list_' + ctlID + '_' + field.id }, ...utils.dictToArr(dict, (k, v) => html.option({ 'value': k }, v)))
 }
 
 export function htmlInput(isAddRec: boolean, ctlID: string, recID: string, field: Field, onChange?: (evt: Event) => any) {

@@ -34,7 +34,7 @@ function onMessage(evt: MessageEvent) {
     const msg = evt.data;
     switch (msg.ident) {
         case 'onAppStateRefreshed':
-            if (msg.payload.cfg)
+            if (msg.payload.config)
                 º.appState.config = msg.payload.config
             if (msg.payload.proj)
                 º.appState.proj = msg.payload.proj
@@ -50,7 +50,7 @@ function onMessage(evt: MessageEvent) {
 function curProps() {
     const coll = º.collFromPath(collPath)
     return {
-        'id': coll?.name,
-        'authorID': coll?.props.authorID,
+        'id': '',
+        'authorID': coll?.props.authorID ?? "",
     } as ctl_inputform.Rec
 }
