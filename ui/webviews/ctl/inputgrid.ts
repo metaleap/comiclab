@@ -125,7 +125,7 @@ function htmlInput(isAddRec: boolean, gridID: string, recID: string, field: Fiel
         'data-field-id': field.id,
         'readOnly': field.readOnly ? (!isAddRec) : false,
         'type': (field.num ? 'number' : 'text'),
-        'placeholder': isAddRec ? (`(New Entry's ${field.title})`) : field.title,
+        'placeholder': (!isAddRec) ? `(${field.title})` : "(New entry)",
     }
     if (onChange)
         init.onchange = onChange

@@ -51,7 +51,7 @@
       {
         "command": "comiclab.proj.colls.addPage",
         "title": "Add Page...",
-        "icon": "$(diff-added)"
+        "icon": "$(new-file)"
       },
       {
         "command": "comiclab.proj.colls.addColl",
@@ -61,7 +61,7 @@
       {
         "command": "comiclab.proj.colls.addCollTop",
         "title": "Add Top-Level Collection...",
-        "icon": "$(diff-added)"
+        "icon": "$(archive)"
       },
       {
         "command": "comiclab.proj.colls.rename",

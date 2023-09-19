@@ -13,7 +13,7 @@ let grid_authors = newGridForStringMap('config_authors', 'Author', 'author_full_
 let grid_languages = newGridForStringMap('config_languages', 'Language', 'lang_name', 'Name', curLanguages, (dict) => { shared.appState.config.contentAuthoring.languages = dict })
 let grid_contentfields = ctl_inputgrid.create('config_contentfields', [
     { id: 'id', title: "Content Field ID", validators: [] },
-    { id: 'localizable', title: "Localizable", validators: [ctl_inputgrid.validatorLookup], lookUp: ctl_inputgrid.lookupBool },
+    { id: 'localizable', title: "Multi-Language", validators: [ctl_inputgrid.validatorLookup], lookUp: ctl_inputgrid.lookupBool },
 ], (recs) => {
     setDisabled(true)
     shared.appState.config.contentAuthoring.contentFields = utils.arrToDict(recs, (rec) => [rec.id, rec['localizable'] == 'true'])

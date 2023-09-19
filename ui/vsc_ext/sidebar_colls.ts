@@ -99,7 +99,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
         const coll_parent = coll ? shared.collParent(coll) : undefined
         const page_parent = page ? shared.pageParent(page) : undefined
         vs.window.showInputBox({
-            title: `Rename '${old_name}'`,
+            title: `Rename '${old_name}':`,
             value: old_name,
             validateInput: (newName) => {
                 if (((newName = newName.trim()).length > 0) && (newName != old_name)) {
@@ -166,7 +166,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
         if (!dontDoIt)
             vs.window.showQuickPick(new_parent_candidates.map(_ => {
                 return '/' + ((!_) ? '' : coll_editor.collToPath(_))
-            }), { placeHolder: `Select the new parent collection for '${coll.id}':`, title: `Relocate '${coll.id}'` }).then((path) => {
+            }), { placeHolder: `Select the new parent collection for '${coll.id}':`, title: `Relocate '${coll.id}:'` }).then((path) => {
                 if (path) {
                     if (coll_parent)
                         coll_parent.collections = coll_parent.collections.filter(_ => (_ != coll))
