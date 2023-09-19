@@ -62,18 +62,20 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
     }
 
     const th_width = 100 / fields.length
-    const ths: ChildDom[] = []
+    const ths_and_lists: ChildDom[] = []
     const add_rec_tds: ChildDom[] = []
     for (const field of fields) {
-        ths.push(html.th({ 'class': 'inputgrid-header', 'id': id + '_' + field.id, 'data-field-id': field.id, 'width': th_width + '%' }, field.title))
+        if (field.lookUp)
+            ths_and_lists.push(html.datalist({ 'id': '_list_' + id + '_' + field.id }, ...field.lookUp().map(_ => html.option({ 'value': _ }))))
+        ths_and_lists.push(html.th({ 'class': 'inputgrid-header', 'id': id + '_' + field.id, 'data-field-id': field.id, 'width': th_width + '%' }, field.title))
         add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, htmlInput(true, id, '', field)))
     }
-    ths.push(html.th({ 'class': 'inputgrid-header', 'id': id + '_' }, ' '))
+    ths_and_lists.push(html.th({ 'class': 'inputgrid-header', 'id': id + '_' }, ' '))
     add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, html.a(
         { 'onclick': recAdd, 'class': 'btn btn-circle-plus inputgrid-cell', 'id': id + '__', alt: "Add", title: "Add", href: '' })))
 
     const table = html.table({ 'class': 'inputgrid', 'id': id },
-        html.tr({ 'class': 'inputgrid-header' }, ...ths),
+        html.tr({ 'class': 'inputgrid-header' }, ...ths_and_lists),
         html.tr({ 'class': 'inputgrid-record-add' }, ...add_rec_tds))
     return {
         ctl: table,
@@ -127,6 +129,8 @@ function htmlInput(isAddRec: boolean, gridID: string, recID: string, field: Fiel
     }
     if (onChange)
         init.onchange = onChange
+    if (field.lookUp)
+        init.list = '_list_' + gridID + '_' + field.id
     if (field.num) {
         const num: any = field.num as any
         for (const prop of ['min', 'max', 'step'])
