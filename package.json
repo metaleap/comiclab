@@ -46,8 +46,14 @@
         "title": "ComicLab",
         "icon": "ui/icons/comments.svg"
       },
-      { "command": "comiclab.proj.colls.openColl", "title": "Open Collection" },
-      { "command": "comiclab.proj.colls.openPage", "title": "Open Page" },
+      {
+        "command": "comiclab.proj.colls.openColl",
+        "title": "Open Collection"
+      },
+      {
+        "command": "comiclab.proj.colls.openPage",
+        "title": "Open Page"
+      },
       {
         "command": "comiclab.proj.colls.addPage",
         "title": "Add Page...",
@@ -101,17 +107,50 @@
     ],
     "menus": {
       "commandPalette": [
-        { "command": "comiclab.proj.colls.addColl", "when": "false" },
-        { "command": "comiclab.proj.colls.addPage", "when": "false" },
-        { "command": "comiclab.proj.colls.moveTo", "when": "false" },
-        { "command": "comiclab.proj.colls.moveDn", "when": "false" },
-        { "command": "comiclab.proj.colls.moveUp", "when": "false" },
-        { "command": "comiclab.proj.colls.moveEnd", "when": "false" },
-        { "command": "comiclab.proj.colls.moveTop", "when": "false" },
-        { "command": "comiclab.proj.colls.delete", "when": "false" },
-        { "command": "comiclab.proj.colls.rename", "when": "false" },
-        { "command": "comiclab.proj.colls.openColl", "when": "false" },
-        { "command": "comiclab.proj.colls.openPage", "when": "false" }
+        {
+          "command": "comiclab.proj.colls.addColl",
+          "when": "false"
+        },
+        {
+          "command": "comiclab.proj.colls.addPage",
+          "when": "false"
+        },
+        {
+          "command": "comiclab.proj.colls.moveTo",
+          "when": "false"
+        },
+        {
+          "command": "comiclab.proj.colls.moveDn",
+          "when": "false"
+        },
+        {
+          "command": "comiclab.proj.colls.moveUp",
+          "when": "false"
+        },
+        {
+          "command": "comiclab.proj.colls.moveEnd",
+          "when": "false"
+        },
+        {
+          "command": "comiclab.proj.colls.moveTop",
+          "when": "false"
+        },
+        {
+          "command": "comiclab.proj.colls.delete",
+          "when": "false"
+        },
+        {
+          "command": "comiclab.proj.colls.rename",
+          "when": "false"
+        },
+        {
+          "command": "comiclab.proj.colls.openColl",
+          "when": "false"
+        },
+        {
+          "command": "comiclab.proj.colls.openPage",
+          "when": "false"
+        }
       ],
       "view/title": [
         {
@@ -203,10 +242,10 @@
     "@types/node-fetch": "^2.6.5",
     "@types/vscode": "^1.82.0",
     "@types/vscode-webview": "^1.57.2",
+    "@vscode/codicons": "^0.0.33",
     "glob": "^10.3.4",
     "mocha": "^10.2.0",
     "node-fetch": "^2.7.0",
-    "typescript": "^5.2.2",
-    "@vscode/codicons": "^0.0.33"
+    "typescript": "^5.2.2"
   }
 }

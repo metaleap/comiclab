@@ -24,7 +24,7 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
     let latest: Rec
     let fieldRow = (field: Field): ChildDom => {
         return html.div({ 'class': 'inputform-field' },
-            html.div({ 'class': 'inputform-field-label' }, field.title),
+            html.div({ 'class': 'inputform-field-label' }, field.title + ":"),
             html.div({ 'class': 'inputform-field-input' },
                 htmlDataList(ctlId, field),
                 htmlInput(false, ctlId, '', field, (evt) => {
@@ -91,7 +91,8 @@ export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field
 }
 
 export function htmlInputDefaultPlaceholder(field: Field, isAddRec?: boolean) {
-    return (!isAddRec) ? `(${field.title})` : "(New entry)"
+    let field_title = field.title.trim()
+    return (!isAddRec) ? (field_title.startsWith('(') ? '' : `(${field_title})`) : "(New entry)"
 }
 
 export function validate(rec: Rec, newValue: string | undefined, ...fields: Field[]) {

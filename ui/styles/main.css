@@ -8,6 +8,10 @@ body {
     cursor: pointer;
 }
 
+.hidden {
+    visibility: hidden;
+}
+
 a.btn {
     display: inline-block;
     text-decoration: none;

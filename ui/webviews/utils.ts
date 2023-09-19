@@ -1,5 +1,6 @@
 export let vs: { postMessage: (_: any) => any }
 
+
 export function onInit(vscode: { postMessage: (_: any) => any }) {
     vs = vscode
 }

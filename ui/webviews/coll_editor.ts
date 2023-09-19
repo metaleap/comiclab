@@ -71,7 +71,7 @@ function onMessage(evt: MessageEvent) {
                     const ret = [{ 'id': _.id + contentDynFieldsLangSep, 'title': _.id, } as ctl_inputform.Field]
                     if (_.localizable)
                         for (const lang_id in º.appState.config.contentAuthoring.languages)
-                            ret.push({ 'id': _.id + contentDynFieldsLangSep + lang_id, 'title': `${_.id} (${º.appState.config.contentAuthoring.languages[lang_id]})`, } as ctl_inputform.Field)
+                            ret.push({ 'id': _.id + contentDynFieldsLangSep + lang_id, 'title': `    (${º.appState.config.contentAuthoring.languages[lang_id]})`, } as ctl_inputform.Field)
                     return ret
                 }).flat()
             const coll = º.collFromPath(collPath)
