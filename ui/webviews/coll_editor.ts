@@ -4,6 +4,10 @@ import * as utils from './utils.js'
 
 import * as ctl_tabs from './ctl/tabs.js'
 import * as ctl_inputform from './ctl/inputform.js'
+import * as ctl_multipanel from './ctl/multipanel.js'
+
+
+const html = van.tags
 
 
 let collPath: string = ''
@@ -19,7 +23,10 @@ const main_form = ctl_inputform.create('coll_editor_form', [
 })
 
 let main_tabs = ctl_tabs.create('coll_editor_tabs', {
-    "Collection Details": main_form.ctl,
+    "Collection Settings": ctl_multipanel.create('coll_editor_props', {
+        'Properties': main_form.ctl,
+    }),
+    "Preview": html.div('(TODO)'),
 })
 
 export function onInit(editorReuseKeyDerivedCollPath: string, vscode: { postMessage: (_: any) => any }, baseUri: string) {
@@ -62,7 +69,6 @@ function altAuthorPlaceholder() {
     if (collPath != '') {
         const coll = º.collFromPath(collPath) as º.Collection
         const parent = º.collParent(coll) as º.Collection
-        console.log(coll, collPath, parent)
         if (parent && parent.props && parent.props.authorID) {
             const full_name = º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[parent.props.authorID] ?? '') : ''
             return (full_name.length > 0) ? full_name : parent.props.authorID

@@ -97,3 +97,15 @@ div.multipanel>span.multipanel-section {
     display: block;
     margin-bottom: 3em;
 }
+
+table.inputform {
+    width: 99%;
+}
+
+table.inputform>tr>td.inputform-field-label {
+    width: 22%;
+}
+
+table.inputform>tr>td.inputform-field-input {
+    width: 77%;
+}
