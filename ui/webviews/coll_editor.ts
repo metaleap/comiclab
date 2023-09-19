@@ -14,6 +14,8 @@ let collPath: string = ''
 const authorFieldPlaceHolder = van.state('')
 const authorFieldLookup = van.state({} as ctl_inputform.Lookup)
 const authorField: ctl_inputform.Field = { id: 'authorID', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: authorFieldLookup, placeHolder: authorFieldPlaceHolder }
+const contentFields = van.state([
+] as ctl_inputform.Field[])
 
 
 const main_form = ctl_inputform.create('coll_editor_form', [
@@ -23,7 +25,7 @@ const main_form = ctl_inputform.create('coll_editor_form', [
     const coll = º.collFromPath(collPath) as º.Collection
     coll.props.authorID = userModifiedRec['authorID']
     utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
-})
+}, contentFields)
 
 let main_tabs = ctl_tabs.create('coll_editor_tabs', {
     "Collection Settings": ctl_multipanel.create('coll_editor_props', {
@@ -51,7 +53,24 @@ function onMessage(evt: MessageEvent) {
                 º.appState.config = msg.payload.config
             if (msg.payload.proj)
                 º.appState.proj = msg.payload.proj
-            main_form.onDataChangedAtSource(curProps())
+
+            authorFieldLookup.val = º.appState.config.contentAuthoring.authors ?? {}
+            contentFields.val = utils.dictToArr(º.appState.config.contentAuthoring.contentFields, (k, v) => ({ 'id': k, 'localizable': v }))
+                .map((_) => ({ 'id': _.id, 'title': _.id, } as ctl_inputform.Field))
+            const coll = º.collFromPath(collPath)
+            if (coll) {
+                let author_field_placeholder = ctl_inputform.htmlInputDefaultPlaceholder(authorField)
+                if (coll) {
+                    const parent = º.collParent(coll) as º.Collection
+                    if (parent && parent.props && parent.props.authorID) {
+                        const full_name = º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[parent.props.authorID] ?? '') : ''
+                        author_field_placeholder = (full_name.length > 0) ? full_name : parent.props.authorID
+                    }
+                }
+                authorFieldPlaceHolder.val = author_field_placeholder
+
+                main_form.onDataChangedAtSource(curProps(coll))
+            }
             setDisabled(false)
             break
         default:
@@ -60,19 +79,7 @@ function onMessage(evt: MessageEvent) {
     }
 }
 
-function curProps() {
-    authorFieldLookup.val = º.appState.config.contentAuthoring.authors ?? {}
-
-    const coll = º.collFromPath(collPath)
-    let author_field_placeholder = ctl_inputform.htmlInputDefaultPlaceholder(authorField)
-    if (coll) {
-        const parent = º.collParent(coll) as º.Collection
-        if (parent && parent.props && parent.props.authorID) {
-            const full_name = º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[parent.props.authorID] ?? '') : ''
-            author_field_placeholder = (full_name.length > 0) ? full_name : parent.props.authorID
-        }
-    }
-    authorFieldPlaceHolder.val = author_field_placeholder
+function curProps(coll: º.Collection) {
     return {
         'id': '',
         'authorID': coll?.props.authorID ?? "",
