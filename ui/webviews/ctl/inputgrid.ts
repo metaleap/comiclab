@@ -1,6 +1,6 @@
-import van, { ChildDom, Props } from '../vanjs/van-1.2.0.js'
+import van, { ChildDom } from '../vanjs/van-1.2.0.js'
 import * as utils from '../utils.js'
-import { Rec, Field, ValidateFunc, RecsFunc, validate, validatorNonEmpty, validatorNumeric } from './form.js'
+import { htmlInput, Rec, Field, RecsFunc, ValidateFunc, validate, validatorNonEmpty, validatorNumeric } from './inputform.js'
 
 
 const html = van.tags
@@ -105,29 +105,6 @@ export function create(id: string, fields: Field[], onDataUserModified: RecsFunc
             table.style.visibility = 'visible'
         }
     }
-}
-
-function htmlInput(isAddRec: boolean, gridID: string, recID: string, field: Field, onChange?: (evt: Event) => any) {
-    const init: Props = {
-        'class': 'inputgrid-cell' + (isAddRec ? ' inputgrid-cell-addrec' : ''),
-        'id': gridID + '_' + recID + '_' + field.id,
-        'data-rec-id': recID,
-        'data-field-id': field.id,
-        'readOnly': field.readOnly ? (!isAddRec) : false,
-        'type': (field.num ? 'number' : 'text'),
-        'placeholder': (!isAddRec) ? `(${field.title})` : "(New entry)",
-    }
-    if (onChange)
-        init.onchange = onChange
-    if (field.lookUp)
-        init.list = '_list_' + gridID + '_' + field.id
-    if (field.num) {
-        const num: any = field.num as any
-        for (const prop of ['min', 'max', 'step'])
-            if (num[prop] !== undefined)
-                init[prop] = num[prop].toString()
-    }
-    return html.input(init)
 }
 
 export function validatorUnique(fullDataset: () => Rec[]): ValidateFunc {

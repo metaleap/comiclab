@@ -5,7 +5,7 @@ import * as app from './app'
 import * as base_editor from './base_editor'
 
 
-export const viewTypeIdent = 'coll_editor'
+const viewTypeIdent = 'coll_editor'
 
 
 export function onInit() {
@@ -26,15 +26,15 @@ class CollEditor extends base_editor.WebviewPanel {
         return {
             ident: 'onCollRefreshed', payload: {
                 'path': º.collToPath(this.coll),
+                'props': this.coll.props,
+                'pages': this.coll.pages,
             }
         }
     }
     override onMessage(msg: any): void {
         switch (msg.ident) {
             case 'onCollModified':
-                const new_coll = msg.payload as º.Collection
-                this.coll.authorID = new_coll.authorID
-                this.coll.contentFields = new_coll.contentFields
+                this.coll.props = msg.payload.props
                 app.onProjModified.now(º.appState.proj)
                 break
             default:

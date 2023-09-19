@@ -3,11 +3,14 @@ import * as º from './_º.js'
 import * as utils from './utils.js'
 
 import * as ctl_tabs from './ctl/tabs.js'
-import * as ctl_form from './ctl/form.js'
+import * as ctl_inputform from './ctl/inputform.js'
 
 
-const main_form = ctl_form.create('coll_editor_form', [
-    { id: 'authorID', title: 'Author', validators: [ctl_form.validatorLookup], lookUp: () => (º.appState.config.contentAuthoring.authors ?? {}) }
+let collPath: string = ''
+
+
+const main_form = ctl_inputform.create('coll_editor_form', [
+    { id: 'authorID', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: () => (º.appState.config.contentAuthoring.authors ?? {}) }
 ], (userModifiedRec) => {
     // const c = shared.appState.proj.collections[0]
 })
@@ -16,7 +19,8 @@ let main_tabs = ctl_tabs.create('coll_editor_tabs', {
     "Collection Details": main_form.ctl,
 })
 
-export function onInit(vscode: { postMessage: (_: any) => any }, baseUri: string) {
+export function onInit(editorReuseKeyDerivedCollPath: string, vscode: { postMessage: (_: any) => any }, baseUri: string) {
+    collPath = editorReuseKeyDerivedCollPath
     utils.onInit(vscode)
     window.addEventListener('message', onMessage)
     van.add(document.body, main_tabs)
@@ -29,17 +33,24 @@ function setDisabled(disabled: boolean) {
 function onMessage(evt: MessageEvent) {
     const msg = evt.data;
     switch (msg.ident) {
-        case 'onCollRefreshed':
-            console.log(msg.payload)
-            // shared.appState.pro = msg.payload as shared.Collection
-            // authors_grid.onDataChangedAtSource(curAuthors())
-            // paperformats_grid.onDataChangedAtSource(curPaperFormats())
-            // languages_grid.onDataChangedAtSource(curLanguages())
-            // contentfields_grid.onDataChangedAtSource(curContentFields())
+        case 'onAppStateRefreshed':
+            if (msg.payload.cfg)
+                º.appState.config = msg.payload.config
+            if (msg.payload.proj)
+                º.appState.proj = msg.payload.proj
+            main_form.onDataChangedAtSource(curProps())
             setDisabled(false)
             break
         default:
             utils.vs.postMessage({ 'unknown_msg': msg })
             break
     }
+}
+
+function curProps() {
+    const coll = º.collFromPath(collPath)
+    return {
+        'id': coll?.name,
+        'authorID': coll?.props.authorID,
+    } as ctl_inputform.Rec
 }

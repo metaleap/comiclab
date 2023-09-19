@@ -83,7 +83,7 @@ export abstract class WebviewPanel {
                 </head><body>
                     <script type='module'>
                         import * as main from '${this.htmlUri(utils.jsPath(this.viewTypeIdent))}'
-                        main.onInit(acquireVsCodeApi(), '${this.htmlUri(vs.Uri.joinPath(utils.extUri, 'ui')).toString()}')
+                        main.onInit(${this.reuseKey.substring(this.reuseKey.indexOf(':') + 1)}, acquireVsCodeApi(), '${this.htmlUri(vs.Uri.joinPath(utils.extUri, 'ui')).toString()}')
                     </script>
                 </body></html>`
         utils.disp(this.webviewPanel.webview.onDidReceiveMessage((msg) => this.onMessage(msg)))

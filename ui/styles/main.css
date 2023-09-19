@@ -73,17 +73,17 @@ div.tab-container>input[type="radio"]:checked+div.tab-page>label {
     color: var(--vscode-tab-activeForeground);
 }
 
-input.inputgrid-cell {
+input.inputfield {
     width: 100%;
 }
 
-input.inputgrid-cell-addrec {
+input.inputfield-addrec {
     font-style: italic;
     background-color: var(--vscode-inputValidation-infoBackground) !important;
     transition: background-color 1000ms linear;
 }
 
-input.inputgrid-cell-addrec:not(:placeholder-shown) {
+input.inputfield-addrec:not(:placeholder-shown) {
     background-color: var(--vscode-editor-stackFrameHighlightBackground) !important;
 }
 

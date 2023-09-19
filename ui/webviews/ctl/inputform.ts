@@ -1,4 +1,4 @@
-import van, { ChildDom } from '../vanjs/van-1.2.0.js'
+import van, { ChildDom, Props } from '../vanjs/van-1.2.0.js'
 import * as utils from '../utils.js'
 
 const html = van.tags
@@ -19,11 +19,42 @@ export type RecsFunc = (recs: Rec[]) => void
 
 
 export function create(id: string, fields: Field[], onDataUserModified: RecFunc): { ctl: ChildDom, onDataChangedAtSource: RecFunc } {
+    const trs: HTMLTableRowElement[] = []
+    for (const field of fields) {
+        trs.push(html.tr({},
+            html.td({ 'class': 'inputform-field-label' }, field.title),
+            html.td({ 'class': 'inputform-field-input' }, htmlInput(false, id, '', field)),
+        ))
+    }
+    const table = html.table({ 'class': 'inputform', 'id': id }, ...trs)
     return {
-        ctl: html.div('hello form'),
+        ctl: table,
         onDataChangedAtSource: (sourceObj) => {
         }
     }
+}
+
+export function htmlInput(isAddRec: boolean, ctlID: string, recID: string, field: Field, onChange?: (evt: Event) => any) {
+    const init: Props = {
+        'class': 'inputfield' + (isAddRec ? ' inputfield-addrec' : ''),
+        'id': ctlID + '_' + recID + '_' + field.id,
+        'data-rec-id': recID,
+        'data-field-id': field.id,
+        'readOnly': field.readOnly ? (!isAddRec) : false,
+        'type': (field.num ? 'number' : 'text'),
+        'placeholder': (!isAddRec) ? `(${field.title})` : "(New entry)",
+    }
+    if (onChange)
+        init.onchange = onChange
+    if (field.lookUp)
+        init.list = '_list_' + ctlID + '_' + field.id
+    if (field.num) {
+        const num: any = field.num as any
+        for (const prop of ['min', 'max', 'step'])
+            if (num[prop] !== undefined)
+                init[prop] = num[prop].toString()
+    }
+    return html.input(init)
 }
 
 export function validate(rec: Rec, newValue: string | undefined, ...fields: Field[]) {

@@ -30,5 +30,5 @@ class ConfigEditor extends base_editor.WebviewPanel {
 }
 
 export function show() {
-    base_editor.show(viewTypeIdent, () => new ConfigEditor())
+    base_editor.show(viewTypeIdent + ':', () => new ConfigEditor())
 }

@@ -23,23 +23,26 @@ export type PaperFormat = {
     heightMm: number,
 }
 
-export type CollOrProj = { name?: string, collections: Collection[] }
-
 export type Proj = {
     collections: Collection[]
 }
 
 export type Collection = {
     name: string,
-    contentFields: { [id: string]: { [lang_id: string]: string } },
-    authorID: string,
     collections: Collection[],
     pages: Page[],
+    props: {
+        contentFields: { [id: string]: { [lang_id: string]: string } },
+        authorID: string,
+    },
 }
 
 export type Page = {
     name: string,
+    props: {},
 }
+
+type CollOrProj = { name?: string, collections: Collection[] }
 
 export function walkCollections<T>(perColl: (_: Collection[]) => any, parents?: Collection[]) {
     const colls = (parents && parents.length) ? parents[0].collections : appState.proj.collections
