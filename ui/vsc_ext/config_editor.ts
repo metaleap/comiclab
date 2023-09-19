@@ -1,7 +1,7 @@
 import * as vs from 'vscode'
+import * as º from './_º'
 import * as utils from './utils'
 import * as app from './app'
-import * as shared from './_shared_types'
 import * as base_editor from './base_editor'
 
 
@@ -16,12 +16,12 @@ class ConfigEditor extends base_editor.WebviewPanel {
         return "ComicLab Config"
     }
     override onRefreshedEventMessage() {
-        return { ident: 'onAppStateCfgRefreshed', payload: shared.appState.config }
+        return { ident: 'onAppStateCfgRefreshed', payload: º.appState.config }
     }
     override onMessage(msg: any): void {
         switch (msg.ident) {
             case 'onAppStateCfgModified':
-                app.onCfgModified.now(msg.payload as shared.Config)
+                app.onCfgModified.now(msg.payload as º.Config)
                 break
             default:
                 super.onMessage(msg)

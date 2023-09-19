@@ -1,5 +1,4 @@
 import * as vs from 'vscode'
-import * as shared from './_shared_types'
 import * as utils from './utils'
 import * as app from './app'
 

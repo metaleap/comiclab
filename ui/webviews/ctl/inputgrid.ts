@@ -1,22 +1,12 @@
 import van, { ChildDom, Props } from '../vanjs/van-1.2.0.js'
 import * as utils from '../utils.js'
+import { Rec, Field, ValidateFunc, RecsFunc, validate, validatorNonEmpty, validatorNumeric } from './form.js'
+
 
 const html = van.tags
 
-export type Num = { min?: number, max?: number, step?: number }
-export type Field = {
-    id: string,
-    title: string,
-    num?: Num,
-    readOnly?: boolean,
-    validators: ValidateFunc[]
-    lookUp?: () => string[]
-}
-export type Rec = { id: string, [field_id: string]: string }
-export type DatasetFunc = (recs: Rec[]) => void
-export type ValidateFunc = (curRec: Rec, field: Field, newFieldValue: string) => Error | undefined
 
-export function create(id: string, fields: Field[], onDataUserModified: DatasetFunc): { ctl: ChildDom, onDataChangedAtSource: DatasetFunc } {
+export function create(id: string, fields: Field[], onDataUserModified: RecsFunc): { ctl: ChildDom, onDataChangedAtSource: RecsFunc } {
     let latestDataset: Rec[] = []
 
     const recDel = (recID: string) => {
@@ -66,7 +56,7 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
     const add_rec_tds: ChildDom[] = []
     for (const field of fields) {
         if (field.lookUp)
-            ths_and_lists.push(html.datalist({ 'id': '_list_' + id + '_' + field.id }, ...field.lookUp().map(_ => html.option({ 'value': _ }))))
+            ths_and_lists.push(html.datalist({ 'id': '_list_' + id + '_' + field.id }, ...utils.dictToArr(field.lookUp(), (k, v) => html.option({ 'value': k }, v))))
         ths_and_lists.push(html.th({ 'class': 'inputgrid-header', 'id': id + '_' + field.id, 'data-field-id': field.id, 'width': th_width + '%' }, field.title))
         add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, htmlInput(true, id, '', field)))
     }
@@ -140,63 +130,10 @@ function htmlInput(isAddRec: boolean, gridID: string, recID: string, field: Fiel
     return html.input(init)
 }
 
-function validate(rec: Rec, newValue: string | undefined, ...fields: Field[]) {
-    for (const field of fields)
-        if (field.validators)
-            for (const validator of field.validators) {
-                const err = validator(rec, field, (newValue === undefined) ? rec[field.id] : newValue)
-                if (err) {
-                    utils.alert((err.name ? (err.name + ': ') : '') + err.message)
-                    return false
-                }
-            }
-    return true
-}
-
-export let validatorNonEmpty: ValidateFunc = (_: Rec, field: Field, newFieldValue: string) => {
-    if (newFieldValue.length == 0)
-        return { name: 'Required', message: `'${field.title} must not be blank.` }
-    return undefined
-}
-
 export function validatorUnique(fullDataset: () => Rec[]): ValidateFunc {
     return (curRec: Rec, field: Field, newFieldValue: string) => {
         if (fullDataset().some(_ => (_[field.id] == newFieldValue) && (_ != curRec) && (_.id != curRec.id || field.id == 'id')))
             return { name: 'Uniqueness', message: `another entry with '${field.title}' of '${newFieldValue}' already exists.` }
         return undefined
     }
-}
-
-export let validatorLookup: ValidateFunc = (curRec: Rec, field: Field, newFieldValue: string) => {
-    if (field.lookUp) {
-        const valid_values = field.lookUp()
-        if (!valid_values.includes(newFieldValue))
-            return { name: 'Invalid', message: `'${field.title} must be one of: '${valid_values.join("' or '")}'` }
-    }
-    return undefined
-}
-
-export function validatorNumeric(min?: number, max?: number, step?: number): ValidateFunc {
-    return (curRec: Rec, field: Field, newFieldValue: string) => {
-        if (newFieldValue.length == 0)
-            return undefined
-        let n: number
-        try {
-            n = parseInt(newFieldValue)
-        } catch (err: any) {
-            return { name: 'Numeric', message: err.toString() }
-        }
-        if ((min !== undefined) && n < min)
-            return { name: 'Minimum', message: `${n} is less than the minimum of ${min}.` }
-        if ((max !== undefined) && n > max)
-            return { name: 'Maximum', message: `${n} exceeds the maximum of ${max}.` }
-        if ((step !== undefined) && (n % step) != 0)
-            return { name: 'Step', message: `${n} is not a multiple of ${step}.` }
-        return undefined
-    }
-}
-
-
-export function lookupBool() {
-    return ['false', 'true']
 }

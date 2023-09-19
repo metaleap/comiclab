@@ -86,3 +86,20 @@ export function collChildPage(coll: Collection, id: string, ...ignore: Page[]): 
 export function collChildColl(coll: CollOrProj, id: string, ...ignore: Collection[]): Collection | undefined {
     return coll.collections.find(_ => (_.id == id) && !ignore.includes(_))
 }
+
+export function collToPath(coll: Collection): string {
+    const coll_path = collParents(coll)
+    return [coll].concat(coll_path).reverse().map(_ => _.id).join('/')
+}
+
+export function collFromPath(path: string): Collection | undefined {
+    let coll: Collection | undefined
+    const parts = path.split('/')
+    let colls: Collection[] = appState.proj.collections
+    for (let i = 0; i < parts.length; i++)
+        if (coll = colls.find(_ => (_.id == parts[i])))
+            colls = coll.collections
+        else
+            break
+    return coll
+}

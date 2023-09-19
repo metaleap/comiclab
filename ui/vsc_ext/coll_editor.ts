@@ -1,6 +1,6 @@
 import * as vs from 'vscode'
+import * as º from './_º'
 import * as utils from './utils'
-import * as shared from './_shared_types'
 import * as app from './app'
 import * as base_editor from './base_editor'
 
@@ -14,8 +14,8 @@ export function onInit() {
 
 
 class CollEditor extends base_editor.WebviewPanel {
-    readonly coll: shared.Collection
-    constructor(coll: shared.Collection) {
+    readonly coll: º.Collection
+    constructor(coll: º.Collection) {
         super(true, false, viewTypeIdent, 'archive')
         this.coll = coll
     }
@@ -23,15 +23,19 @@ class CollEditor extends base_editor.WebviewPanel {
         return this.coll.id
     }
     override onRefreshedEventMessage(): any {
-        return { ident: 'onCollRefreshed', payload: this.coll }
+        return {
+            ident: 'onCollRefreshed', payload: {
+                'path': º.collToPath(this.coll),
+            }
+        }
     }
     override onMessage(msg: any): void {
         switch (msg.ident) {
             case 'onCollModified':
-                const new_coll = msg.payload as shared.Collection
+                const new_coll = msg.payload as º.Collection
                 this.coll.authorID = new_coll.authorID
                 this.coll.contentFields = new_coll.contentFields
-                app.onProjModified.now(shared.appState.proj)
+                app.onProjModified.now(º.appState.proj)
                 break
             default:
                 super.onMessage(msg)
@@ -40,29 +44,12 @@ class CollEditor extends base_editor.WebviewPanel {
 }
 
 export function show(collPath: string) {
-    const coll = collFromPath(collPath)
+    const coll = º.collFromPath(collPath)
     if (!coll)
         return
     base_editor.show(viewTypeIdent + ':' + collPath, () => new CollEditor(coll))
 }
 
-export function close(coll: shared.Collection) {
-    base_editor.close(viewTypeIdent + ':' + collToPath(coll))
-}
-
-export function collToPath(coll: shared.Collection): string {
-    const coll_path = shared.collParents(coll)
-    return [coll].concat(coll_path).reverse().map(_ => _.id).join('/')
-}
-
-export function collFromPath(path: string): shared.Collection | undefined {
-    let coll: shared.Collection | undefined
-    const parts = path.split('/')
-    let colls: shared.Collection[] = shared.appState.proj.collections
-    for (let i = 0; i < parts.length; i++)
-        if (coll = colls.find(_ => (_.id == parts[i])))
-            colls = coll.collections
-        else
-            break
-    return coll
+export function close(coll: º.Collection) {
+    base_editor.close(viewTypeIdent + ':' + º.collToPath(coll))
 }

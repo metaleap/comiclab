@@ -1,5 +1,5 @@
 import * as vs from 'vscode'
-import * as shared from './_shared_types'
+import * as º from './_º'
 import * as utils from './utils'
 import * as sidebar from './sidebar'
 import * as config_editor from './config_editor'
@@ -11,12 +11,12 @@ import fetch from 'node-fetch'
 
 export let dirtyProj = false
 export let dirtyCfg = false
-export let onProjRefreshed = new utils.Event<shared.Proj>()
-export let onCfgRefreshed = new utils.Event<shared.Config>()
-export let onProjSaved = new utils.Event<shared.Proj>()
-export let onCfgSaved = new utils.Event<shared.Config>()
-export let onProjModified = new utils.Event<shared.Proj>()
-export let onCfgModified = new utils.Event<shared.Config>()
+export let onProjRefreshed = new utils.Event<º.Proj>()
+export let onCfgRefreshed = new utils.Event<º.Config>()
+export let onProjSaved = new utils.Event<º.Proj>()
+export let onCfgSaved = new utils.Event<º.Config>()
+export let onProjModified = new utils.Event<º.Proj>()
+export let onCfgModified = new utils.Event<º.Config>()
 
 
 const apiUri = 'http://localhost:64646'
@@ -54,13 +54,13 @@ export function activate(context: vs.ExtensionContext) {
 
 	onCfgModified.do((modifiedCfg) => {
 		onDirty(dirtyProj, true, false)
-		shared.appState.config = modifiedCfg
-		onCfgRefreshed.now(shared.appState.config)
+		º.appState.config = modifiedCfg
+		onCfgRefreshed.now(º.appState.config)
 	})
 	onProjModified.do((modifiedProj) => {
 		onDirty(true, dirtyCfg, false)
-		shared.appState.proj = modifiedProj
-		onProjRefreshed.now(shared.appState.proj)
+		º.appState.proj = modifiedProj
+		onProjRefreshed.now(º.appState.proj)
 	})
 
 	appStateReload(true, true)
@@ -133,12 +133,12 @@ function appStateReload(proj: boolean, cfg: boolean) {
 						return req.onErr("No error reported but nothing received, buggily. Frontend app state might be out of date, try again and fix that bug.")
 					onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg, true) // happens in onDone for good, but also must occur before below event triggers
 					if (proj) {
-						shared.appState.proj = latestAppState.proj
-						onProjRefreshed.now(shared.appState.proj)
+						º.appState.proj = latestAppState.proj
+						onProjRefreshed.now(º.appState.proj)
 					}
 					if (cfg) {
-						shared.appState.config = latestAppState.config
-						onCfgRefreshed.now(shared.appState.config)
+						º.appState.config = latestAppState.config
+						onCfgRefreshed.now(º.appState.config)
 					}
 					if (proj && cfg)
 						everLoadedFully = true
@@ -156,17 +156,17 @@ function appStateSave(proj: boolean, cfg: boolean) {
 	const req = prepFetch(proj, cfg)
 	const postBody: any = {}
 	if (proj)
-		postBody.proj = shared.appState.proj
+		postBody.proj = º.appState.proj
 	if (cfg)
-		postBody.config = shared.appState.config
+		postBody.config = º.appState.config
 	fetch(apiUri + '/appState', { method: 'POST', body: JSON.stringify(postBody), headers: { "Content-Type": "application/json" }, })
 		.then((resp) => {
 			if (!resp.ok)
 				req.onErr(resp)
 			else {
 				onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg, true) // happens in onDone for good, but also must occur before below event triggers
-				if (proj) onProjSaved.now(shared.appState.proj)
-				if (cfg) onCfgSaved.now(shared.appState.config)
+				if (proj) onProjSaved.now(º.appState.proj)
+				if (cfg) onCfgSaved.now(º.appState.config)
 				statusBarItem.text = "$(pass-filled) ComicLab saved changes to " + msg_suffix
 			}
 		})

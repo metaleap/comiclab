@@ -1,7 +1,6 @@
 import * as vs from 'vscode'
 import * as utils from './utils'
 import * as app from './app'
-import * as shared from './_shared_types'
 
 
 const editors = new Map<string, WebviewPanel>();
