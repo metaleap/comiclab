@@ -8,23 +8,38 @@ const editors = new Map<string, WebviewPanel>();
 
 
 export abstract class WebviewPanel {
-    reuseKey: string = ''
+    private readonly targetsCfg: boolean
+    private readonly targetsProj: boolean
+    private readonly viewTypeIdent: string
+    private readonly codicon: string
     private webviewPanel: vs.WebviewPanel | null = null
+    reuseKey: string = ''
+
+    constructor(targetsProj: boolean, targetsCfg: boolean, viewTypeIdent: string, codicon: string) {
+        this.targetsCfg = targetsCfg
+        this.targetsProj = targetsProj
+        this.viewTypeIdent = viewTypeIdent
+        this.codicon = codicon
+    }
 
     title() { return "TitleHere" }
     htmlUri(localUri: vs.Uri) { return (this.webviewPanel as vs.WebviewPanel).webview.asWebviewUri(localUri) }
-
-    onSaved() {
+    dirtyIndicator(): boolean {
+        return (this.targetsCfg && app.dirtyCfg) || (this.targetsProj && app.dirtyProj)
+    }
+    refreshTitle() {
         if (this.webviewPanel)
-            this.webviewPanel.title = this.title()
+            this.webviewPanel.title = this.title() + (this.dirtyIndicator() ? "*" : "")
     }
 
+    onSaved() {
+        this.refreshTitle()
+    }
     onRefreshed() {
-        if (this.webviewPanel) {
+        this.refreshTitle()
+        if (this.webviewPanel)
             this.webviewPanel.webview.postMessage(this.onRefreshedEventMessage())
                 .then(() => { }, console.error)
-            this.webviewPanel.title = this.title()
-        }
     }
     abstract onRefreshedEventMessage(): any;
 
@@ -38,21 +53,21 @@ export abstract class WebviewPanel {
         }
     }
 
-    show(proj: boolean, cfg: boolean, viewTypeIdent: string, codicon: string) {
+    show() {
         if (this.webviewPanel)
             return this.webviewPanel.reveal(vs.ViewColumn.One)
 
         const on_refreshed = () => this.onRefreshed()
         const on_saved = () => this.onSaved()
-        if (cfg) {
+        if (this.targetsCfg) {
             app.onCfgRefreshed.do(on_refreshed)
             app.onCfgSaved.do(on_saved)
         }
-        if (proj) {
+        if (this.targetsProj) {
             app.onProjRefreshed.do(on_refreshed)
             app.onProjSaved.do(on_saved)
         }
-        utils.disp(this.webviewPanel = vs.window.createWebviewPanel(viewTypeIdent, this.title(), vs.ViewColumn.One, {
+        utils.disp(this.webviewPanel = vs.window.createWebviewPanel(this.viewTypeIdent, this.title(), vs.ViewColumn.One, {
             retainContextWhenHidden: true,
             enableCommandUris: true,
             enableFindWidget: true,
@@ -68,18 +83,18 @@ export abstract class WebviewPanel {
                     <link rel='stylesheet' type='text/css' href='${this.htmlUri(utils.cssPath('main'))}'>
                 </head><body>
                     <script type='module'>
-                        import * as main from '${this.htmlUri(utils.jsPath(viewTypeIdent))}'
+                        import * as main from '${this.htmlUri(utils.jsPath(this.viewTypeIdent))}'
                         main.onInit(acquireVsCodeApi(), '${this.htmlUri(vs.Uri.joinPath(utils.extUri, 'ui')).toString()}')
                     </script>
                 </body></html>`
         utils.disp(this.webviewPanel.webview.onDidReceiveMessage((msg) => this.onMessage(msg)))
-        this.webviewPanel.iconPath = utils.codiconPath(codicon)
+        this.webviewPanel.iconPath = utils.codiconPath(this.codicon)
         utils.disp(this.webviewPanel.onDidDispose(() => {
-            if (cfg) {
+            if (this.targetsCfg) {
                 app.onCfgRefreshed.dont(on_refreshed)
                 app.onCfgSaved.dont(on_saved)
             }
-            if (proj) {
+            if (this.targetsProj) {
                 app.onProjRefreshed.dont(on_refreshed)
                 app.onProjSaved.dont(on_saved)
             }
@@ -95,12 +110,12 @@ export abstract class WebviewPanel {
 
 }
 
-export function show(reuseKey: string, newT: () => WebviewPanel, proj: boolean, cfg: boolean, viewTypeIdent: string, codicon: string) {
+export function show(reuseKey: string, newT: () => WebviewPanel) {
     let editor = editors.get(reuseKey)
     if (!editor) {
         editor = newT()
         editor.reuseKey = reuseKey
         editors.set(reuseKey, editor)
     }
-    editor.show(proj, cfg, viewTypeIdent, codicon)
+    editor.show()
 }

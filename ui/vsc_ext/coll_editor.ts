@@ -5,6 +5,9 @@ import * as app from './app'
 import * as base_editor from './base_editor'
 
 
+const viewTypeIdent = 'coll_editor'
+
+
 export function onInit() {
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.openColl', show))
 }
@@ -13,7 +16,7 @@ export function onInit() {
 class CollEditor extends base_editor.WebviewPanel {
     readonly coll: shared.Collection
     constructor(coll: shared.Collection) {
-        super()
+        super(true, false, viewTypeIdent, 'archive')
         this.coll = coll
     }
     override title(): string {
@@ -40,7 +43,7 @@ export function show(collPath: string) {
     const coll = collFromPath(collPath)
     if (!coll)
         return
-    base_editor.show('coll_editor:' + collPath, () => new CollEditor(coll), true, false, 'coll_editor', 'archive')
+    base_editor.show(viewTypeIdent + ':' + collPath, () => new CollEditor(coll))
 }
 
 export function collToPath(coll: shared.Collection): string {
