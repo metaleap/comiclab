@@ -53,8 +53,8 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
     }
 }
 
-export function htmlId(ctlId: string, recId: string, field: Field, prefix?: string) {
-    return (prefix ? (prefix + '_') : '') + ctlId + '_' + recId + '_' + field.id
+export function htmlId(ctlId: string, recId: string, field?: Field, prefix?: string) {
+    return (prefix ? (prefix + '_') : '') + ctlId + '_' + recId + '_' + (field ? field.id : 'id')
 }
 
 export function htmlDataList(ctlId: string, field: Field): ChildDom {
@@ -64,13 +64,14 @@ export function htmlDataList(ctlId: string, field: Field): ChildDom {
 }
 
 export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field: Field, onChange?: (evt: Event) => any): HTMLInputElement {
+    const is_bool = (field.lookUp == lookupBool)
     const init: Props = {
         'class': 'inputfield' + (isAddRec ? ' inputfield-addrec' : ''),
         'id': htmlId(ctlId, recId, field),
         'data-rec-id': recId,
         'data-field-id': field.id,
         'readOnly': field.readOnly ? (!isAddRec) : false,
-        'type': (field.num ? 'number' : 'text'),
+        'type': is_bool ? 'checkbox' : (field.num ? 'number' : 'text'),
         'placeholder': field.placeHolder ? field.placeHolder : htmlInputDefaultPlaceholder(field, isAddRec),
     }
     if (onChange)
