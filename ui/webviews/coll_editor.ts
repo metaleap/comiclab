@@ -15,7 +15,6 @@ const main_form = ctl_inputform.create('coll_editor_form', [
     setDisabled(true)
     const coll = º.collFromPath(collPath) as º.Collection
     coll.props.authorID = userModifiedRec['authorID']
-    console.log("WPOST", "onCollModified", coll)
     utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
 })
 
@@ -42,8 +41,6 @@ function onMessage(evt: MessageEvent) {
                 º.appState.config = msg.payload.config
             if (msg.payload.proj)
                 º.appState.proj = msg.payload.proj
-            console.log("WRECV", msg.payload.proj)
-            console.log("PROPS", curProps())
             main_form.onDataChangedAtSource(curProps())
             setDisabled(false)
             break

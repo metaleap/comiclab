@@ -28,7 +28,6 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
             html.td({ 'class': 'inputform-field-input' }, htmlInput(false, ctlId, '', field, (evt) => {
                 const input_field = document.getElementById(htmlId(ctlId, '', field)) as HTMLInputElement
                 if (!validate(latest, input_field.value, field)) {
-                    console.log("SET0", latest[field.id])
                     input_field.value = latest[field.id]
                     return
                 }
@@ -44,7 +43,6 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
             for (const field of fields) {
                 const field_value = sourceObj[field.id]
                 const input_field = document.getElementById(htmlId(ctlId, '', field)) as HTMLInputElement
-                console.log("SET1", field_value)
                 input_field.value = field_value
                 if (field.lookUp) {
                     const new_datalist = htmlDataList(ctlId, field) as HTMLDataListElement
