@@ -4,9 +4,6 @@ import * as app from './app'
 import * as shared from './_shared_types'
 import * as base_editor from './base_editor'
 
-
-let configEditor: ConfigEditor | null = null
-
 class ConfigEditor extends base_editor.WebviewPanel {
     override title(): string {
         return "ComicLab Config" + (app.dirtyCfg ? "*" : "")
@@ -16,7 +13,7 @@ class ConfigEditor extends base_editor.WebviewPanel {
     }
     override onMessage(msg: any): void {
         switch (msg.ident) {
-            case 'appStateCfgModified':
+            case 'onAppStateCfgModified':
                 app.onCfgModified.now(msg.payload as shared.Config)
                 break
             default:
@@ -26,7 +23,5 @@ class ConfigEditor extends base_editor.WebviewPanel {
 }
 
 export function show() {
-    if (!configEditor)
-        configEditor = new ConfigEditor()
-    configEditor.show(false, true, 'config_editor', 'tools')
+    base_editor.show('config_editor', () => new ConfigEditor(), false, true, 'config_editor', 'tools')
 }

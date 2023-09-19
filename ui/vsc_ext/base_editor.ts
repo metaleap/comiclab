@@ -4,7 +4,11 @@ import * as app from './app'
 import * as shared from './_shared_types'
 
 
+const editors = new Map<string, WebviewPanel>();
+
+
 export abstract class WebviewPanel {
+    reuseKey: string = ''
     private webviewPanel: vs.WebviewPanel | null = null
 
     title() { return "TitleHere" }
@@ -86,6 +90,17 @@ export abstract class WebviewPanel {
 
     onDisposed() {
         this.webviewPanel = null
+        editors.delete(this.reuseKey)
     }
 
+}
+
+export function show(reuseKey: string, newT: () => WebviewPanel, proj: boolean, cfg: boolean, viewTypeIdent: string, codicon: string) {
+    let editor = editors.get(reuseKey)
+    if (!editor) {
+        editor = newT()
+        editor.reuseKey = reuseKey
+        editors.set(reuseKey, editor)
+    }
+    editor.show(proj, cfg, viewTypeIdent, codicon)
 }

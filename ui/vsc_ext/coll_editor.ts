@@ -5,7 +5,9 @@ import * as app from './app'
 import * as base_editor from './base_editor'
 
 
-let collEditors = new Map<string, CollEditor>()
+export function onInit() {
+    utils.disp(vs.commands.registerCommand('comiclab.proj.colls.openColl', show))
+}
 
 
 class CollEditor extends base_editor.WebviewPanel {
@@ -17,16 +19,12 @@ class CollEditor extends base_editor.WebviewPanel {
     override title(): string {
         return this.coll.id
     }
-    override onDisposed() {
-        collEditors.delete(collToPath(this.coll))
-        super.onDisposed()
-    }
     override onRefreshedEventMessage(): any {
         return { ident: 'onCollRefreshed', payload: this.coll }
     }
     override onMessage(msg: any): void {
         switch (msg.ident) {
-            case 'appCollModified':
+            case 'onCollModified':
                 const new_coll = msg.payload as shared.Collection
                 this.coll.authorID = new_coll.authorID
                 this.coll.contentFields = new_coll.contentFields
@@ -39,15 +37,10 @@ class CollEditor extends base_editor.WebviewPanel {
 }
 
 export function show(collPath: string) {
-    let editor = collEditors.get(collPath)
     const coll = collFromPath(collPath)
     if (!coll)
         return
-    if (!editor) {
-        editor = new CollEditor(coll)
-        collEditors.set(collPath, editor)
-    }
-    editor.show(true, false, 'coll_editor', 'archive')
+    base_editor.show('coll_editor:' + collPath, () => new CollEditor(coll), true, false, 'coll_editor', 'archive')
 }
 
 export function collToPath(coll: shared.Collection): string {
@@ -65,8 +58,4 @@ export function collFromPath(path: string): shared.Collection | undefined {
         else
             break
     return coll
-}
-
-export function onInit() {
-    utils.disp(vs.commands.registerCommand('comiclab.proj.colls.openColl', show))
 }

@@ -9,9 +9,9 @@ import * as ctl_multipanel from './ctl/multipanel.js'
 
 const html = van.tags
 
-let authors_grid = gridStringTupNew('config_authors', 'Author', 'author_full_name', 'Full Name', curAuthors, (_ => { shared.appState.config.contentAuthoring.authors = _ }))
-let languages_grid = gridStringTupNew('config_languages', 'Language', 'lang_name', 'Name', curLanguages, (dict) => { shared.appState.config.contentAuthoring.languages = dict })
-let contentfields_grid = gridStringTupNew('config_contentfields', 'Content Field', 'title', 'Title', curContentFields, (dict) => { shared.appState.config.contentAuthoring.contentFields = dict })
+let authors_grid = newGridForStringMap('config_authors', 'Author', 'author_full_name', 'Full Name', curAuthors, (_ => { shared.appState.config.contentAuthoring.authors = _ }))
+let languages_grid = newGridForStringMap('config_languages', 'Language', 'lang_name', 'Name', curLanguages, (dict) => { shared.appState.config.contentAuthoring.languages = dict })
+let contentfields_grid = newGridForStringMap('config_contentfields', 'Content Field', 'title', 'Title', curContentFields, (dict) => { shared.appState.config.contentAuthoring.contentFields = dict })
 
 let paperformats_grid = ctl_inputgrid.create('config_paperformats', [
     { id: 'id', title: "Paper Format ID", validators: [/*validators added by input_grid.create*/] },
@@ -20,7 +20,7 @@ let paperformats_grid = ctl_inputgrid.create('config_paperformats', [
 ], (recs) => {
     setDisabled(true)
     shared.appState.config.contentAuthoring.paperFormats = utils.arrToDict(recs, (rec) => [rec.id, { widthMm: parseInt(rec.widthMm), heightMm: parseInt(rec.heightMm) }])
-    utils.vs.postMessage({ ident: 'appStateCfgModified', payload: shared.appState.config })
+    utils.vs.postMessage({ ident: 'onAppStateCfgModified', payload: shared.appState.config })
 })
 
 let main_tabs = ctl_tabs.create('config_main_tabs', {
@@ -61,14 +61,14 @@ function onMessage(evt: MessageEvent) {
     }
 }
 
-function gridStringTupNew(id: string, title: string, valueName: string, valueTitle: string, cur: () => ctl_inputgrid.Rec[], set: (_: { [_: string]: string }) => void) {
+function newGridForStringMap(id: string, title: string, valueName: string, valueTitle: string, cur: () => ctl_inputgrid.Rec[], set: (_: { [_: string]: string }) => void) {
     return ctl_inputgrid.create(id, [
         { id: 'id', title: title + " ID", validators: [/*validators added by input_grid.create*/] },
         { id: valueName, title: valueTitle, validators: [ctl_inputgrid.validatorNonEmpty(), ctl_inputgrid.validatorUnique(cur)] },
     ], (recs) => {
         setDisabled(true)
         set(utils.arrToDict(recs, (rec) => [rec.id, rec[valueName]]))
-        utils.vs.postMessage({ ident: 'appStateCfgModified', payload: shared.appState.config })
+        utils.vs.postMessage({ ident: 'onAppStateCfgModified', payload: shared.appState.config })
     })
 }
 
