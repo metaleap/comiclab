@@ -27,6 +27,7 @@ const colorRed = new vs.ThemeColor('charts.red')
 
 
 let statusBarItem: vs.StatusBarItem
+let everLoadedFully: boolean
 
 
 function onDirty(proj: boolean, cfg: boolean, preserveStatusText: boolean) {
@@ -74,14 +75,17 @@ function cmdMainMenu() {
 	let itemReloadCfg: vs.QuickPickItem = { label: "Reload Config", iconPath: new vs.ThemeIcon('refresh'), alwaysShow: true }
 	let itemReloadBoth: vs.QuickPickItem = { label: "Reload Both", iconPath: new vs.ThemeIcon('refresh'), alwaysShow: true }
 	let itemConfig: vs.QuickPickItem = { label: "Config...", iconPath: new vs.ThemeIcon('tools'), alwaysShow: true }
-	let items: vs.QuickPickItem[] = []
+	let items: vs.QuickPickItem[] = [itemConfig]
+	if (!everLoadedFully)
+		items.push(itemReloadBoth, itemReloadProj, itemReloadCfg)
 	if (dirtyCfg && dirtyProj)
 		items.push(itemSaveBoth)
 	if (dirtyCfg)
 		items.push(itemSaveCfg)
 	if (dirtyProj)
 		items.push(itemSaveProj)
-	items.push(itemReloadBoth, itemReloadProj, itemReloadCfg, itemConfig)
+	if (everLoadedFully)
+		items.push(itemReloadBoth, itemReloadProj, itemReloadCfg)
 
 	vs.window.showQuickPick(items, { title: "ComicLab" }).then((item) => {
 		switch (item) {
@@ -136,6 +140,8 @@ function appStateReload(proj: boolean, cfg: boolean) {
 						shared.appState.config = latestAppState.config
 						onCfgRefreshed.now(shared.appState.config)
 					}
+					if (proj && cfg)
+						everLoadedFully = true
 					statusBarItem.text = "$(pass-filled) ComicLab reloaded " + msg_suffix
 				})
 				.catch(req.onErr)

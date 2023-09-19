@@ -3,10 +3,11 @@ import * as utils from '../utils.js'
 
 const html = van.tags
 
+export type Num = { min?: number, max?: number, step?: number }
 export type Field = {
     id: string,
     title: string,
-    number?: { min?: number, max?: number, step?: number },
+    num?: Num,
     readOnly?: boolean,
     validators: ValidateFunc[]
     lookUp?: () => string[]
@@ -16,8 +17,6 @@ export type DatasetFunc = (recs: Rec[]) => void
 export type ValidateFunc = (curRec: Rec, field: Field, newFieldValue: string) => Error | undefined
 
 export function create(id: string, fields: Field[], onDataUserModified: DatasetFunc): { ctl: ChildDom, onDataChangedAtSource: DatasetFunc } {
-    const ths: ChildDom[] = []
-    const add_rec_tds: ChildDom[] = []
     let latestDataset: Rec[] = []
 
     const recDel = (recID: string) => {
@@ -27,10 +26,10 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
     for (const field of fields) {
         if (field.id == 'id') {
             field.readOnly = true
-            field.validators.push(validatorNonEmpty(), validatorUnique(() => latestDataset))
+            field.validators.push(validatorNonEmpty, validatorUnique(() => latestDataset))
         }
-        if (field.number)
-            field.validators.push(validatorNumeric(field.number.min, field.number.max, field.number.step))
+        if (field.num)
+            field.validators.push(validatorNumeric(field.num.min, field.num.max, field.num.step))
     }
 
     const recAdd = (_: MouseEvent) => {
@@ -63,6 +62,8 @@ export function create(id: string, fields: Field[], onDataUserModified: DatasetF
     }
 
     const th_width = 100 / fields.length
+    const ths: ChildDom[] = []
+    const add_rec_tds: ChildDom[] = []
     for (const field of fields) {
         ths.push(html.th({ 'class': 'inputgrid-header', 'id': id + '_' + field.id, 'data-field-id': field.id, 'width': th_width + '%' }, field.title))
         add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, htmlInput(true, id, '', field)))
@@ -121,13 +122,13 @@ function htmlInput(isAddRec: boolean, gridID: string, recID: string, field: Fiel
         'data-rec-id': recID,
         'data-field-id': field.id,
         'readOnly': field.readOnly ? (!isAddRec) : false,
-        'type': field.number ? 'number' : 'text',
+        'type': (field.num ? 'number' : 'text'),
         'placeholder': isAddRec ? (`(New Entry's ${field.title})`) : field.title,
     }
     if (onChange)
         init.onchange = onChange
-    if (field.number) {
-        const num: any = field.number as any
+    if (field.num) {
+        const num: any = field.num as any
         for (const prop of ['min', 'max', 'step'])
             if (num[prop] !== undefined)
                 init[prop] = num[prop].toString()
@@ -148,12 +149,10 @@ function validate(rec: Rec, newValue: string | undefined, ...fields: Field[]) {
     return true
 }
 
-export function validatorNonEmpty(): ValidateFunc {
-    return (_: Rec, field: Field, newFieldValue: string) => {
-        if (newFieldValue.length == 0)
-            return { name: 'Required', message: `'${field.title} must not be blank.` }
-        return undefined
-    }
+export let validatorNonEmpty: ValidateFunc = (_: Rec, field: Field, newFieldValue: string) => {
+    if (newFieldValue.length == 0)
+        return { name: 'Required', message: `'${field.title} must not be blank.` }
+    return undefined
 }
 
 export function validatorUnique(fullDataset: () => Rec[]): ValidateFunc {
@@ -162,6 +161,15 @@ export function validatorUnique(fullDataset: () => Rec[]): ValidateFunc {
             return { name: 'Uniqueness', message: `another entry with '${field.title}' of '${newFieldValue}' already exists.` }
         return undefined
     }
+}
+
+export let validatorLookup: ValidateFunc = (curRec: Rec, field: Field, newFieldValue: string) => {
+    if (field.lookUp) {
+        const valid_values = field.lookUp()
+        if (!valid_values.includes(newFieldValue))
+            return { name: 'Invalid', message: `'${field.title} must be one of: '${valid_values.join("' or '")}'` }
+    }
+    return undefined
 }
 
 export function validatorNumeric(min?: number, max?: number, step?: number): ValidateFunc {
@@ -182,4 +190,9 @@ export function validatorNumeric(min?: number, max?: number, step?: number): Val
             return { name: 'Step', message: `${n} is not a multiple of ${step}.` }
         return undefined
     }
+}
+
+
+export function lookupBool() {
+    return ['false', 'true']
 }

@@ -112,10 +112,12 @@ export class TreeColls extends sidebar.TreeDataProvider {
             }
         }).then((newName) => {
             if (newName && ((newName = newName.trim()).length > 0) && (newName != old_name)) {
-                if (coll)
+                if (coll) {
+                    coll_editor.close(coll)
                     coll.id = newName
-                else if (page)
+                } else if (page) {
                     page.id = newName
+                }
                 app.onProjModified.now(shared.appState.proj)
             }
         })

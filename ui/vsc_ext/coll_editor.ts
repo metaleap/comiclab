@@ -5,7 +5,7 @@ import * as app from './app'
 import * as base_editor from './base_editor'
 
 
-const viewTypeIdent = 'coll_editor'
+export const viewTypeIdent = 'coll_editor'
 
 
 export function onInit() {
@@ -44,6 +44,10 @@ export function show(collPath: string) {
     if (!coll)
         return
     base_editor.show(viewTypeIdent + ':' + collPath, () => new CollEditor(coll))
+}
+
+export function close(coll: shared.Collection) {
+    base_editor.close(viewTypeIdent + ':' + collToPath(coll))
 }
 
 export function collToPath(coll: shared.Collection): string {

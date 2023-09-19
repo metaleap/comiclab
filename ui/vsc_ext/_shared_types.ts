@@ -14,7 +14,7 @@ export type Config = {
         authors?: { [id: string]: string },
         paperFormats?: { [id: string]: PaperFormat },
         languages?: { [id: string]: string },
-        contentFields?: { [id: string]: string },
+        contentFields?: { [id: string]: boolean },
     },
 }
 

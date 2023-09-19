@@ -103,12 +103,17 @@ export abstract class WebviewPanel {
         setTimeout(on_refreshed, 345) // below 3xx was sometimes to soon..
     }
 
+    close() {
+        if (this.webviewPanel)
+            this.webviewPanel.dispose()
+    }
     onDisposed() {
         this.webviewPanel = null
         editors.delete(this.reuseKey)
     }
 
 }
+
 
 export function show(reuseKey: string, newT: () => WebviewPanel) {
     let editor = editors.get(reuseKey)
@@ -118,4 +123,10 @@ export function show(reuseKey: string, newT: () => WebviewPanel) {
         editors.set(reuseKey, editor)
     }
     editor.show()
+}
+
+export function close(reuseKey: string) {
+    const editor = editors.get(reuseKey)
+    if (editor)
+        editor.close()
 }

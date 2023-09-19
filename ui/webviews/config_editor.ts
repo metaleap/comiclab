@@ -9,28 +9,34 @@ import * as ctl_multipanel from './ctl/multipanel.js'
 
 const html = van.tags
 
-let authors_grid = newGridForStringMap('config_authors', 'Author', 'author_full_name', 'Full Name', curAuthors, (_ => { shared.appState.config.contentAuthoring.authors = _ }))
-let languages_grid = newGridForStringMap('config_languages', 'Language', 'lang_name', 'Name', curLanguages, (dict) => { shared.appState.config.contentAuthoring.languages = dict })
-let contentfields_grid = newGridForStringMap('config_contentfields', 'Content Field', 'title', 'Title', curContentFields, (dict) => { shared.appState.config.contentAuthoring.contentFields = dict })
-
-let paperformats_grid = ctl_inputgrid.create('config_paperformats', [
+let grid_authors = newGridForStringMap('config_authors', 'Author', 'author_full_name', 'Full Name', curAuthors, (_ => { shared.appState.config.contentAuthoring.authors = _ }))
+let grid_languages = newGridForStringMap('config_languages', 'Language', 'lang_name', 'Name', curLanguages, (dict) => { shared.appState.config.contentAuthoring.languages = dict })
+let grid_contentfields = ctl_inputgrid.create('config_contentfields', [
+    { id: 'id', title: "Content Field ID", validators: [] },
+    { id: 'localizable', title: "Localizable", validators: [ctl_inputgrid.validatorLookup], lookUp: ctl_inputgrid.lookupBool },
+], (recs) => {
+    setDisabled(true)
+    shared.appState.config.contentAuthoring.contentFields = utils.arrToDict(recs, (rec) => [rec.id, rec['localizable'] == 'true'])
+    utils.vs.postMessage({ ident: 'onAppStateCfgModified', payload: shared.appState.config })
+})
+let grid_paperformats = ctl_inputgrid.create('config_paperformats', [
     { id: 'id', title: "Paper Format ID", validators: [/*validators added by input_grid.create*/] },
-    { id: 'widthMm', title: 'Width (mm)', number: { min: 11, max: 1234 }, validators: [ctl_inputgrid.validatorNonEmpty()] },
-    { id: 'heightMm', title: 'Height (mm)', number: { min: 11, max: 1234 }, validators: [ctl_inputgrid.validatorNonEmpty()] },
+    { id: 'widthMm', title: 'Width (mm)', num: { min: 11, max: 1234 }, validators: [ctl_inputgrid.validatorNonEmpty] },
+    { id: 'heightMm', title: 'Height (mm)', num: { min: 11, max: 1234 }, validators: [ctl_inputgrid.validatorNonEmpty] },
 ], (recs) => {
     setDisabled(true)
     shared.appState.config.contentAuthoring.paperFormats = utils.arrToDict(recs, (rec) => [rec.id, { widthMm: parseInt(rec.widthMm), heightMm: parseInt(rec.heightMm) }])
     utils.vs.postMessage({ ident: 'onAppStateCfgModified', payload: shared.appState.config })
 })
 
-let main_tabs = ctl_tabs.create('config_main_tabs', {
+let main_tabs = ctl_tabs.create('config_editor_tabs', {
     "Content Authoring": ctl_multipanel.create('config_contentauthoring', {
-        "Authors": authors_grid.ctl,
-        "Languages": languages_grid.ctl,
-        "Custom Content Fields": contentfields_grid.ctl,
+        "Authors": grid_authors.ctl,
+        "Languages": grid_languages.ctl,
+        "Custom Content Fields": grid_contentfields.ctl,
     }),
     "Paper-Related": ctl_multipanel.create('config_paperrelated', {
-        "Paper Formats": paperformats_grid.ctl,
+        "Paper Formats": grid_paperformats.ctl,
     }),
 })
 
@@ -49,10 +55,10 @@ function onMessage(evt: MessageEvent) {
     switch (msg.ident) {
         case 'onAppStateCfgRefreshed':
             shared.appState.config = msg.payload as shared.Config
-            authors_grid.onDataChangedAtSource(curAuthors())
-            paperformats_grid.onDataChangedAtSource(curPaperFormats())
-            languages_grid.onDataChangedAtSource(curLanguages())
-            contentfields_grid.onDataChangedAtSource(curContentFields())
+            grid_authors.onDataChangedAtSource(curAuthors())
+            grid_paperformats.onDataChangedAtSource(curPaperFormats())
+            grid_languages.onDataChangedAtSource(curLanguages())
+            grid_contentfields.onDataChangedAtSource(curContentFields())
             setDisabled(false)
             break
         default:
@@ -64,7 +70,7 @@ function onMessage(evt: MessageEvent) {
 function newGridForStringMap(id: string, title: string, valueName: string, valueTitle: string, cur: () => ctl_inputgrid.Rec[], set: (_: { [_: string]: string }) => void) {
     return ctl_inputgrid.create(id, [
         { id: 'id', title: title + " ID", validators: [/*validators added by input_grid.create*/] },
-        { id: valueName, title: valueTitle, validators: [ctl_inputgrid.validatorNonEmpty(), ctl_inputgrid.validatorUnique(cur)] },
+        { id: valueName, title: valueTitle, validators: [ctl_inputgrid.validatorNonEmpty, ctl_inputgrid.validatorUnique(cur)] },
     ], (recs) => {
         setDisabled(true)
         set(utils.arrToDict(recs, (rec) => [rec.id, rec[valueName]]))
@@ -80,7 +86,7 @@ function curAuthors() {
 
 function curContentFields() {
     return utils.arrFromDict(shared.appState.config.contentAuthoring.contentFields, (key, value) => ({
-        'id': key, 'title': value,
+        'id': key, 'localizable': (value ? 'true' : 'false'),
     } as ctl_inputgrid.Rec))
 }
 
