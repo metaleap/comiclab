@@ -104,15 +104,14 @@ div.multipanel>span.multipanel-section {
     margin-bottom: 3em;
 }
 
-table.inputform,
-table.inputgrid {
-    width: 99%;
-}
-
-table.inputform tr>td.inputform-field-label {
+div.inputform div.inputform-field>div.inputform-field-label {
+    display: inline-block;
+    padding: 0.22em;
     width: 22%;
 }
 
-table.inputform tr>td.inputform-field-input {
+div.inputform div.inputform-field>div.inputform-field-input {
+    display: inline-block;
+    padding: 0.22em;
     width: 77%;
 }

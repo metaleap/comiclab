@@ -22,10 +22,10 @@ export type RecsFunc = (recs: Rec[]) => void
 
 export function create(ctlId: string, fields: Field[], onDataUserModified: RecFunc, dynFields?: State<Field[]>): { ctl: ChildDom, onDataChangedAtSource: RecFunc } {
     let latest: Rec
-    let fieldTr = (field: Field): ChildDom => {
-        return html.tr({},
-            html.td({ 'class': 'inputform-field-label' }, field.title),
-            html.td({ 'class': 'inputform-field-input' },
+    let fieldRow = (field: Field): ChildDom => {
+        return html.div({ 'class': 'inputform-field' },
+            html.div({ 'class': 'inputform-field-label' }, field.title),
+            html.div({ 'class': 'inputform-field-input' },
                 htmlDataList(ctlId, field),
                 htmlInput(false, ctlId, '', field, (evt) => {
                     const input_field = document.getElementById(htmlId(ctlId, '', field)) as HTMLInputElement
@@ -39,9 +39,9 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
             ),
         )
     }
-    const table = html.table({ 'class': 'inputform', 'id': ctlId },
-        fields.map(fieldTr),
-        (!dynFields) ? null : () => html.span(...dynFields.val.map(fieldTr)))
+    const table = html.div({ 'class': 'inputform', 'id': ctlId },
+        html.span(...fields.map(fieldRow)),
+        (!dynFields) ? null : () => html.span(...dynFields.val.map(fieldRow)))
     return {
         ctl: table,
         onDataChangedAtSource: (sourceObj) => {

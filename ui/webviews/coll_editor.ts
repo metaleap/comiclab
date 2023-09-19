@@ -14,8 +14,7 @@ let collPath: string = ''
 const authorFieldPlaceHolder = van.state('')
 const authorFieldLookup = van.state({} as ctl_inputform.Lookup)
 const authorField: ctl_inputform.Field = { id: 'authorID', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: authorFieldLookup, placeHolder: authorFieldPlaceHolder }
-const contentFields = van.state([
-] as ctl_inputform.Field[])
+const contentDynFields = van.state([] as ctl_inputform.Field[])
 
 
 const main_form = ctl_inputform.create('coll_editor_form', [
@@ -25,7 +24,7 @@ const main_form = ctl_inputform.create('coll_editor_form', [
     const coll = º.collFromPath(collPath) as º.Collection
     coll.props.authorID = userModifiedRec['authorID']
     utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
-}, contentFields)
+}, contentDynFields)
 
 let main_tabs = ctl_tabs.create('coll_editor_tabs', {
     "Collection Settings": ctl_multipanel.create('coll_editor_props', {
@@ -55,8 +54,16 @@ function onMessage(evt: MessageEvent) {
                 º.appState.proj = msg.payload.proj
 
             authorFieldLookup.val = º.appState.config.contentAuthoring.authors ?? {}
-            contentFields.val = utils.dictToArr(º.appState.config.contentAuthoring.contentFields, (k, v) => ({ 'id': k, 'localizable': v }))
-                .map((_) => ({ 'id': _.id, 'title': _.id, } as ctl_inputform.Field))
+            contentDynFields.val = utils.dictToArr(º.appState.config.contentAuthoring.contentFields, (k, v) => ({ 'id': k, 'localizable': v }))
+                .sort((a, b) => (a.id == 'title') ? -123456789 : (a.id.localeCompare(b.id)))
+                .map((_) => {
+                    const ret = [{ 'id': _.id, 'title': _.id, } as ctl_inputform.Field]
+                    if (_.localizable) {
+                        for (const lang_id in º.appState.config.contentAuthoring.languages)
+                            ret.push({ 'id': _.id + ':' + lang_id, 'title': `${_.id} (${º.appState.config.contentAuthoring.languages[lang_id]})`, } as ctl_inputform.Field)
+                    }
+                    return ret
+                }).flat()
             const coll = º.collFromPath(collPath)
             if (coll) {
                 let author_field_placeholder = ctl_inputform.htmlInputDefaultPlaceholder(authorField)
