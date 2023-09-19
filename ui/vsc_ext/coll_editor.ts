@@ -14,13 +14,13 @@ export function onInit() {
 
 
 class CollEditor extends base_editor.WebviewPanel {
-    readonly coll: º.Collection
-    constructor(coll: º.Collection) {
+    readonly collPath: string
+    constructor(collPath: string) {
         super(true, true, viewTypeIdent, 'archive')
-        this.coll = coll
+        this.collPath = collPath
     }
     override title(): string {
-        return this.coll.name
+        return º.collFromPath(this.collPath)?.name ?? '?!bug?!'
     }
     override onRefreshedEventMessage(): any {
         return {
@@ -28,9 +28,10 @@ class CollEditor extends base_editor.WebviewPanel {
         }
     }
     override onMessage(msg: any): void {
+        const coll = º.collFromPath(this.collPath) as º.Collection
         switch (msg.ident) {
             case 'onCollModified':
-                this.coll.props = msg.payload.props
+                coll.props = msg.payload.props
                 app.onProjModified.now(º.appState.proj)
                 break
             default:
@@ -40,10 +41,7 @@ class CollEditor extends base_editor.WebviewPanel {
 }
 
 export function show(collPath: string) {
-    const coll = º.collFromPath(collPath)
-    if (!coll)
-        return
-    base_editor.show(viewTypeIdent + ':' + collPath, () => new CollEditor(coll))
+    base_editor.show(viewTypeIdent + ':' + collPath, () => new CollEditor(collPath))
 }
 
 export function close(coll: º.Collection) {

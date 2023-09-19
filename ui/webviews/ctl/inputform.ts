@@ -18,23 +18,36 @@ export type RecFunc = (rec: Rec) => void
 export type RecsFunc = (recs: Rec[]) => void
 
 
-export function create(id: string, fields: Field[], onDataUserModified: RecFunc): { ctl: ChildDom, onDataChangedAtSource: RecFunc } {
+export function create(ctlId: string, fields: Field[], onDataUserModified: RecFunc): { ctl: ChildDom, onDataChangedAtSource: RecFunc } {
     const trs: HTMLTableRowElement[] = []
+    let latest: Rec
     for (const field of fields)
         trs.push(html.tr({},
-            html.td({ 'class': 'inputform-field-label' }, ([field.title] as any[]).concat(field.lookUp ? [htmlDataList(id, field)] : [])),
-            html.td({ 'class': 'inputform-field-input' }, htmlInput(false, id, '', field)),
+            html.td({ 'class': 'inputform-field-label' }, ([field.title] as any[]).concat(
+                field.lookUp ? [htmlDataList(ctlId, field)] : [])),
+            html.td({ 'class': 'inputform-field-input' }, htmlInput(false, ctlId, '', field, (evt) => {
+                const input_field = document.getElementById(htmlId(ctlId, '', field)) as HTMLInputElement
+                if (!validate(latest, input_field.value, field)) {
+                    console.log("SET0", latest[field.id])
+                    input_field.value = latest[field.id]
+                    return
+                }
+                latest[field.id] = input_field.value
+                onDataUserModified(latest)
+            })),
         ))
-    const table = html.table({ 'class': 'inputform', 'id': id }, ...trs)
+    const table = html.table({ 'class': 'inputform', 'id': ctlId }, ...trs)
     return {
         ctl: table,
         onDataChangedAtSource: (sourceObj) => {
+            latest = sourceObj
             for (const field of fields) {
                 const field_value = sourceObj[field.id]
-                const input_field = document.getElementById(id + '__' + field.id) as HTMLInputElement
+                const input_field = document.getElementById(htmlId(ctlId, '', field)) as HTMLInputElement
+                console.log("SET1", field_value)
                 input_field.value = field_value
                 if (field.lookUp) {
-                    const new_datalist = htmlDataList(id, field) as HTMLDataListElement
+                    const new_datalist = htmlDataList(ctlId, field) as HTMLDataListElement
                     const old_datalist = document.getElementById(new_datalist.id) as HTMLDataListElement
                     old_datalist.innerHTML = new_datalist.innerHTML
                 }
@@ -43,16 +56,20 @@ export function create(id: string, fields: Field[], onDataUserModified: RecFunc)
     }
 }
 
-export function htmlDataList(ctlID: string, field: Field) {
-    const dict = (field.lookUp as () => { [_: string]: string })()
-    return html.datalist({ 'id': '_list_' + ctlID + '_' + field.id }, ...utils.dictToArr(dict, (k, v) => html.option({ 'value': k }, v)))
+export function htmlId(ctlId: string, recId: string, field: Field, prefix?: string) {
+    return (prefix ? (prefix + '_') : '') + ctlId + '_' + recId + '_' + field.id
 }
 
-export function htmlInput(isAddRec: boolean, ctlID: string, recID: string, field: Field, onChange?: (evt: Event) => any) {
+export function htmlDataList(ctlId: string, field: Field) {
+    const dict = (field.lookUp as () => { [_: string]: string })()
+    return html.datalist({ 'id': htmlId(ctlId, '', field, '_list') }, ...utils.dictToArr(dict, (k, v) => html.option({ 'value': k }, v)))
+}
+
+export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field: Field, onChange?: (evt: Event) => any) {
     const init: Props = {
         'class': 'inputfield' + (isAddRec ? ' inputfield-addrec' : ''),
-        'id': ctlID + '_' + recID + '_' + field.id,
-        'data-rec-id': recID,
+        'id': htmlId(ctlId, recId, field),
+        'data-rec-id': recId,
         'data-field-id': field.id,
         'readOnly': field.readOnly ? (!isAddRec) : false,
         'type': (field.num ? 'number' : 'text'),
@@ -61,7 +78,7 @@ export function htmlInput(isAddRec: boolean, ctlID: string, recID: string, field
     if (onChange)
         init.onchange = onChange
     if (field.lookUp)
-        init.list = '_list_' + ctlID + '_' + field.id
+        init.list = htmlId(ctlId, recId, field, '_list')
     if (field.num) {
         const num: any = field.num as any
         for (const prop of ['min', 'max', 'step'])

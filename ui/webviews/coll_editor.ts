@@ -12,7 +12,11 @@ let collPath: string = ''
 const main_form = ctl_inputform.create('coll_editor_form', [
     { id: 'authorID', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: () => (º.appState.config.contentAuthoring.authors ?? {}) }
 ], (userModifiedRec) => {
-    // const c = shared.appState.proj.collections[0]
+    setDisabled(true)
+    const coll = º.collFromPath(collPath) as º.Collection
+    coll.props.authorID = userModifiedRec['authorID']
+    console.log("WPOST", "onCollModified", coll)
+    utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
 })
 
 let main_tabs = ctl_tabs.create('coll_editor_tabs', {
@@ -38,6 +42,8 @@ function onMessage(evt: MessageEvent) {
                 º.appState.config = msg.payload.config
             if (msg.payload.proj)
                 º.appState.proj = msg.payload.proj
+            console.log("WRECV", msg.payload.proj)
+            console.log("PROPS", curProps())
             main_form.onDataChangedAtSource(curProps())
             setDisabled(false)
             break
