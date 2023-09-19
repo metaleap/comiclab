@@ -1,7 +1,7 @@
 package app
 
 type Collection struct {
-	ID            string                       `json:"id"`
+	Name          string                       `json:"name"`
 	Collections   []*Collection                `json:"collections"`
 	Pages         []*PageLayout                `json:"pages"`
 	ContentFields map[string]map[string]string `json:"contentFields,omitempty"`
@@ -9,5 +9,5 @@ type Collection struct {
 }
 
 type PageLayout struct {
-	ID string `json:"id"`
+	Name string `json:"name"`
 }

@@ -23,14 +23,14 @@ export type PaperFormat = {
     heightMm: number,
 }
 
-export type CollOrProj = { id?: string, collections: Collection[] }
+export type CollOrProj = { name?: string, collections: Collection[] }
 
 export type Proj = {
     collections: Collection[]
 }
 
 export type Collection = {
-    id: string,
+    name: string,
     contentFields: { [id: string]: { [lang_id: string]: string } },
     authorID: string,
     collections: Collection[],
@@ -38,7 +38,7 @@ export type Collection = {
 }
 
 export type Page = {
-    id: string,
+    name: string,
 }
 
 export function walkCollections<T>(perColl: (_: Collection[]) => any, parents?: Collection[]) {
@@ -80,16 +80,16 @@ export function pageParents(page: Page): Collection[] {
 }
 
 export function collChildPage(coll: Collection, id: string, ...ignore: Page[]): Page | undefined {
-    return coll.pages.find(_ => (_.id == id) && !ignore.includes(_))
+    return coll.pages.find(_ => (_.name == id) && !ignore.includes(_))
 }
 
 export function collChildColl(coll: CollOrProj, id: string, ...ignore: Collection[]): Collection | undefined {
-    return coll.collections.find(_ => (_.id == id) && !ignore.includes(_))
+    return coll.collections.find(_ => (_.name == id) && !ignore.includes(_))
 }
 
 export function collToPath(coll: Collection): string {
     const coll_path = collParents(coll)
-    return [coll].concat(coll_path).reverse().map(_ => _.id).join('/')
+    return [coll].concat(coll_path).reverse().map(_ => _.name).join('/')
 }
 
 export function collFromPath(path: string): Collection | undefined {
@@ -97,7 +97,7 @@ export function collFromPath(path: string): Collection | undefined {
     const parts = path.split('/')
     let colls: Collection[] = appState.proj.collections
     for (let i = 0; i < parts.length; i++)
-        if (coll = colls.find(_ => (_.id == parts[i])))
+        if (coll = colls.find(_ => (_.name == parts[i])))
             colls = coll.collections
         else
             break

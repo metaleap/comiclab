@@ -20,7 +20,7 @@ class CollEditor extends base_editor.WebviewPanel {
         this.coll = coll
     }
     override title(): string {
-        return this.coll.id
+        return this.coll.name
     }
     override onRefreshedEventMessage(): any {
         return {

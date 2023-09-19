@@ -95,7 +95,7 @@
       },
       {
         "command": "comiclab.proj.colls.moveEnd",
-        "title": "Move to End",
+        "title": "Move to Bottom",
         "icon": "$(fold-down)"
       }
     ],

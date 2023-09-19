@@ -31,7 +31,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
             id: collToNodeId(_),
             contextValue: '_canRename_canDelete_canAddPage_canAddColl_',
             command: { command: 'comiclab.proj.colls.openColl', arguments: [º.collToPath(_)] },
-            label: _.id,
+            label: _.name,
         } as vs.TreeItem)) ?? []
         if (pages)
             ret.push(...pages.map(_ => ({
@@ -39,7 +39,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                 iconPath: new vs.ThemeIcon('file'),
                 id: pageToNodeId(_),
                 contextValue: '_canRename_canDelete_',
-                label: _.id,
+                label: _.name,
             } as vs.TreeItem)))
         ret.forEach((treeNode: vs.TreeItem) => {
             const dict: { [_: string]: boolean } = {
@@ -60,7 +60,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
         const coll = parentTreeNode ? collFromNodeId(parentTreeNode.id as string) : undefined
         const nameConflicts = (name: string) =>
             ((addNewPage && coll) ? º.collChildPage(coll, name) : º.collChildColl(coll ? coll : º.appState.proj, name))
-        const desc_parent = coll ? (`'${coll.id}'`) : "the project"
+        const desc_parent = coll ? (`'${coll.name}'`) : "the project"
         const desc_what = (addNewPage ? 'page' : 'collection')
         let name_sugg = desc_what + (((addNewPage && coll) ? coll.pages : (coll ? coll.collections : º.appState.proj.collections)).length + 1).toString().padStart(addNewPage ? 3 : 2, "0")
         if (nameConflicts(name_sugg))
@@ -79,9 +79,9 @@ export class TreeColls extends sidebar.TreeDataProvider {
         }).then((name) => {
             if (name && ((name = name.trim()).length > 0)) {
                 if (addNewPage && coll)
-                    coll.pages = (coll.pages ?? []).concat([{ id: name }])
+                    coll.pages = (coll.pages ?? []).concat([{ name: name }])
                 else {
-                    const new_coll = { id: name, collections: [], pages: [], authorID: '', contentFields: {} }
+                    const new_coll = { name: name, collections: [], pages: [], authorID: '', contentFields: {} }
                     if (coll)
                         coll.collections = (coll.collections ?? []).concat([new_coll])
                     else
@@ -104,9 +104,9 @@ export class TreeColls extends sidebar.TreeDataProvider {
             validateInput: (newName) => {
                 if (((newName = newName.trim()).length > 0) && (newName != old_name)) {
                     if (coll_parent && º.collChildColl(coll_parent, newName))
-                        return `Another collection in ${((coll_parent.id) ? ("'" + coll_parent.id + "'") : "the project")} is already named '${newName}'.`
+                        return `Another collection in ${((coll_parent.name) ? ("'" + coll_parent.name + "'") : "the project")} is already named '${newName}'.`
                     if (page_parent && º.collChildPage(page_parent, newName))
-                        return `Another page in '${page_parent.id}' is already named '${newName}'.`
+                        return `Another page in '${page_parent.name}' is already named '${newName}'.`
                 }
                 return undefined
             }
@@ -114,9 +114,9 @@ export class TreeColls extends sidebar.TreeDataProvider {
             if (newName && ((newName = newName.trim()).length > 0) && (newName != old_name)) {
                 if (coll) {
                     coll_editor.close(coll)
-                    coll.id = newName
+                    coll.name = newName
                 } else if (page) {
-                    page.id = newName
+                    page.name = newName
                 }
                 app.onProjModified.now(º.appState.proj)
             }
@@ -127,7 +127,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
     deleteColl(treeNode: vs.TreeItem) {
         const coll = collFromNodeId(treeNode.id as string)
         if (coll)
-            vs.window.showWarningMessage(`Really remove '${coll.id}' from the project?`, { modal: true, detail: this.deletionNote }, "OK").then((_) => {
+            vs.window.showWarningMessage(`Really remove '${coll.name}' from the project?`, { modal: true, detail: this.deletionNote }, "OK").then((_) => {
                 if (_ == "OK") {
                     coll_editor.close(coll)
                     const parents = º.collParents(coll)
@@ -143,7 +143,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
         const page = pageFromNodeId(treeNode.id as string)
         const coll = page ? º.pageParent(page) : undefined
         if (page && coll)
-            vs.window.showWarningMessage(`Really remove page '${page.id}' from collection '${coll.id}'?`, { modal: true, detail: this.deletionNote }, "OK").then((_) => {
+            vs.window.showWarningMessage(`Really remove page '${page.name}' from collection '${coll.name}'?`, { modal: true, detail: this.deletionNote }, "OK").then((_) => {
                 if (_ == "OK") {
                     coll.pages = coll.pages.filter(_ => (_ != page))
                     app.onProjModified.now(º.appState.proj)
@@ -167,7 +167,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
         if (!dontDoIt)
             vs.window.showQuickPick(new_parent_candidates.map(_ => {
                 return '/' + ((!_) ? '' : º.collToPath(_))
-            }), { placeHolder: `Select the new parent collection for '${coll.id}':`, title: `Relocate '${coll.id}:'` }).then((path) => {
+            }), { placeHolder: `Select the new parent collection for '${coll.name}':`, title: `Relocate '${coll.name}:'` }).then((path) => {
                 if (path) {
                     if (coll_parent)
                         coll_parent.collections = coll_parent.collections.filter(_ => (_ != coll))
@@ -222,7 +222,7 @@ function collFromNodeId(id: string): º.Collection | undefined {
 
 function pageToNodeId(page: º.Page) {
     const coll_path = º.pageParents(page)
-    return node_id_prefix_page + [page].concat(coll_path).reverse().map(_ => _.id).join('/')
+    return node_id_prefix_page + [page].concat(coll_path).reverse().map(_ => _.name).join('/')
 }
 
 function pageFromNodeId(id: string): º.Page | undefined {
@@ -232,8 +232,8 @@ function pageFromNodeId(id: string): º.Page | undefined {
         let coll: º.Collection | undefined
         for (let i = 0; i < parts.length; i++)
             if (i == parts.length - 1)
-                return coll?.pages.find(_ => (_.id == parts[i]))
-            else if (coll = colls.find(_ => (_.id == parts[i])))
+                return coll?.pages.find(_ => (_.name == parts[i]))
+            else if (coll = colls.find(_ => (_.name == parts[i])))
                 colls = coll.collections
             else
                 break
