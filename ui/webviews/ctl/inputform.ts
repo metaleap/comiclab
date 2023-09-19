@@ -46,10 +46,11 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
         ctl: table,
         onDataChangedAtSource: (sourceObj) => {
             latest = sourceObj
-            for (const field of fields) {
-                const field_value = sourceObj[field.id]
+            for (const field of (dynFields ? dynFields.val : []).concat(fields)) {
+                const field_value = latest[field.id] ?? ''
                 const input_field = document.getElementById(htmlId(ctlId, '', field)) as HTMLInputElement
-                input_field.value = field_value
+                if (input_field)
+                    input_field.value = field_value
             }
         }
     }

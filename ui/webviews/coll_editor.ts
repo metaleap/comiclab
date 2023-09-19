@@ -15,14 +15,25 @@ const authorFieldPlaceHolder = van.state('')
 const authorFieldLookup = van.state({} as ctl_inputform.Lookup)
 const authorField: ctl_inputform.Field = { id: 'authorID', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: authorFieldLookup, placeHolder: authorFieldPlaceHolder }
 const contentDynFields = van.state([] as ctl_inputform.Field[])
+const contentDynFieldsLangSep = ':'
 
 
-const main_form = ctl_inputform.create('coll_editor_form', [
-    authorField,
-], (userModifiedRec) => {
+const main_form = ctl_inputform.create('coll_editor_form', [authorField], (userModifiedRec) => {
     setDisabled(true)
     const coll = º.collFromPath(collPath) as º.Collection
     coll.props.authorID = userModifiedRec['authorID']
+    coll.props.contentFields = {}
+    if (º.appState.config.contentAuthoring.contentFields)
+        for (const dyn_field_id in º.appState.config.contentAuthoring.contentFields) {
+            coll.props.contentFields[dyn_field_id] = {}
+            coll.props.contentFields[dyn_field_id][''] = userModifiedRec[dyn_field_id + contentDynFieldsLangSep]
+            if (º.appState.config.contentAuthoring.contentFields[dyn_field_id]) // if custom field localizable
+                for (const lang_id in º.appState.config.contentAuthoring.languages) {
+                    const loc_val = userModifiedRec[dyn_field_id + contentDynFieldsLangSep + lang_id]
+                    if (loc_val && loc_val.length > 0)
+                        coll.props.contentFields[dyn_field_id][lang_id] = loc_val
+                }
+        }
     utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
 }, contentDynFields)
 
@@ -57,11 +68,10 @@ function onMessage(evt: MessageEvent) {
             contentDynFields.val = utils.dictToArr(º.appState.config.contentAuthoring.contentFields, (k, v) => ({ 'id': k, 'localizable': v }))
                 .sort((a, b) => (a.id == 'title') ? -123456789 : (a.id.localeCompare(b.id)))
                 .map((_) => {
-                    const ret = [{ 'id': _.id, 'title': _.id, } as ctl_inputform.Field]
-                    if (_.localizable) {
+                    const ret = [{ 'id': _.id + contentDynFieldsLangSep, 'title': _.id, } as ctl_inputform.Field]
+                    if (_.localizable)
                         for (const lang_id in º.appState.config.contentAuthoring.languages)
-                            ret.push({ 'id': _.id + ':' + lang_id, 'title': `${_.id} (${º.appState.config.contentAuthoring.languages[lang_id]})`, } as ctl_inputform.Field)
-                    }
+                            ret.push({ 'id': _.id + contentDynFieldsLangSep + lang_id, 'title': `${_.id} (${º.appState.config.contentAuthoring.languages[lang_id]})`, } as ctl_inputform.Field)
                     return ret
                 }).flat()
             const coll = º.collFromPath(collPath)
@@ -76,7 +86,7 @@ function onMessage(evt: MessageEvent) {
                 }
                 authorFieldPlaceHolder.val = author_field_placeholder
 
-                main_form.onDataChangedAtSource(curProps(coll))
+                setTimeout(() => main_form.onDataChangedAtSource(curProps(coll)), 123) // TODO: no setTimeout!
             }
             setDisabled(false)
             break
@@ -87,8 +97,11 @@ function onMessage(evt: MessageEvent) {
 }
 
 function curProps(coll: º.Collection) {
-    return {
-        'id': '',
-        'authorID': coll?.props.authorID ?? "",
-    } as ctl_inputform.Rec
+    const ret = { 'id': '', 'authorID': coll.props.authorID ?? '' } as ctl_inputform.Rec
+    if (coll.props.contentFields)
+        for (const dyn_field_id in coll.props.contentFields)
+            if (coll.props.contentFields[dyn_field_id])
+                for (const lang_id in coll.props.contentFields[dyn_field_id])
+                    ret[dyn_field_id + contentDynFieldsLangSep + lang_id] = coll.props.contentFields[dyn_field_id][lang_id]
+    return ret
 }

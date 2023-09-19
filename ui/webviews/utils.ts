@@ -10,16 +10,18 @@ export function alert(msg: string) {
 
 export function dictToArr<TArr, TDict>(dict: { [key: string]: TDict } | undefined, to: ((key: string, v: TDict) => TArr)): TArr[] {
     const ret: TArr[] = []
-    for (const key in dict)
-        ret.push(to(key, dict[key]))
+    if (dict)
+        for (const key in dict)
+            ret.push(to(key, dict[key]))
     return ret
 }
 
-export function dictFromArr<TArr, TDict>(arr: TArr[], to: (_: TArr) => [string, TDict]): { [key: string]: TDict } {
+export function dictFromArr<TArr, TDict>(arr: TArr[] | undefined, to: (_: TArr) => [string, TDict]): { [key: string]: TDict } {
     const ret: { [key: string]: TDict } = {}
-    for (const item of arr) {
-        const tup = to(item)
-        ret[tup[0]] = tup[1]
-    }
+    if (arr)
+        for (const item of arr) {
+            const tup = to(item)
+            ret[tup[0]] = tup[1]
+        }
     return ret
 }
