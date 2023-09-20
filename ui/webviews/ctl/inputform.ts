@@ -20,7 +20,7 @@ export type RecFunc = (rec: Rec) => void
 export type RecsFunc = (recs: Rec[]) => void
 
 
-export function create(ctlId: string, fields: Field[], onDataUserModified: RecFunc, dynFields?: State<Field[]>): { ctl: ChildDom, onDataChangedAtSource: RecFunc } {
+export function create(ctlId: string, fields: Field[], dynFields: State<Field[]> | undefined, onDataUserModified: RecFunc): { ctl: ChildDom, onDataChangedAtSource: RecFunc } {
     let latest_rec = van.state({} as Rec)
 
     let fieldRow = (field: Field, isDyn: boolean): ChildDom => {
@@ -45,7 +45,7 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
     }
     const table = html.div({ 'class': 'inputform', 'id': ctlId },
         html.span(...fields.map((_) => fieldRow(_, false))),
-        (!dynFields) ? null : () => html.span(...dynFields.val.map((_) => fieldRow(_, true))))
+        (dynFields ? (() => html.span(...dynFields.val.map((_) => fieldRow(_, true)))) : null))
     return {
         ctl: table,
         onDataChangedAtSource: (sourceObj) => {

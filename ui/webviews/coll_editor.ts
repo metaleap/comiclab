@@ -22,25 +22,26 @@ const authorField: ctl_inputform.Field = { id: 'authorId', title: 'Author', vali
 const pageFormatField: ctl_inputform.Field = { id: 'pageFormatId', title: 'Page Format', validators: [ctl_inputform.validatorLookup], lookUp: pageFormatFieldLookup, placeHolder: pageFormatFieldPlaceHolder }
 
 
-const main_form = ctl_inputform.create('coll_editor_form', [authorField, pageFormatField], (userModifiedRec) => {
-    setDisabled(true)
-    const coll = º.collFromPath(collPath) as º.Collection
-    coll.props.authorId = userModifiedRec['authorId']
-    coll.props.pageFormatId = userModifiedRec['pageFormatId']
-    coll.props.contentFields = {}
-    if (º.appState.config.contentAuthoring.contentFields)
-        for (const dyn_field_id in º.appState.config.contentAuthoring.contentFields) {
-            coll.props.contentFields[dyn_field_id] = {}
-            coll.props.contentFields[dyn_field_id][''] = userModifiedRec[dyn_field_id + contentDynFieldsLangSep]
-            if (º.appState.config.contentAuthoring.contentFields[dyn_field_id]) // if custom field localizable
-                for (const lang_id in º.appState.config.contentAuthoring.languages) {
-                    const loc_val = userModifiedRec[dyn_field_id + contentDynFieldsLangSep + lang_id]
-                    if (loc_val && loc_val.length > 0)
-                        coll.props.contentFields[dyn_field_id][lang_id] = loc_val
-                }
-        }
-    utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
-}, contentDynFields)
+const main_form = ctl_inputform.create('coll_editor_form', [authorField, pageFormatField], contentDynFields,
+    (userModifiedRec) => {
+        setDisabled(true)
+        const coll = º.collFromPath(collPath) as º.Collection
+        coll.props.authorId = userModifiedRec['authorId']
+        coll.props.pageFormatId = userModifiedRec['pageFormatId']
+        coll.props.contentFields = {}
+        if (º.appState.config.contentAuthoring.contentFields)
+            for (const dyn_field_id in º.appState.config.contentAuthoring.contentFields) {
+                coll.props.contentFields[dyn_field_id] = {}
+                coll.props.contentFields[dyn_field_id][''] = userModifiedRec[dyn_field_id + contentDynFieldsLangSep]
+                if (º.appState.config.contentAuthoring.contentFields[dyn_field_id]) // if custom field localizable
+                    for (const lang_id in º.appState.config.contentAuthoring.languages) {
+                        const loc_val = userModifiedRec[dyn_field_id + contentDynFieldsLangSep + lang_id]
+                        if (loc_val && loc_val.length > 0)
+                            coll.props.contentFields[dyn_field_id][lang_id] = loc_val
+                    }
+            }
+        utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
+    })
 
 let main_tabs = ctl_tabs.create('coll_editor_tabs', {
     "Collection Settings": ctl_multipanel.create('coll_editor_props', {

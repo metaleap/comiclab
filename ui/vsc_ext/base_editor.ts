@@ -1,4 +1,5 @@
 import * as vs from 'vscode'
+import * as º from './_º'
 import * as utils from './utils'
 import * as app from './app'
 
@@ -83,6 +84,10 @@ export abstract class WebviewPanel {
                     <link rel='stylesheet' type='text/css' href='${this.htmlUri(utils.cssPath('main'))}'>
                 </head><body>
                     <script type='module'>
+                        import * as º from '${this.htmlUri(utils.jsPath("_º"))}'
+                        º.appState.config = ${JSON.stringify(º.appState.config)}
+                        º.appState.proj = ${JSON.stringify(º.appState.proj)}
+
                         import * as main from '${this.htmlUri(utils.jsPath(this.viewTypeIdent))}'
                         main.onInit('${this.reuseKey.substring(this.reuseKey.indexOf(reuseKeySep) + 1)}', acquireVsCodeApi(), '${this.htmlUri(utils.extUri).toString()}')
                     </script>
