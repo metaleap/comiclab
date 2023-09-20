@@ -8,6 +8,7 @@ const html = van.tags
 
 let pagePath: string = ''
 let page: º.Page
+let vscCfg: object
 
 let ˍ: {
     main: HTMLDivElement,
@@ -18,9 +19,9 @@ let ˍ: {
     top_toolbar_zoom_text: HTMLSpanElement,
 } = {} as any
 
-export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string) {
+export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfgSettings: object) {
     pagePath = editorReuseKeyDerivedPagePath
-    utils.onInit(vscode, extUri)
+    utils.onInit(vscode, extUri, vscCfgSettings)
     window.addEventListener('message', onMessage)
 }
 
@@ -68,7 +69,7 @@ function onMessage(evt: MessageEvent) {
 }
 
 function createGui() {
-    const orig_size_zoom_percent = 122.5
+    const orig_size_zoom_percent: number = (utils.vscCfg && utils.vscCfg['pageEditorDefaultZoom']) ? (utils.vscCfg['pageEditorDefaultZoom'] as number) : 122.5
     const page_size = º.pageSizeMm(page)
     ˍ.top_toolbar_dbg = html.div({ 'id': 'top_toolbar_dbg', 'class': 'top-toolbar-block' }, "Debug info here")
     ˍ.top_toolbar = html.div({ 'id': 'top_toolbar' },
@@ -103,7 +104,7 @@ function createGui() {
         'id': 'page_canvas', 'style': `left: 22px; top: 44px; width: ${page_size.wMm}mm; height: ${page_size.hMm}mm;`
     }))
     van.add(document.body, ˍ.main, ˍ.top_toolbar)
-    // setZoom(0)
+    setZoom(0)
 }
 
 function setZoom(zoom: number) {

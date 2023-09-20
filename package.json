@@ -40,6 +40,17 @@
         }
       ]
     },
+    "configuration": {
+      "title": "ComicLab",
+      "properties": {
+        "comiclab.pageEditorDefaultZoom": {
+          "type": "number",
+          "maximum": 222,
+          "minimum": 2,
+          "default": 122.5
+        }
+      }
+    },
     "commands": [
       {
         "command": "comiclab.menu",

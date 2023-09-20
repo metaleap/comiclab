@@ -1,7 +1,9 @@
 export let vs: { postMessage: (_: any) => any }
 export let extUri = ''
+export let vscCfg: any
 
-export function onInit(vscode: { postMessage: (_: any) => any }, baseUri: string) {
+export function onInit(vscode: { postMessage: (_: any) => any }, baseUri: string, vscCfgSettings: object) {
+    vscCfg = vscCfgSettings
     extUri = baseUri
     while (extUri.endsWith('/'))
         extUri = extUri.substring(0, extUri.length - 1)

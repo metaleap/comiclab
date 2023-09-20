@@ -85,7 +85,7 @@ export abstract class WebviewPanel {
                 </head><body>
                     <script type='module'>
                         import * as main from '${this.htmlUri(utils.jsPath(this.viewTypeIdent))}'
-                        main.onInit('${this.reuseKey.substring(this.reuseKey.indexOf(reuseKeySep) + 1)}', acquireVsCodeApi(), '${this.htmlUri(utils.extUri).toString()}')
+                        main.onInit('${this.reuseKey.substring(this.reuseKey.indexOf(reuseKeySep) + 1)}', acquireVsCodeApi(), '${this.htmlUri(utils.extUri).toString()}', ${JSON.stringify(vs.workspace.getConfiguration().get("comiclab"))})
                     </script>
                 </body></html>`
         utils.disp(this.webviewPanel.webview.onDidReceiveMessage((msg) => this.onMessage(msg)))
