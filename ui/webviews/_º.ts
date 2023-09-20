@@ -140,27 +140,40 @@ export function strPaperFormat(_: PaperFormat): string {
     return _ ? (_.widthMm + "×" + _.heightMm + " mm") : ''
 }
 
-export function deepEq(v1: any, v2: any, mustSameArrayOrder?: boolean): boolean {
-    if (v1 === v2 || (v1 === null && v2 === undefined) || (v1 === undefined && v2 === null))
+export function deepEq(val1: any, val2: any, mustSameArrayOrder?: boolean): boolean {
+    if (val1 === val2 || (val1 === null && val2 === undefined) || (val1 === undefined && val2 === null))
         return true
-    if ((typeof v1 == 'object') && (typeof v2 == 'object')) {
-        const a1 = Array.isArray(v1), a2 = Array.isArray(v2)
-        if ((a1 != a2) || (a1 && a2 && v1.length != v2.length)) // array vs. object
+    if ((typeof val1 == 'object') && (typeof val2 == 'object')) {
+        const arr1 = Array.isArray(val1), arr2 = Array.isArray(val2)
+
+        if ((arr1 != arr2) || (arr1 && arr2 && val1.length != val2.length))
             return false
-        else if (!(a1 && a2)) { // object
-            for (const k in v1)
-                if (deepEq(v1[k], v2[k], mustSameArrayOrder))
-                    return true
-        } else if (mustSameArrayOrder) { // array, in order
-            for (let i = 0; i < v1.length; i++)
-                if (!deepEq(v1[i], v2[i], mustSameArrayOrder))
+
+        else if (!(arr1 && arr2)) { // 2 objects
+            let len1 = 0, len2 = 0
+            for (const k in val2)
+                len2++
+            for (const k in val1)
+                if (((++len1) > len2) || !deepEq(val1[k], val2[k], mustSameArrayOrder))
+                    return false
+            return (len1 == len2)
+
+        } else if (mustSameArrayOrder) { // 2 arrays, in order
+            for (let i = 0; i < val1.length; i++)
+                if (!deepEq(val1[i], val2[i], mustSameArrayOrder))
                     return false
             return true
-        } else {  // array, ignoring order
-            for (const item1 of v1)
-                for (const item2 of v2)
-                    if (deepEq(item1, item2, mustSameArrayOrder))
-                        return true
+
+        } else { // 2 arrays, ignoring order
+            for (const item1 of val1) {
+                let found = false
+                for (const item2 of val2)
+                    if (found = deepEq(item1, item2, mustSameArrayOrder))
+                        break
+                if (!found)
+                    return false
+            }
+            return true
         }
     }
     return false
