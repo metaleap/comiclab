@@ -140,6 +140,11 @@ body>div#page_editor_main {
     overflow: hidden;
 }
 
+body>div#page_editor_main>div#canvas {
+    background-color: #fff;
+    position: relative;
+}
+
 body>#top_toolbar {
     position: absolute;
     top: 0;

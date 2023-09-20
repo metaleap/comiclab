@@ -136,6 +136,16 @@ export function collPageFormat(coll: Collection): PaperFormat | undefined {
     return undefined
 }
 
+export function pageSizeMm(page: Page): { wMm: number, hMm: number } {
+    const coll = pageParent(page)
+    if (coll) {
+        const page_format = collPageFormat(coll)
+        if (page_format)
+            return { wMm: page_format.widthMm, hMm: page_format.heightMm }
+    }
+    return {} as any
+}
+
 export function strPaperFormat(_: PaperFormat): string {
     return _ ? (_.widthMm + "×" + _.heightMm + " mm") : ''
 }

@@ -11,6 +11,7 @@ let page: º.Page
 
 let ˍ: {
     main: HTMLDivElement,
+    canvas: HTMLDivElement,
     top_toolbar: HTMLDivElement,
     top_toolbar_dbg: HTMLDivElement,
     top_toolbar_zoom: HTMLInputElement,
@@ -67,15 +68,15 @@ function onMessage(evt: MessageEvent) {
 }
 
 function createGui() {
-    const zoom_percent = 123
+    const orig_size_zoom_percent = 122.5
     ˍ.top_toolbar_dbg = html.div({ 'id': 'top_toolbar_dbg', 'class': 'top-toolbar-block' }, "Debug info here")
     ˍ.top_toolbar = html.div({ 'id': 'top_toolbar' },
         html.div({ 'class': 'top-toolbar-block' },
-            html.a({ 'class': 'btn', 'title': 'Original size', 'style': cssIcon('zoom-in'), 'onclick': () => setZoom(100) }),
+            html.a({ 'class': 'btn', 'title': 'Original size', 'style': cssIcon('zoom-in'), 'onclick': () => setZoom(orig_size_zoom_percent) }),
             ˍ.top_toolbar_zoom_text = html.span({}, '100%'),
             html.a({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('zoom-out'), 'onclick': () => setZoom(0) }),
             ˍ.top_toolbar_zoom = html.input({
-                'type': 'range', 'min': '10', 'max': '500', 'step': 10, 'value': '100', 'onchange': (evt) => {
+                'type': 'range', 'min': '10', 'max': '500', 'step': 1, 'value': '100', 'onchange': (evt) => {
                     setZoom(parseInt(ˍ.top_toolbar_zoom.value))
                 }
             })),
@@ -83,7 +84,7 @@ function createGui() {
     )
 
     ˍ.main = html.div({
-        'id': 'page_editor_main', 'style': `zoom: ${zoom_percent}%;`,
+        'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`,
         'onwheel': (evt: WheelEvent) => {
             console.log(evt)
             ˍ.top_toolbar_dbg.innerText = evt.toString()
@@ -97,14 +98,26 @@ function createGui() {
         //     }
         //     htmls.top_toolbar_dbg.innerText = evt.clientX.toString()
         // },
-    })
-    van.add(document.body, ˍ.top_toolbar, ˍ.main)
+    }, ˍ.canvas = html.div({
+        'id': 'canvas', 'style': 'left: 2em; top: 3em; width: 14cm; height: 21cm;'
+    }))
+    van.add(document.body, ˍ.main, ˍ.top_toolbar)
     // setZoom(0)
 }
 
 function setZoom(zoom: number) {
     if (zoom == 0) { // fit in viewport
-
+        const main_style = ˍ.main.style as any
+        zoom = 1
+        main_style.zoom = '1%'
+        const max_width = () => ˍ.main.clientWidth - (ˍ.main.clientHeight / 20), max_height = () => ˍ.main.clientHeight - (ˍ.main.clientHeight / 17)
+        if (ˍ.canvas.clientWidth < max_width() && ˍ.canvas.clientHeight < max_height()) {
+            const fw = max_width() / ˍ.canvas.clientWidth, fh = max_height() / ˍ.canvas.clientHeight, f = Math.min(fw, fh) - 5
+            if (f >= 10) {
+                zoom = f
+                main_style.zoom = zoom.toString() + '%'
+            }
+        }
     }
     ˍ.top_toolbar_zoom.value = zoom.toString()
     ˍ.top_toolbar_zoom_text.innerText = ˍ.top_toolbar_zoom.value + "%"
