@@ -17,7 +17,8 @@ export class Event<T>  {
         this.handlers = this.handlers.filter(_ => (_ != eventHandler))
     }
     now(arg: T) {
-        this.handlers.forEach(_ => _(arg))
+        for (const handler of this.handlers)
+            handler(arg)
     }
 }
 

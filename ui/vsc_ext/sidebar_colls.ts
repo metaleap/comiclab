@@ -43,7 +43,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
             command: { command: 'comiclab.proj.colls.openPage', arguments: [º.pageToPath(_)] },
             label: _.name,
         } as vs.TreeItem)))
-        ret.forEach((treeNode: vs.TreeItem) => {
+        for (const treeNode of ret) {
             const dict: { [_: string]: boolean } = {
                 'canMoveUp_': this.move(treeNode, -1, true),
                 'canMoveDn_': this.move(treeNode, 1, true),
@@ -54,7 +54,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
             for (const k in dict)
                 if (dict[k])
                     treeNode.contextValue += k
-        })
+        }
         return ret
     }
 
