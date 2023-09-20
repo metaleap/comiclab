@@ -32,9 +32,9 @@ export type Collection = {
     collections: Collection[],
     pages: Page[],
     props: {
-        authorId: string,
-        pageFormatId: string,
-        contentFields: { [id: string]: { [lang_id: string]: string } },
+        authorId?: string,
+        pageFormatId?: string,
+        contentFields?: { [id: string]: { [lang_id: string]: string } },
     },
 }
 
@@ -108,6 +108,14 @@ export function collFromPath(path: string): Collection | undefined {
     return coll
 }
 
+export function collPageFormat(coll: Collection): PaperFormat | undefined {
+    const path = [coll].concat(collParents(coll))
+    for (const coll of path)
+        if (coll.props.pageFormatId && coll.props.pageFormatId.length > 0)
+            return appState.config.contentAuthoring.paperFormats ? appState.config.contentAuthoring.paperFormats[coll.props.pageFormatId] : undefined
+    return undefined
+}
+
 export function strPaperFormat(_: PaperFormat): string {
-    return _ ? (_.widthMm + "×" + _.heightMm + "mm") : ''
+    return _ ? (_.widthMm + "×" + _.heightMm + " mm") : ''
 }

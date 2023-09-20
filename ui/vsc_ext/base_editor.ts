@@ -45,7 +45,7 @@ export abstract class WebviewPanel {
     onMessage(msg: any) {
         switch (msg.ident) {
             case 'alert':
-                vs.window.showWarningMessage(msg.payload as string, { modal: true })
+                utils.alert(msg.payload as string)
                 break
             default:
                 vs.window.showInformationMessage(JSON.stringify(msg))

@@ -65,6 +65,10 @@ export class TreeColls extends sidebar.TreeDataProvider {
         let name_sugg = desc_what + (((addNewPage && coll) ? coll.pages : (coll ? coll.collections : º.appState.proj.collections)).length + 1).toString().padStart(addNewPage ? 3 : 2, "0")
         if (nameConflicts(name_sugg))
             name_sugg = ''
+        if (addNewPage && coll && !º.collPageFormat(coll)) {
+            utils.alert(`Collection '${coll.name}' has no valid Page Format set yet.`)
+            return
+        }
         vs.window.showInputBox({
             title: `Add ${desc_what} to ${desc_parent}:`,
             value: name_sugg,
@@ -81,7 +85,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                 if (addNewPage && coll)
                     coll.pages = (coll.pages ?? []).concat([{ name: name, props: {} }])
                 else {
-                    const new_coll: º.Collection = { name: name, collections: [], pages: [], props: { authorId: '', contentFields: {} } }
+                    const new_coll: º.Collection = { name: name, collections: [], pages: [], props: {} }
                     if (coll)
                         coll.collections = (coll.collections ?? []).concat([new_coll])
                     else

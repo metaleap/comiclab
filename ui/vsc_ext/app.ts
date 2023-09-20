@@ -191,7 +191,7 @@ function prepFetch(proj: boolean, cfg: boolean) {
 				statusBarItem.color = colorRed
 				statusBarItem.text = msg
 				statusBarItem.tooltip = msg
-				vs.window.showErrorMessage(msg, { modal: true })
+				utils.alert(msg)
 			}
 			if (err.statusText && err.statusText.length && err.statusText.length > 0 && err.text)
 				err.text()
