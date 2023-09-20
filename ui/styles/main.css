@@ -140,9 +140,12 @@ body>div#page_editor_main {
     overflow: hidden;
 }
 
-body>div#page_editor_main>div#canvas {
+body>div#page_editor_main>div#page_canvas {
     background-color: #fff;
     position: relative;
+    margin: 0;
+    padding: 0;
+    display: inline-block;
 }
 
 body>#top_toolbar {
@@ -154,7 +157,6 @@ body>#top_toolbar {
     box-shadow: 0 0 0.44em 0 #000;
     padding: 0.22em;
     overflow: hidden;
-    opacity: 0.5;
 }
 
 body>#top_toolbar>div.top-toolbar-block {

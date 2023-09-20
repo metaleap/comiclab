@@ -77,8 +77,8 @@ function createGui() {
             ˍ.top_toolbar_zoom_text = html.span({}, orig_size_zoom_percent + '%'),
             html.a({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('zoom-out'), 'onclick': () => setZoom(0) }),
             ˍ.top_toolbar_zoom = html.input({
-                'type': 'range', 'min': '1', 'max': '222', 'step': 0.5, 'value': orig_size_zoom_percent, 'onchange': (evt) => {
-                    setZoom(parseInt(ˍ.top_toolbar_zoom.value))
+                'type': 'range', 'min': '0.5', 'max': '222', 'step': '1', 'value': orig_size_zoom_percent, 'onchange': (evt) => {
+                    setZoom(parseFloat(ˍ.top_toolbar_zoom.value))
                 }
             })),
         ˍ.top_toolbar_dbg,
@@ -100,7 +100,7 @@ function createGui() {
         //     htmls.top_toolbar_dbg.innerText = evt.clientX.toString()
         // },
     }, ˍ.page_canvas = html.div({
-        'id': 'canvas', 'style': `left: 22px; top: 44px; width: ${page_size.wMm}mm; height: ${page_size.hMm}mm;`
+        'id': 'page_canvas', 'style': `left: 22px; top: 44px; width: ${page_size.wMm}mm; height: ${page_size.hMm}mm;`
     }))
     van.add(document.body, ˍ.main, ˍ.top_toolbar)
     // setZoom(0)
@@ -109,7 +109,7 @@ function createGui() {
 function setZoom(zoom: number) {
     const main_style = ˍ.main.style as any
     const htop = (() => (ˍ.top_toolbar.clientHeight * (100 / zoom)))
-    if (zoom > 0)
+    if (zoom > 0.01)
         main_style.zoom = zoom.toString() + '%'
     else { // fit in viewport
         zoom = 1
