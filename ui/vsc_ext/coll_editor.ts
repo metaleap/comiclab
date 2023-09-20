@@ -49,3 +49,7 @@ export function show(collPath: string) {
 export function close(coll: º.Collection) {
     base_editor.close(viewTypeIdent + base_editor.reuseKeySep + º.collToPath(coll))
 }
+
+export function isOpen(coll: º.Collection) {
+    return base_editor.isOpen(viewTypeIdent + base_editor.reuseKeySep + º.collToPath(coll))
+}

@@ -37,10 +37,6 @@ export function arrayMoveItem<T>(arr: T[], idxOld: number, idxNew: number): T[] 
     return arr
 }
 
-export function noneIn<T>(arr: T[] | null | undefined): boolean {
-    return (!arr) || (!arr.length) || (arr.length == 0)
-}
-
 export function extPath(...pathSegments: string[]) {
     return vs.Uri.joinPath(extUri, ...pathSegments)
 }

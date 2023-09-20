@@ -139,3 +139,29 @@ export function collPageFormat(coll: Collection): PaperFormat | undefined {
 export function strPaperFormat(_: PaperFormat): string {
     return _ ? (_.widthMm + "×" + _.heightMm + " mm") : ''
 }
+
+export function deepEq(v1: any, v2: any, mustSameArrayOrder?: boolean): boolean {
+    if (v1 === v2 || (v1 === null && v2 === undefined) || (v1 === undefined && v2 === null))
+        return true
+    if ((typeof v1 == 'object') && (typeof v2 == 'object')) {
+        const a1 = Array.isArray(v1), a2 = Array.isArray(v2)
+        if ((a1 != a2) || (a1 && a2 && v1.length != v2.length)) // array vs. object
+            return false
+        else if (!(a1 && a2)) { // object
+            for (const k in v1)
+                if (deepEq(v1[k], v2[k], mustSameArrayOrder))
+                    return true
+        } else if (mustSameArrayOrder) { // array, in order
+            for (let i = 0; i < v1.length; i++)
+                if (!deepEq(v1[i], v2[i], mustSameArrayOrder))
+                    return false
+            return true
+        } else {  // array, ignoring order
+            for (const item1 of v1)
+                for (const item2 of v2)
+                    if (deepEq(item1, item2, mustSameArrayOrder))
+                        return true
+        }
+    }
+    return false
+}

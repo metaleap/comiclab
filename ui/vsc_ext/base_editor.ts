@@ -40,7 +40,7 @@ export abstract class WebviewPanel {
         this.refreshTitle()
         if (this.webviewPanel)
             this.webviewPanel.webview.postMessage(this.onRefreshedEventMessage())
-                .then(() => { }, console.error)
+                .then(() => { }, utils.alert)
     }
     abstract onRefreshedEventMessage(): any;
 
@@ -84,10 +84,6 @@ export abstract class WebviewPanel {
                     <link rel='stylesheet' type='text/css' href='${this.htmlUri(utils.cssPath('main'))}'>
                 </head><body>
                     <script type='module'>
-                        import * as º from '${this.htmlUri(utils.jsPath("_º"))}'
-                        º.appState.config = ${JSON.stringify(º.appState.config)}
-                        º.appState.proj = ${JSON.stringify(º.appState.proj)}
-
                         import * as main from '${this.htmlUri(utils.jsPath(this.viewTypeIdent))}'
                         main.onInit('${this.reuseKey.substring(this.reuseKey.indexOf(reuseKeySep) + 1)}', acquireVsCodeApi(), '${this.htmlUri(utils.extUri).toString()}')
                     </script>
@@ -134,4 +130,8 @@ export function close(reuseKey: string) {
     const editor = editors.get(reuseKey)
     if (editor)
         editor.close()
+}
+
+export function isOpen(reuseKey: string) {
+    return editors.get(reuseKey) ? true : false
 }

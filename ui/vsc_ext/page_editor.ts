@@ -50,3 +50,10 @@ export function show(pagePath: string) {
 export function close(page: º.Page) {
     base_editor.close(viewTypeIdent + base_editor.reuseKeySep + º.pageToPath(page))
 }
+
+export function isOpen(coll: º.Collection) {
+    for (const page of coll.pages)
+        if (base_editor.isOpen(viewTypeIdent + base_editor.reuseKeySep + º.pageToPath(page)))
+            return true
+    return false
+}

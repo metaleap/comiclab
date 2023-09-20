@@ -26,8 +26,9 @@ export class TreeColls extends sidebar.TreeDataProvider {
         }
 
         const ret: vs.TreeItem[] = colls.map(_ => ({
-            collapsibleState: ((utils.noneIn(_.collections) && utils.noneIn(_.pages)) ? vs.TreeItemCollapsibleState.None
-                : (parentTreeNode ? vs.TreeItemCollapsibleState.Collapsed : vs.TreeItemCollapsibleState.Expanded)),
+            collapsibleState: (((_.collections.length == 0) && (_.pages.length == 0)) ? vs.TreeItemCollapsibleState.None
+                : ((coll_editor.isOpen(_) || page_editor.isOpen(_) || !parentTreeNode) ? vs.TreeItemCollapsibleState.Expanded
+                    : vs.TreeItemCollapsibleState.Collapsed)),
             iconPath: new vs.ThemeIcon('archive'),
             id: collToNodeId(_),
             contextValue: '_canRename_canDelete_canAddPage_canAddColl_',

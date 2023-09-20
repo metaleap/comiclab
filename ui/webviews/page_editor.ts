@@ -2,31 +2,37 @@ import van from './vanjs/van-1.2.0.js'
 import * as º from './_º.js'
 import * as utils from './utils.js'
 
-import * as ctl_pagecanvas from './ctl/pagecanvas.js'
-
 
 const html = van.tags
 
 
 let pagePath: string = ''
-let page_editor_main = ctl_pagecanvas.create('page_editor_main', pagePath,
-    (userModifiedPage) => {
-        setDisabled(true)
-        const page = º.pageFromPath(pagePath) as º.Page
-        page.props = userModifiedPage.props
-        page.panels = userModifiedPage.panels
-        utils.vs.postMessage({ ident: 'onPageModified', payload: page })
-    })
+let page: º.Page
+let page_editor_main: HTMLElement
 
 export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string) {
     pagePath = editorReuseKeyDerivedPagePath
     utils.onInit(vscode, extUri)
     window.addEventListener('message', onMessage)
-    van.add(document.body, page_editor_main.ctl)
 }
 
 function setDisabled(disabled: boolean) {
-    page_editor_main.ctl.style.visibility = disabled ? 'hidden' : 'visible'
+    if (page_editor_main)
+        page_editor_main.style.visibility = disabled ? 'hidden' : 'visible'
+}
+
+function onUserModified() {
+    setDisabled(true)
+    const proj_page = º.pageFromPath(pagePath) as º.Page
+    proj_page.props = page.props
+    proj_page.panels = page.panels
+    utils.vs.postMessage({ ident: 'onPageModified', payload: proj_page })
+}
+
+function onPotentiallyChangedAtSource() {
+    if (!page) {
+        page = º.pageFromPath(pagePath) as º.Page
+    }
 }
 
 function onMessage(evt: MessageEvent) {
@@ -38,11 +44,22 @@ function onMessage(evt: MessageEvent) {
             if (msg.payload.proj)
                 º.appState.proj = msg.payload.proj
 
-            page_editor_main.onDataChangedAtSource(º.pageFromPath(pagePath) as º.Page)
-            setDisabled(false)
+            const proj_page = º.pageFromPath(pagePath)
+            if (proj_page && ((!page) || !º.deepEq(page, proj_page))) {
+                page = proj_page
+                if (!page_editor_main)
+                    createGui()
+                onPotentiallyChangedAtSource()
+                setDisabled(false)
+            }
             break
         default:
             utils.vs.postMessage({ 'unknown_msg': msg })
             break
     }
+}
+
+function createGui() {
+    page_editor_main = html.div(new Date().getTime().toString() + " Hello " + pagePath + " YOU OLD", html.pre(JSON.stringify(page)))
+    van.add(document.body, page_editor_main)
 }
