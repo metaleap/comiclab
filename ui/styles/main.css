@@ -145,3 +145,10 @@ body>div#page_editor_main>#top_toolbar {
     background-color: var(--vscode-tab-activeBackground);
     height: 2.34em;
 }
+
+body>div#page_editor_main>#top_toolbar>#top_toolbar_dbg {
+    background-color: #d0d0d0;
+    display: inline-block;
+    position: absolute;
+    right: 0;
+}

@@ -8,7 +8,12 @@ const html = van.tags
 
 let pagePath: string = ''
 let page: º.Page
-let page_editor_main: HTMLElement
+
+let htmls: {
+    main: HTMLDivElement,
+    top_toolbar: HTMLDivElement,
+    top_toolbar_dbg: HTMLDivElement,
+} = {} as any
 
 export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string) {
     pagePath = editorReuseKeyDerivedPagePath
@@ -17,8 +22,8 @@ export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMess
 }
 
 function setDisabled(disabled: boolean) {
-    if (page_editor_main)
-        page_editor_main.style.visibility = disabled ? 'hidden' : 'visible'
+    if (htmls.main)
+        htmls.main.style.visibility = disabled ? 'hidden' : 'visible'
 }
 
 function onUserModified() {
@@ -47,7 +52,7 @@ function onMessage(evt: MessageEvent) {
             const proj_page = º.pageFromPath(pagePath)
             if (proj_page && ((!page) || !º.deepEq(page, proj_page))) {
                 page = proj_page
-                if (!page_editor_main)
+                if (!htmls.main)
                     createGui()
                 onPotentiallyChangedAtSource()
                 setDisabled(false)
@@ -60,9 +65,28 @@ function onMessage(evt: MessageEvent) {
 }
 
 function createGui() {
-    page_editor_main = html.div({ 'id': 'page_editor_main' },
-        html.div({ 'id': 'top_toolbar' }),
-        new Date().getTime().toString() + " Hello " + pagePath + " YOU OLD", html.pre(JSON.stringify(page)),
+    const zoom_percent = 123
+    htmls.top_toolbar_dbg = html.div({ 'id': 'top_toolbar_dbg' }, "Debug info here")
+    htmls.top_toolbar = html.div({ 'id': 'top_toolbar' }, htmls.top_toolbar_dbg)
+    htmls.main = html.div({
+        'id': 'page_editor_main',
+        'style': `zoom: ${zoom_percent}%; font-size: ${100 / zoom_percent}em`,
+        'onwheel': (evt: WheelEvent) => {
+            console.log(evt)
+            htmls.top_toolbar_dbg.innerText = evt.toString()
+        },
+        // 'ondragstart': (evt: DragEvent) => {
+        //     console.log(evt)
+        //     if (evt.dataTransfer) {
+        //         evt.dataTransfer.effectAllowed = "move"
+        //         evt.dataTransfer.dropEffect = "move"
+        //         evt.dataTransfer.setDragImage(new Image(), 0, 0)
+        //     }
+        //     htmls.top_toolbar_dbg.innerText = evt.clientX.toString()
+        // },
+    },
+        htmls.top_toolbar,
+        new Date().getTime().toString() + " HELLO " + pagePath + " YOU FUNKY", html.pre(JSON.stringify(page)),
     )
-    van.add(document.body, page_editor_main)
+    van.add(document.body, htmls.main)
 }
