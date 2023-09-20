@@ -60,6 +60,9 @@ function onMessage(evt: MessageEvent) {
 }
 
 function createGui() {
-    page_editor_main = html.div(new Date().getTime().toString() + " Hello " + pagePath + " YOU OLD", html.pre(JSON.stringify(page)))
+    page_editor_main = html.div({ 'id': 'page_editor_main' },
+        html.div({ 'id': 'top_toolbar' }),
+        new Date().getTime().toString() + " Hello " + pagePath + " YOU OLD", html.pre(JSON.stringify(page)),
+    )
     van.add(document.body, page_editor_main)
 }

@@ -30,7 +30,7 @@ let grid_paperformats = ctl_inputgrid.create('config_paperformats', [
     utils.vs.postMessage({ ident: 'onAppStateCfgModified', payload: º.appState.config })
 })
 
-let main_tabs = ctl_tabs.create('config_editor_tabs', {
+let main_tabs = ctl_tabs.create('config_editor_main', {
     "Content Authoring": ctl_multipanel.create('config_contentauthoring', {
         "Authors": grid_authors.ctl,
         "Languages": grid_languages.ctl,

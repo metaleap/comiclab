@@ -43,7 +43,7 @@ const main_form = ctl_inputform.create('coll_editor_form', [authorField, pageFor
         utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
     })
 
-let main_tabs = ctl_tabs.create('coll_editor_tabs', {
+let main_tabs = ctl_tabs.create('coll_editor_main', {
     "Collection Settings": ctl_multipanel.create('coll_editor_props', {
         'Properties': main_form.ctl,
     }),

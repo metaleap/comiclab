@@ -1,7 +1,7 @@
 body {
     font-size: 1.11em;
     background-color: transparent;
-    padding: 1em;
+    padding: 0;
 }
 
 .btn {
@@ -121,4 +121,27 @@ div.inputform div.inputform-field>div.inputform-field-input {
     display: inline-block;
     padding: 0.22em;
     width: 77%;
+}
+
+body>div#config_editor_main,
+body>div#coll_editor_main {
+    margin: 1em;
+}
+
+body>div#page_editor_main {
+    background-color: var(--vscode-minimapSlider-activeBackground);
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+}
+
+body>div#page_editor_main>#top_toolbar {
+    box-shadow: 0 0 0.44em 0 #000;
+    background-color: var(--vscode-tab-activeBackground);
+    height: 2.34em;
 }
