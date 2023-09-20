@@ -32,8 +32,9 @@ export type Collection = {
     collections: Collection[],
     pages: Page[],
     props: {
+        authorId: string,
+        pageFormatId: string,
         contentFields: { [id: string]: { [lang_id: string]: string } },
-        authorID: string,
     },
 }
 
@@ -105,4 +106,8 @@ export function collFromPath(path: string): Collection | undefined {
         else
             break
     return coll
+}
+
+export function strPaperFormat(_: PaperFormat): string {
+    return _ ? (_.widthMm + "×" + _.heightMm + "mm") : ''
 }

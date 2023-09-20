@@ -3,7 +3,6 @@ export let extUri = ''
 
 export function onInit(vscode: { postMessage: (_: any) => any }, baseUri: string) {
     extUri = baseUri
-    console.log(codiconPath('diff-added'))
     vs = vscode
 }
 

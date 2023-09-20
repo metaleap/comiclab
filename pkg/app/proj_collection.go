@@ -5,8 +5,9 @@ type Collection struct {
 	Collections []*Collection `json:"collections"`
 	Pages       []*PageLayout `json:"pages"`
 	Props       struct {
+		AuthorID      string                       `json:"authorId,omitempty"`
+		PageFormatID  string                       `json:"pageFormatId,omitempty"`
 		ContentFields map[string]map[string]string `json:"contentFields,omitempty"`
-		AuthorID      string                       `json:"authorID,omitempty"`
 	} `json:"props"`
 }
 
