@@ -38,7 +38,10 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
                         rec[field.id] = new_value
                         onDataUserModified(rec)
                     }
-                }, /* value attr: */() => latest_rec.val[field.id] ?? '')))
+                }, () => { // value attr of
+                    const rec = utils.dictClone(latest_rec.val)
+                    return rec[field.id] ?? ''
+                })))
     }
     const table = html.div({ 'class': 'inputform', 'id': ctlId },
         html.span(...fields.map((_) => fieldRow(_, false))),
@@ -46,7 +49,7 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
     return {
         ctl: table,
         onDataChangedAtSource: (sourceObj) => {
-            const rec = latest_rec.val
+            const rec = utils.dictClone(latest_rec.val)
             let mut = false
             for (const field_id in sourceObj)
                 if (rec[field_id] !== sourceObj[field_id])

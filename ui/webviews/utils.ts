@@ -9,15 +9,21 @@ export function alert(msg: string) {
     vs.postMessage({ ident: 'alert', payload: msg })
 }
 
-export function dictMap<TIn, TOut>(to: (_: TIn) => TOut, ...dicts: { [key: string]: TIn }[]) {
-    const ret: { [key: string]: TOut } = {}
+export function dictMerge<TDict>(...dicts: { [_: string]: TDict }[]): { [_: string]: TDict } {
+    return Object.assign({}, ...dicts) // dictMap<TDict, TDict>((_) => _, ...dicts)
+}
+
+export const dictClone = dictMerge
+
+export function dictMap<TIn, TOut>(to: (_: TIn) => TOut, ...dicts: { [_: string]: TIn }[]) {
+    const ret: { [_: string]: TOut } = {}
     for (const dict of dicts)
         for (const key in dict)
             ret[key] = to(dict[key])
     return ret
 }
 
-export function dictToArr<TArr, TDict>(dict: { [key: string]: TDict } | undefined, to: ((key: string, v: TDict) => TArr)): TArr[] {
+export function dictToArr<TArr, TDict>(dict: { [_: string]: TDict } | undefined, to: ((k: string, v: TDict) => TArr)): TArr[] {
     const ret: TArr[] = []
     if (dict)
         for (const key in dict)
@@ -25,8 +31,8 @@ export function dictToArr<TArr, TDict>(dict: { [key: string]: TDict } | undefine
     return ret
 }
 
-export function dictFromArr<TArr, TDict>(arr: TArr[] | undefined, to: (_: TArr) => [string, TDict]): { [key: string]: TDict } {
-    const ret: { [key: string]: TDict } = {}
+export function dictFromArr<TArr, TDict>(arr: TArr[] | undefined, to: (_: TArr) => [string, TDict]): { [_: string]: TDict } {
+    const ret: { [_: string]: TDict } = {}
     if (arr)
         for (const item of arr) {
             const tup = to(item)
