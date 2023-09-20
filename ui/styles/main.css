@@ -129,26 +129,37 @@ body>div#coll_editor_main {
 }
 
 body>div#page_editor_main {
-    background-color: var(--vscode-minimapSlider-activeBackground);
-    margin: 0;
-    padding: 0;
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    background-color: #a0a0a0;
+    padding: 0;
+    margin: 0;
     overflow: hidden;
 }
 
-body>div#page_editor_main>#top_toolbar {
-    box-shadow: 0 0 0.44em 0 #000;
+body>#top_toolbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     background-color: var(--vscode-tab-activeBackground);
-    height: 2.34em;
+    box-shadow: 0 0 0.44em 0 #000;
+    padding: 0.22em;
+    overflow: hidden;
 }
 
-body>div#page_editor_main>#top_toolbar>#top_toolbar_dbg {
-    background-color: #d0d0d0;
+body>#top_toolbar>div.top-toolbar-block {
     display: inline-block;
-    position: absolute;
-    right: 0;
+}
+
+body>#top_toolbar>div.top-toolbar-block>* {
+    vertical-align: middle;
+}
+
+body>#top_toolbar>#top_toolbar_dbg {
+    background-color: #d0d0d0;
+    float: right;
 }

@@ -9,10 +9,12 @@ const html = van.tags
 let pagePath: string = ''
 let page: º.Page
 
-let htmls: {
+let ˍ: {
     main: HTMLDivElement,
     top_toolbar: HTMLDivElement,
     top_toolbar_dbg: HTMLDivElement,
+    top_toolbar_zoom: HTMLInputElement,
+    top_toolbar_zoom_text: HTMLSpanElement,
 } = {} as any
 
 export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string) {
@@ -22,8 +24,8 @@ export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMess
 }
 
 function setDisabled(disabled: boolean) {
-    if (htmls.main)
-        htmls.main.style.visibility = disabled ? 'hidden' : 'visible'
+    if (ˍ.main)
+        ˍ.main.style.visibility = disabled ? 'hidden' : 'visible'
 }
 
 function onUserModified() {
@@ -52,7 +54,7 @@ function onMessage(evt: MessageEvent) {
             const proj_page = º.pageFromPath(pagePath)
             if (proj_page && ((!page) || !º.deepEq(page, proj_page))) {
                 page = proj_page
-                if (!htmls.main)
+                if (!ˍ.main)
                     createGui()
                 onPotentiallyChangedAtSource()
                 setDisabled(false)
@@ -66,14 +68,25 @@ function onMessage(evt: MessageEvent) {
 
 function createGui() {
     const zoom_percent = 123
-    htmls.top_toolbar_dbg = html.div({ 'id': 'top_toolbar_dbg' }, "Debug info here")
-    htmls.top_toolbar = html.div({ 'id': 'top_toolbar' }, htmls.top_toolbar_dbg)
-    htmls.main = html.div({
-        'id': 'page_editor_main',
-        'style': `zoom: ${zoom_percent}%; font-size: ${100 / zoom_percent}em`,
+    ˍ.top_toolbar_dbg = html.div({ 'id': 'top_toolbar_dbg', 'class': 'top-toolbar-block' }, "Debug info here")
+    ˍ.top_toolbar = html.div({ 'id': 'top_toolbar' },
+        html.div({ 'class': 'top-toolbar-block' },
+            html.a({ 'class': 'btn', 'title': 'Original size', 'style': cssIcon('zoom-in'), 'onclick': () => setZoom(100) }),
+            ˍ.top_toolbar_zoom_text = html.span({}, '100%'),
+            html.a({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('zoom-out'), 'onclick': () => setZoom(0) }),
+            ˍ.top_toolbar_zoom = html.input({
+                'type': 'range', 'min': '10', 'max': '500', 'step': 10, 'value': '100', 'onchange': (evt) => {
+                    setZoom(parseInt(ˍ.top_toolbar_zoom.value))
+                }
+            })),
+        ˍ.top_toolbar_dbg,
+    )
+
+    ˍ.main = html.div({
+        'id': 'page_editor_main', 'style': `zoom: ${zoom_percent}%;`,
         'onwheel': (evt: WheelEvent) => {
             console.log(evt)
-            htmls.top_toolbar_dbg.innerText = evt.toString()
+            ˍ.top_toolbar_dbg.innerText = evt.toString()
         },
         // 'ondragstart': (evt: DragEvent) => {
         //     console.log(evt)
@@ -84,9 +97,23 @@ function createGui() {
         //     }
         //     htmls.top_toolbar_dbg.innerText = evt.clientX.toString()
         // },
-    },
-        htmls.top_toolbar,
-        new Date().getTime().toString() + " HELLO " + pagePath + " YOU FUNKY", html.pre(JSON.stringify(page)),
-    )
-    van.add(document.body, htmls.main)
+    })
+    van.add(document.body, ˍ.top_toolbar, ˍ.main)
+    // setZoom(0)
+}
+
+function setZoom(zoom: number) {
+    if (zoom == 0) { // fit in viewport
+
+    }
+    ˍ.top_toolbar_zoom.value = zoom.toString()
+    ˍ.top_toolbar_zoom_text.innerText = ˍ.top_toolbar_zoom.value + "%"
+}
+
+function dom(id: string): HTMLElement {
+    return document.getElementById(id) as HTMLElement
+}
+
+function cssIcon(name: string) {
+    return `background-image: url('${utils.codiconPath(name)}')`
 }

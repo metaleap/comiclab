@@ -3,11 +3,13 @@ export let extUri = ''
 
 export function onInit(vscode: { postMessage: (_: any) => any }, baseUri: string) {
     extUri = baseUri
+    while (extUri.endsWith('/'))
+        extUri = extUri.substring(0, extUri.length - 1)
     vs = vscode
 }
 
 export function codiconPath(name: string) {
-    return extUri + 'node_modules/@vscode/codicons/src/icons/' + name + '.svg'
+    return extUri + '/node_modules/@vscode/codicons/src/icons/' + name + '.svg'
 }
 
 export function alert(msg: string) {
