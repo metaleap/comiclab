@@ -69,6 +69,7 @@ function onMessage(evt: MessageEvent) {
 
 function createGui() {
     const orig_size_zoom_percent = 122.5
+    const page_size = º.pageSizeMm(page)
     ˍ.top_toolbar_dbg = html.div({ 'id': 'top_toolbar_dbg', 'class': 'top-toolbar-block' }, "Debug info here")
     ˍ.top_toolbar = html.div({ 'id': 'top_toolbar' },
         html.div({ 'class': 'top-toolbar-block' },
@@ -99,27 +100,31 @@ function createGui() {
         //     htmls.top_toolbar_dbg.innerText = evt.clientX.toString()
         // },
     }, ˍ.canvas = html.div({
-        'id': 'canvas', 'style': 'left: 2em; top: 3em; width: 14cm; height: 21cm;'
+        'id': 'canvas', 'style': `left: 1em; top: 2em; width: ${page_size.wMm}mm; height: ${page_size.hMm}mm;`
     }))
     van.add(document.body, ˍ.main, ˍ.top_toolbar)
     // setZoom(0)
 }
 
 function setZoom(zoom: number) {
-    if (zoom == 0) { // fit in viewport
+    if (zoom <= 0) { // fit in viewport
         const main_style = ˍ.main.style as any
         zoom = 1
         main_style.zoom = '1%'
-        const max_width = () => ˍ.main.clientWidth - (ˍ.main.clientHeight / 20), max_height = () => ˍ.main.clientHeight - (ˍ.main.clientHeight / 17)
+        const max_width = () => ˍ.main.clientWidth - (ˍ.main.clientWidth / 55)
+        const max_height = () => ˍ.main.clientHeight - (ˍ.main.clientHeight / 55) - (ˍ.top_toolbar.clientHeight / (1 / ˍ.top_toolbar.clientHeight))
         if (ˍ.canvas.clientWidth < max_width() && ˍ.canvas.clientHeight < max_height()) {
             const fw = max_width() / ˍ.canvas.clientWidth, fh = max_height() / ˍ.canvas.clientHeight, f = Math.min(fw, fh) - 5
             if (f >= 10) {
                 zoom = f
                 main_style.zoom = zoom.toString() + '%'
+                ˍ.canvas.style.top = ((100 / zoom) * (1.5 * ˍ.top_toolbar.clientHeight)) + 'px'
+                ˍ.canvas.style.left = ((ˍ.main.clientWidth - ˍ.canvas.clientWidth) / 2) + 'px'
             }
         }
     }
     ˍ.top_toolbar_zoom.value = zoom.toString()
+    console.log(ˍ.top_toolbar_zoom.value, "=", zoom.toString())
     ˍ.top_toolbar_zoom_text.innerText = ˍ.top_toolbar_zoom.value + "%"
 }
 

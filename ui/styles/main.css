@@ -158,6 +158,7 @@ body>#top_toolbar {
 
 body>#top_toolbar>div.top-toolbar-block {
     display: inline-block;
+    white-space: nowrap;
 }
 
 body>#top_toolbar>div.top-toolbar-block>* {
