@@ -21,7 +21,8 @@ export type RecsFunc = (recs: Rec[]) => void
 
 
 export function create(ctlId: string, fields: Field[], onDataUserModified: RecFunc, dynFields?: State<Field[]>): { ctl: ChildDom, onDataChangedAtSource: RecFunc } {
-    let latest: Rec
+    let latest_rec_states: { id: State<string>, [_: string]: State<string> } = { id: van.state('') }
+    const latest_rec = () => utils.dictMap(latest_rec_states, (_) => _.val) as Rec
     let fieldRow = (field: Field): ChildDom => {
         return html.div({ 'class': 'inputform-field' },
             html.div({ 'class': 'inputform-field-label' }, field.title + ":"),
@@ -29,15 +30,16 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
                 htmlDataList(ctlId, field),
                 htmlInput(false, ctlId, '', field, (evt) => {
                     const input_field = document.getElementById(htmlId(ctlId, '', field)) as HTMLInputElement
-                    if (!validate(latest, input_field.value, field)) {
-                        input_field.value = latest[field.id]
-                        return
+                    if (!validate(latest_rec(), input_field.value, field))
+                        input_field.value = latest_rec()[field.id] ?? ''
+                    else {
+                        if (latest_rec_states[field.id] === undefined) // dynFields...
+                            latest_rec_states[field.id] = van.state(input_field.value)
+                        else
+                            latest_rec_states[field.id].val = input_field.value
+                        onDataUserModified(latest_rec())
                     }
-                    latest[field.id] = input_field.value
-                    onDataUserModified(latest)
-                }),
-            ),
-        )
+                }, () => (latest_rec_states[field.id]?.val) ?? '')))
     }
     const table = html.div({ 'class': 'inputform', 'id': ctlId },
         html.span(...fields.map(fieldRow)),
@@ -45,13 +47,14 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
     return {
         ctl: table,
         onDataChangedAtSource: (sourceObj) => {
-            latest = sourceObj
-            for (const field of (dynFields ? dynFields.val : []).concat(fields)) {
-                const field_value = latest[field.id] ?? ''
-                const input_field = document.getElementById(htmlId(ctlId, '', field)) as HTMLInputElement
-                if (input_field)
-                    input_field.value = field_value
-            }
+            for (const field_id in sourceObj)
+                if (latest_rec_states[field_id] === undefined) // newly added dynField?
+                    latest_rec_states[field_id] = van.state(sourceObj[field_id])
+                else
+                    latest_rec_states[field_id].val = sourceObj[field_id]
+            for (const field_id in latest_rec_states)
+                if (sourceObj[field_id] === undefined) // newly deleted dynField
+                    delete latest_rec_states[field_id]
         }
     }
 }
@@ -66,7 +69,7 @@ export function htmlDataList(ctlId: string, field: Field): ChildDom {
     return null
 }
 
-export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field: Field, onChange?: (evt: Event) => any): HTMLInputElement {
+export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field: Field, onChange: (evt: Event) => any, value?: () => string, placeholder?: string): HTMLInputElement {
     const is_bool = (field.lookUp == lookupBool)
     const init: Props = {
         'class': 'inputfield' + (isAddRec ? ' inputfield-addrec' : ''),
@@ -75,8 +78,10 @@ export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field
         'data-field-id': field.id,
         'readOnly': field.readOnly ? (!isAddRec) : false,
         'type': is_bool ? 'checkbox' : (field.num ? 'number' : 'text'),
-        'placeholder': field.placeHolder ? field.placeHolder : htmlInputDefaultPlaceholder(field, isAddRec),
+        'placeholder': field.placeHolder ? field.placeHolder : (placeholder ?? ''),
     }
+    if (value)
+        init.value = value
     if (onChange)
         init.onchange = onChange
     if (field.lookUp)
@@ -88,11 +93,6 @@ export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field
                 init[prop] = num[prop].toString()
     }
     return html.input(init)
-}
-
-export function htmlInputDefaultPlaceholder(field: Field, isAddRec?: boolean) {
-    let field_title = field.title.trim()
-    return (!isAddRec) ? (field_title.startsWith('(') ? '' : `(${field_title})`) : "(New entry)"
 }
 
 export function validate(rec: Rec, newValue: string | undefined, ...fields: Field[]) {
@@ -114,7 +114,7 @@ export let validatorNonEmpty: ValidateFunc = (_: Rec, field: Field, newFieldValu
     return undefined
 }
 
-export let validatorLookup: ValidateFunc = (curRec: Rec, field: Field, newFieldValue: string) => {
+export let validatorLookup: ValidateFunc = (_: Rec, field: Field, newFieldValue: string) => {
     if (field.lookUp && newFieldValue.length > 0) {
         const valid_values = utils.dictToArr(field.lookUp.val, (k, v) => k)
         if (!valid_values.includes(newFieldValue))
@@ -124,12 +124,14 @@ export let validatorLookup: ValidateFunc = (curRec: Rec, field: Field, newFieldV
 }
 
 export function validatorNumeric(min?: number, max?: number, step?: number): ValidateFunc {
-    return (curRec: Rec, field: Field, newFieldValue: string) => {
+    return (_: Rec, field: Field, newFieldValue: string) => {
         if (newFieldValue.length == 0)
             return undefined
         let n: number
         try {
             n = parseInt(newFieldValue)
+            if (n === undefined || n === null || Number.isNaN(n))
+                throw `${field.title} must be a numeric value.`
         } catch (err: any) {
             return { name: 'Numeric', message: err.toString() }
         }

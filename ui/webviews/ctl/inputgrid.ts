@@ -59,7 +59,7 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecsF
         if (field.lookUp)
             ths_and_lists.push(htmlDataList(ctlId, field))
         ths_and_lists.push(html.th({ 'class': 'inputgrid-header', 'id': htmlId(ctlId, '', field, '_th'), 'data-field-id': field.id, 'width': th_width + '%' }, field.title))
-        add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, htmlInput(true, ctlId, '', field)))
+        add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, htmlInput(true, ctlId, '', field, () => { }, undefined, htmlInputDefaultPlaceholder(field, true))))
     }
     ths_and_lists.push(html.th({ 'class': 'inputgrid-header' }, ' '))
     add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, html.a(
@@ -86,7 +86,7 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecsF
                     rec_tr = html.tr({ 'class': 'inputgrid-record', 'id': rec_tr_id, 'data-rec-id': rec.id })
                     const cell_tds: ChildDom[] = []
                     for (const field of fields)
-                        cell_tds.push(html.td({ 'class': 'inputgrid-cell' }, htmlInput(false, ctlId, rec.id, field, () => { recInput(rec.id, field) })))
+                        cell_tds.push(html.td({ 'class': 'inputgrid-cell' }, htmlInput(false, ctlId, rec.id, field, () => { recInput(rec.id, field) }, undefined, htmlInputDefaultPlaceholder(field, false))))
                     cell_tds.push(html.td({ 'class': 'inputgrid-cell' }, html.a(
                         { 'onclick': () => recDel(rec.id), 'class': 'btn btn-circle-minus inputgrid-cell', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })))
                     van.add(rec_tr, ...cell_tds)
@@ -109,6 +109,11 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecsF
             table.style.visibility = 'visible'
         }
     }
+}
+
+function htmlInputDefaultPlaceholder(field: Field, isAddRec?: boolean) {
+    let field_title = field.title.trim()
+    return (!isAddRec) ? (field_title.startsWith('(') ? '' : `(${field_title})`) : "(New entry)"
 }
 
 export function validatorUnique(fullDataset: () => Rec[]): ValidateFunc {

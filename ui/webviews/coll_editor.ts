@@ -68,7 +68,9 @@ function onMessage(evt: MessageEvent) {
             contentDynFields.val = utils.dictToArr(º.appState.config.contentAuthoring.contentFields, (k, v) => ({ 'id': k, 'localizable': v }))
                 .sort((a, b) => (a.id == 'title') ? -123456789 : (a.id.localeCompare(b.id)))
                 .map((_) => {
-                    const ret = [{ 'id': _.id + contentDynFieldsLangSep, 'title': _.id, } as ctl_inputform.Field]
+                    const ret = [{ 'id': _.id + contentDynFieldsLangSep, 'title': _.id, validators: [] } as ctl_inputform.Field]
+                    if (_.id.includes('year'))
+                        ret[0].validators = [ctl_inputform.validatorNumeric(1234, 2345)]
                     if (_.localizable)
                         for (const lang_id in º.appState.config.contentAuthoring.languages)
                             ret.push({ 'id': _.id + contentDynFieldsLangSep + lang_id, 'title': `    (${º.appState.config.contentAuthoring.languages[lang_id]})`, } as ctl_inputform.Field)
@@ -76,7 +78,7 @@ function onMessage(evt: MessageEvent) {
                 }).flat()
             const coll = º.collFromPath(collPath)
             if (coll) {
-                let author_field_placeholder = ctl_inputform.htmlInputDefaultPlaceholder(authorField)
+                let author_field_placeholder = ''
                 if (coll) {
                     const parent = º.collParent(coll) as º.Collection
                     if (parent && parent.props && parent.props.authorID) {
@@ -86,7 +88,7 @@ function onMessage(evt: MessageEvent) {
                 }
                 authorFieldPlaceHolder.val = author_field_placeholder
 
-                setTimeout(() => main_form.onDataChangedAtSource(curProps(coll)), 123) // TODO: no setTimeout!
+                main_form.onDataChangedAtSource(curProps(coll))
             }
             setDisabled(false)
             break
