@@ -99,7 +99,7 @@ function onMessage(evt: MessageEvent) {
 }
 
 function curProps(coll: º.Collection) {
-    const ret = { 'id': '', 'authorID': coll.props.authorID ?? '' } as ctl_inputform.Rec
+    const ret: ctl_inputform.Rec = { 'authorID': coll.props.authorID ?? '' }
     if (coll.props.contentFields)
         for (const dyn_field_id in coll.props.contentFields)
             if (coll.props.contentFields[dyn_field_id])

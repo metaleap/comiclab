@@ -4,7 +4,7 @@ import * as utils from '../utils.js'
 const html = van.tags
 
 export type Num = { min?: number, max?: number, step?: number }
-export type Rec = { id: string, [field_id: string]: string }
+export type Rec = { [_: string]: string }
 export type Lookup = { [_: string]: string }
 export type Field = {
     id: string,
@@ -21,11 +21,11 @@ export type RecsFunc = (recs: Rec[]) => void
 
 
 export function create(ctlId: string, fields: Field[], onDataUserModified: RecFunc, dynFields?: State<Field[]>): { ctl: ChildDom, onDataChangedAtSource: RecFunc } {
-    let latest_rec = van.state({ id: '' } as Rec)
+    let latest_rec = van.state({} as Rec)
 
-    let fieldRow = (field: Field): ChildDom => {
+    let fieldRow = (field: Field, isDyn: boolean): ChildDom => {
         return html.div({ 'class': 'inputform-field' },
-            html.div({ 'class': 'inputform-field-label' }, field.title + ":"),
+            html.div({ 'class': 'inputform-field-label' }, (isDyn ? html.em : html.strong)(field.title + ":")),
             html.div({ 'class': 'inputform-field-input' },
                 htmlDataList(ctlId, field),
                 htmlInput(false, ctlId, '', field, (_) => { // onChange
@@ -41,8 +41,8 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
                 }, /* value attr: */() => latest_rec.val[field.id] ?? '')))
     }
     const table = html.div({ 'class': 'inputform', 'id': ctlId },
-        html.span(...fields.map(fieldRow)),
-        (!dynFields) ? null : () => html.span(...dynFields.val.map(fieldRow)))
+        html.span(...fields.map((_) => fieldRow(_, false))),
+        (!dynFields) ? null : () => html.span(...dynFields.val.map((_) => fieldRow(_, true))))
     return {
         ctl: table,
         onDataChangedAtSource: (sourceObj) => {
