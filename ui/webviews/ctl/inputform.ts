@@ -21,25 +21,24 @@ export type RecsFunc = (recs: Rec[]) => void
 
 
 export function create(ctlId: string, fields: Field[], onDataUserModified: RecFunc, dynFields?: State<Field[]>): { ctl: ChildDom, onDataChangedAtSource: RecFunc } {
-    let latest_rec_states: { id: State<string>, [_: string]: State<string> } = { id: van.state('') }
-    const latest_rec = () => utils.dictMap(latest_rec_states, (_) => _.val) as Rec
+    let latest_rec = van.state({ id: '' } as Rec)
+
     let fieldRow = (field: Field): ChildDom => {
         return html.div({ 'class': 'inputform-field' },
             html.div({ 'class': 'inputform-field-label' }, field.title + ":"),
             html.div({ 'class': 'inputform-field-input' },
                 htmlDataList(ctlId, field),
-                htmlInput(false, ctlId, '', field, (evt) => {
+                htmlInput(false, ctlId, '', field, (_) => { // onChange
                     const input_field = document.getElementById(htmlId(ctlId, '', field)) as HTMLInputElement
-                    if (!validate(latest_rec(), input_field.value, field))
-                        input_field.value = latest_rec()[field.id] ?? ''
+                    const new_value = input_field.value.trim()
+                    const rec = latest_rec.val
+                    if (!validate(rec, new_value, field))
+                        input_field.value = rec[field.id] ?? ''
                     else {
-                        if (latest_rec_states[field.id] === undefined) // dynFields...
-                            latest_rec_states[field.id] = van.state(input_field.value)
-                        else
-                            latest_rec_states[field.id].val = input_field.value
-                        onDataUserModified(latest_rec())
+                        rec[field.id] = new_value
+                        onDataUserModified(rec)
                     }
-                }, () => (latest_rec_states[field.id]?.val) ?? '')))
+                }, /* value attr: */() => latest_rec.val[field.id] ?? '')))
     }
     const table = html.div({ 'class': 'inputform', 'id': ctlId },
         html.span(...fields.map(fieldRow)),
@@ -47,14 +46,18 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecFu
     return {
         ctl: table,
         onDataChangedAtSource: (sourceObj) => {
+            const rec = latest_rec.val
+            let mut = false
             for (const field_id in sourceObj)
-                if (latest_rec_states[field_id] === undefined) // newly added dynField?
-                    latest_rec_states[field_id] = van.state(sourceObj[field_id])
-                else
-                    latest_rec_states[field_id].val = sourceObj[field_id]
-            for (const field_id in latest_rec_states)
-                if (sourceObj[field_id] === undefined) // newly deleted dynField
-                    delete latest_rec_states[field_id]
+                if (rec[field_id] !== sourceObj[field_id])
+                    [mut, rec[field_id]] = [true, sourceObj[field_id]]
+            for (const field_id in rec)
+                if (sourceObj[field_id] === undefined) { // newly deleted dynField
+                    mut = true
+                    delete rec[field_id]
+                }
+            if (mut)
+                latest_rec.val = rec
         }
     }
 }
@@ -110,7 +113,7 @@ export function validate(rec: Rec, newValue: string | undefined, ...fields: Fiel
 
 export let validatorNonEmpty: ValidateFunc = (_: Rec, field: Field, newFieldValue: string) => {
     if (newFieldValue.length == 0)
-        return { name: 'Required', message: `'${field.title} must not be blank.` }
+        return { name: 'Required', message: `'${field.title}' must not be blank.` }
     return undefined
 }
 
@@ -118,7 +121,7 @@ export let validatorLookup: ValidateFunc = (_: Rec, field: Field, newFieldValue:
     if (field.lookUp && newFieldValue.length > 0) {
         const valid_values = utils.dictToArr(field.lookUp.val, (k, v) => k)
         if (!valid_values.includes(newFieldValue))
-            return { name: 'Invalid', message: `'${field.title} must be one of: '${valid_values.join("' or '")}'` }
+            return { name: 'Invalid', message: `'${field.title}' must be one of: '${valid_values.join("' or '")}'` }
     }
     return undefined
 }
@@ -131,7 +134,7 @@ export function validatorNumeric(min?: number, max?: number, step?: number): Val
         try {
             n = parseInt(newFieldValue)
             if (n === undefined || n === null || Number.isNaN(n))
-                throw `${field.title} must be a numeric value.`
+                throw `'${field.title}' must be a numeric value.`
         } catch (err: any) {
             return { name: 'Numeric', message: err.toString() }
         }

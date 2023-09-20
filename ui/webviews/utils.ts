@@ -9,9 +9,9 @@ export function alert(msg: string) {
     vs.postMessage({ ident: 'alert', payload: msg })
 }
 
-export function dictMap<TIn, TOut>(dict: { [key: string]: TIn } | undefined, to: (_: TIn) => TOut) {
+export function dictMap<TIn, TOut>(to: (_: TIn) => TOut, ...dicts: { [key: string]: TIn }[]) {
     const ret: { [key: string]: TOut } = {}
-    if (dict)
+    for (const dict of dicts)
         for (const key in dict)
             ret[key] = to(dict[key])
     return ret
