@@ -154,6 +154,7 @@ body>#top_toolbar {
     box-shadow: 0 0 0.44em 0 #000;
     padding: 0.22em;
     overflow: hidden;
+    opacity: 0.5;
 }
 
 body>#top_toolbar>div.top-toolbar-block {

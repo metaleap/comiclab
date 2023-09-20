@@ -11,7 +11,7 @@ let page: º.Page
 
 let ˍ: {
     main: HTMLDivElement,
-    canvas: HTMLDivElement,
+    page_canvas: HTMLDivElement,
     top_toolbar: HTMLDivElement,
     top_toolbar_dbg: HTMLDivElement,
     top_toolbar_zoom: HTMLInputElement,
@@ -74,10 +74,10 @@ function createGui() {
     ˍ.top_toolbar = html.div({ 'id': 'top_toolbar' },
         html.div({ 'class': 'top-toolbar-block' },
             html.a({ 'class': 'btn', 'title': 'Original size', 'style': cssIcon('zoom-in'), 'onclick': () => setZoom(orig_size_zoom_percent) }),
-            ˍ.top_toolbar_zoom_text = html.span({}, '100%'),
+            ˍ.top_toolbar_zoom_text = html.span({}, orig_size_zoom_percent + '%'),
             html.a({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('zoom-out'), 'onclick': () => setZoom(0) }),
             ˍ.top_toolbar_zoom = html.input({
-                'type': 'range', 'min': '10', 'max': '500', 'step': 1, 'value': '100', 'onchange': (evt) => {
+                'type': 'range', 'min': '1', 'max': '222', 'step': 0.5, 'value': orig_size_zoom_percent, 'onchange': (evt) => {
                     setZoom(parseInt(ˍ.top_toolbar_zoom.value))
                 }
             })),
@@ -99,32 +99,32 @@ function createGui() {
         //     }
         //     htmls.top_toolbar_dbg.innerText = evt.clientX.toString()
         // },
-    }, ˍ.canvas = html.div({
-        'id': 'canvas', 'style': `left: 1em; top: 2em; width: ${page_size.wMm}mm; height: ${page_size.hMm}mm;`
+    }, ˍ.page_canvas = html.div({
+        'id': 'canvas', 'style': `left: 22px; top: 44px; width: ${page_size.wMm}mm; height: ${page_size.hMm}mm;`
     }))
     van.add(document.body, ˍ.main, ˍ.top_toolbar)
     // setZoom(0)
 }
 
 function setZoom(zoom: number) {
-    if (zoom <= 0) { // fit in viewport
-        const main_style = ˍ.main.style as any
+    const main_style = ˍ.main.style as any
+    const htop = (() => (ˍ.top_toolbar.clientHeight * (100 / zoom)))
+    if (zoom > 0)
+        main_style.zoom = zoom.toString() + '%'
+    else { // fit in viewport
         zoom = 1
         main_style.zoom = '1%'
-        const max_width = () => ˍ.main.clientWidth - (ˍ.main.clientWidth / 55)
-        const max_height = () => ˍ.main.clientHeight - (ˍ.main.clientHeight / 55) - (ˍ.top_toolbar.clientHeight / (1 / ˍ.top_toolbar.clientHeight))
-        if (ˍ.canvas.clientWidth < max_width() && ˍ.canvas.clientHeight < max_height()) {
-            const fw = max_width() / ˍ.canvas.clientWidth, fh = max_height() / ˍ.canvas.clientHeight, f = Math.min(fw, fh) - 5
-            if (f >= 10) {
-                zoom = f
-                main_style.zoom = zoom.toString() + '%'
-                ˍ.canvas.style.top = ((100 / zoom) * (1.5 * ˍ.top_toolbar.clientHeight)) + 'px'
-                ˍ.canvas.style.left = ((ˍ.main.clientWidth - ˍ.canvas.clientWidth) / 2) + 'px'
-            }
+        const wmax = (() => ˍ.main.clientWidth), hmax = (() => ˍ.main.clientHeight - htop())
+        if (ˍ.page_canvas.clientWidth < wmax() && ˍ.page_canvas.clientHeight < hmax()) {
+            const fw = wmax() / ˍ.page_canvas.clientWidth, fh = hmax() / ˍ.page_canvas.clientHeight
+            const f = Math.min(fw, fh) - 2
+            zoom = f
+            main_style.zoom = zoom.toString() + '%'
         }
     }
+    ˍ.page_canvas.style.left = ((ˍ.main.clientWidth - ˍ.page_canvas.clientWidth) / 2) + 'px'
+    ˍ.page_canvas.style.top = (((ˍ.main.clientHeight - ˍ.page_canvas.clientHeight) / 2) + (htop() / 2)) + 'px'
     ˍ.top_toolbar_zoom.value = zoom.toString()
-    console.log(ˍ.top_toolbar_zoom.value, "=", zoom.toString())
     ˍ.top_toolbar_zoom_text.innerText = ˍ.top_toolbar_zoom.value + "%"
 }
 
