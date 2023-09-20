@@ -40,7 +40,11 @@ export type Collection = {
 
 export type Page = {
     name: string,
+    panels: Panel[],
     props: {},
+}
+
+export type Panel = {
 }
 
 type CollOrProj = { name?: string, collections: Collection[] }
@@ -81,6 +85,22 @@ export function pageParents(page: Page): Collection[] {
             return path
         return undefined
     }) ?? []
+}
+
+export function pageToPath(page: Page): string {
+    const page_path = pageParents(page)
+    return ([page] as any[]).concat(page_path).reverse().map(_ => _.name).join('/')
+}
+
+export function pageFromPath(path: string): Page | undefined {
+    const parts = path.split('/')
+    let coll = appState.proj.collections.find(_ => (_.name == parts[0]))
+    for (let i = 1; coll && (i < parts.length); i++)
+        if (i == (parts.length - 1))
+            return coll.pages.find(_ => (_.name == parts[i]))
+        else
+            coll = coll.collections.find(_ => (_.name == parts[i]))
+    return undefined
 }
 
 export function collChildPage(coll: Collection, id: string, ...ignore: Page[]): Page | undefined {

@@ -12,6 +12,10 @@ type Collection struct {
 }
 
 type PageLayout struct {
-	Name  string   `json:"name"`
-	Props struct{} `json:"props"`
+	Name   string   `json:"name"`
+	Panels []*Panel `json:"panels"`
+	Props  struct{} `json:"props"`
+}
+
+type Panel struct {
 }

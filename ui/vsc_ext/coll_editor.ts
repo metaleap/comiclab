@@ -28,7 +28,9 @@ class CollEditor extends base_editor.WebviewPanel {
         }
     }
     override onMessage(msg: any): void {
-        const coll = º.collFromPath(this.collPath) as º.Collection
+        const coll = º.collFromPath(this.collPath)
+        if (!coll)
+            return utils.alert("NEW BUG: coll " + this.collPath + " not found?!")
         switch (msg.ident) {
             case 'onCollModified':
                 coll.props = msg.payload.props
@@ -45,5 +47,5 @@ export function show(collPath: string) {
 }
 
 export function close(coll: º.Collection) {
-    base_editor.close(viewTypeIdent + ':' + º.collToPath(coll))
+    base_editor.close(viewTypeIdent + base_editor.reuseKeySep + º.collToPath(coll))
 }

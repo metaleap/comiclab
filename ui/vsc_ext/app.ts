@@ -4,6 +4,7 @@ import * as utils from './utils'
 import * as sidebar from './sidebar'
 import * as config_editor from './config_editor'
 import * as coll_editor from './coll_editor'
+import * as page_editor from './page_editor'
 
 import fetch from 'node-fetch'
 
@@ -51,6 +52,7 @@ export function activate(context: vs.ExtensionContext) {
 
 	sidebar.onInit()
 	coll_editor.onInit()
+	page_editor.onInit()
 
 	onCfgModified.do((modifiedCfg) => {
 		onDirty(dirtyProj, true, false)
