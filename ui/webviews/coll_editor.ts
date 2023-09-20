@@ -44,9 +44,9 @@ let main_tabs = ctl_tabs.create('coll_editor_tabs', {
     "Preview": html.div('(TODO)'),
 })
 
-export function onInit(editorReuseKeyDerivedCollPath: string, vscode: { postMessage: (_: any) => any }, baseUri: string) {
+export function onInit(editorReuseKeyDerivedCollPath: string, vscode: { postMessage: (_: any) => any }, extUri: string) {
     collPath = editorReuseKeyDerivedCollPath
-    utils.onInit(vscode)
+    utils.onInit(vscode, extUri)
     window.addEventListener('message', onMessage)
     van.add(document.body, main_tabs)
 }

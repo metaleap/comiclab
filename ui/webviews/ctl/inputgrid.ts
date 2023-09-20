@@ -63,7 +63,7 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecsF
     }
     ths_and_lists.push(html.th({ 'class': 'inputgrid-header' }, ' '))
     add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, html.a(
-        { 'onclick': recAdd, 'class': 'btn btn-circle-plus inputgrid-cell', alt: "Add", title: "Add", href: '' })))
+        { 'onclick': recAdd, 'class': 'btn btn-plus inputgrid-cell', alt: "Add", title: "Add", href: '' })))
 
     const table = html.table({ 'class': 'inputgrid', 'id': ctlId },
         html.tr({ 'class': 'inputgrid-header' }, ...ths_and_lists),
@@ -88,7 +88,7 @@ export function create(ctlId: string, fields: Field[], onDataUserModified: RecsF
                     for (const field of fields)
                         cell_tds.push(html.td({ 'class': 'inputgrid-cell' }, htmlInput(false, ctlId, rec.id, field, () => { recInput(rec.id, field) }, undefined, htmlInputDefaultPlaceholder(field, false))))
                     cell_tds.push(html.td({ 'class': 'inputgrid-cell' }, html.a(
-                        { 'onclick': () => recDel(rec.id), 'class': 'btn btn-circle-minus inputgrid-cell', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })))
+                        { 'onclick': () => recDel(rec.id), 'class': 'btn btn-minus inputgrid-cell', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })))
                     van.add(rec_tr, ...cell_tds)
                     new_rec_trs.push(rec_tr)
                 }

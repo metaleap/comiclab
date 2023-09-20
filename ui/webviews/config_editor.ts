@@ -41,8 +41,8 @@ let main_tabs = ctl_tabs.create('config_editor_tabs', {
     }),
 })
 
-export function onInit(_: string, vscode: { postMessage: (_: any) => any }, baseUri: string) {
-    utils.onInit(vscode)
+export function onInit(_: string, vscode: { postMessage: (_: any) => any }, extUri: string) {
+    utils.onInit(vscode, extUri)
     window.addEventListener('message', onMessage)
     van.add(document.body, main_tabs)
 }

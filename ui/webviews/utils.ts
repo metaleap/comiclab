@@ -1,8 +1,14 @@
 export let vs: { postMessage: (_: any) => any }
+export let extUri = ''
 
-
-export function onInit(vscode: { postMessage: (_: any) => any }) {
+export function onInit(vscode: { postMessage: (_: any) => any }, baseUri: string) {
+    extUri = baseUri
+    console.log(codiconPath('diff-added'))
     vs = vscode
+}
+
+export function codiconPath(name: string) {
+    return extUri + 'node_modules/@vscode/codicons/src/icons/' + name + '.svg'
 }
 
 export function alert(msg: string) {

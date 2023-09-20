@@ -17,18 +17,21 @@ a.btn {
     text-decoration: none;
     margin: 0;
     padding: 0;
-    width: 17px;
-    height: 17px;
+    margin-left: 0.22em;
+    width: 1.23em;
+    height: 1.23em;
     background-repeat: no-repeat;
     background-position: center center;
+    background-size: contain;
+    vertical-align: middle;
 }
 
-a.btn-circle-plus {
-    background-image: url('../icons/circle-plus.svg')
+a.btn-plus {
+    background-image: url('../../node_modules/@vscode/codicons/src/icons/diff-added.svg')
 }
 
-a.btn-circle-minus {
-    background-image: url('../icons/circle-minus.svg')
+a.btn-minus {
+    background-image: url('../../node_modules/@vscode/codicons/src/icons/diff-removed.svg')
 }
 
 div.tab-container {
