@@ -17,7 +17,8 @@ a.btn {
     text-decoration: none;
     margin: 0;
     padding: 0;
-    margin-left: 0.22em;
+    margin-left: 0.44em;
+    margin-right: 0.44em;
     width: 1.23em;
     height: 1.23em;
     background-repeat: no-repeat;
@@ -88,6 +89,10 @@ table.inputgrid>tr.inputgrid-header>th.inputgrid-header {
 
 input.inputfield {
     width: 100%;
+}
+
+table.inputgrid>tr>td.inputgrid-cell {
+    vertical-align: middle;
 }
 
 table.inputgrid input.inputfield-addrec {

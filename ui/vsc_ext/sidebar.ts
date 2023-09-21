@@ -8,13 +8,14 @@ let webviewProvider: SidebarWebViewProvider
 
 
 export abstract class TreeDataProvider implements vs.TreeDataProvider<vs.TreeItem> {
-    refresh = new vs.EventEmitter<vs.TreeItem | undefined | null | void>()
+    refreshEmitter = new vs.EventEmitter<vs.TreeItem | undefined | null | void>()
+    onDidChangeTreeData = this.refreshEmitter.event
     treeView: vs.TreeView<vs.TreeItem>
     origTitle: string
-    onDidChangeTreeData: vs.Event<vs.TreeItem | undefined | null | void> = this.refresh.event
     abstract getTreeItem(treeNode: vs.TreeItem): vs.TreeItem;
     abstract getChildren(treeNode?: vs.TreeItem): vs.ProviderResult<vs.TreeItem[]>;
     onInit(treeView: vs.TreeView<vs.TreeItem>) {
+        utils.disp(this.refreshEmitter)
         this.origTitle = treeView.title ?? '?!bug?!'
         this.treeView = treeView
         return this.treeView
@@ -48,12 +49,15 @@ export function onInit() {
     utils.disp(treeColls.onInit(vs.window.createTreeView('comiclabExplorerProjColls', { treeDataProvider: treeColls, showCollapseAll: true })))
     utils.disp(treeBooks.onInit(vs.window.createTreeView('comiclabExplorerProjBooks', { treeDataProvider: treeBooks, showCollapseAll: true })))
     utils.disp(treeSites.onInit(vs.window.createTreeView('comiclabExplorerProjSites', { treeDataProvider: treeSites, showCollapseAll: true })))
-    app.onProjSaved.do((_) => { [treeColls, treeBooks, treeSites].forEach(_ => _.refreshTitle()) })
-    app.onProjRefreshed.do((_) => {
-        [treeColls, treeBooks, treeSites].forEach(_ => {
-            _.refresh.fire()
-            _.refreshTitle()
-        })
+    app.events.projSaved.on((_) => {
+        for (const tree of [treeColls, treeBooks, treeSites])
+            tree.refreshTitle()
+    })
+    app.events.projRefreshed.on((_) => {
+        for (const tree of [treeColls, treeBooks, treeSites]) {
+            tree.refreshEmitter.fire()
+            tree.refreshTitle()
+        }
     })
 }
 

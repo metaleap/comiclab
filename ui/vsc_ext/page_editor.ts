@@ -35,7 +35,7 @@ class PageEditor extends base_editor.WebviewPanel {
             case 'onPageModified':
                 page.props = msg.payload.props
                 page.panels = msg.payload.panels
-                app.onProjModified.now(º.appState.proj)
+                app.events.projModified.now(º.appState.proj)
                 break
             default:
                 super.onMessage(msg)

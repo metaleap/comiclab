@@ -61,12 +61,12 @@ export abstract class WebviewPanel {
         const on_refreshed = () => this.onRefreshed()
         const on_saved = () => this.onSaved()
         if (this.targetsCfg) {
-            app.onCfgRefreshed.do(on_refreshed)
-            app.onCfgSaved.do(on_saved)
+            app.events.cfgRefreshed.on(on_refreshed)
+            app.events.cfgSaved.on(on_saved)
         }
         if (this.targetsProj) {
-            app.onProjRefreshed.do(on_refreshed)
-            app.onProjSaved.do(on_saved)
+            app.events.projRefreshed.on(on_refreshed)
+            app.events.projSaved.on(on_saved)
         }
         utils.disp(this.webviewPanel = vs.window.createWebviewPanel(this.viewTypeIdent, this.title(), vs.ViewColumn.One, {
             retainContextWhenHidden: true,
@@ -92,12 +92,12 @@ export abstract class WebviewPanel {
         this.webviewPanel.iconPath = utils.codiconPath(this.codicon)
         utils.disp(this.webviewPanel.onDidDispose(() => {
             if (this.targetsCfg) {
-                app.onCfgRefreshed.dont(on_refreshed)
-                app.onCfgSaved.dont(on_saved)
+                app.events.cfgRefreshed.no(on_refreshed)
+                app.events.cfgSaved.no(on_saved)
             }
             if (this.targetsProj) {
-                app.onProjRefreshed.dont(on_refreshed)
-                app.onProjSaved.dont(on_saved)
+                app.events.projRefreshed.no(on_refreshed)
+                app.events.projSaved.no(on_saved)
             }
             this.onDisposed()
         }))

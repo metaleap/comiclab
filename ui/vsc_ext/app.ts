@@ -12,12 +12,14 @@ import fetch from 'node-fetch'
 
 export let dirtyProj = false
 export let dirtyCfg = false
-export let onProjRefreshed = new utils.Event<º.Proj>()
-export let onCfgRefreshed = new utils.Event<º.Config>()
-export let onProjSaved = new utils.Event<º.Proj>()
-export let onCfgSaved = new utils.Event<º.Config>()
-export let onProjModified = new utils.Event<º.Proj>()
-export let onCfgModified = new utils.Event<º.Config>()
+export let events = {
+	projRefreshed: new utils.Event<º.Proj>(),
+	cfgRefreshed: new utils.Event<º.Config>(),
+	projSaved: new utils.Event<º.Proj>(),
+	cfgSaved: new utils.Event<º.Config>(),
+	projModified: new utils.Event<º.Proj>(),
+	cfgModified: new utils.Event<º.Config>(),
+}
 
 
 const apiUri = 'http://localhost:64646'
@@ -54,16 +56,19 @@ export function activate(context: vs.ExtensionContext) {
 	coll_editor.onInit()
 	page_editor.onInit()
 
-	onCfgModified.do((modifiedCfg) => {
+	events.cfgModified.on((modifiedCfg) => {
 		onDirty(dirtyProj, true, false)
 		º.appState.config = modifiedCfg
-		onCfgRefreshed.now(º.appState.config)
+		events.cfgRefreshed.now(º.appState.config)
 	})
-	onProjModified.do((modifiedProj) => {
+	events.projModified.on((modifiedProj) => {
 		onDirty(true, dirtyCfg, false)
 		º.appState.proj = modifiedProj
-		onProjRefreshed.now(º.appState.proj)
+		events.projRefreshed.now(º.appState.proj)
 	})
+
+	const diag = vs.languages.createDiagnosticCollection("ComicLab")
+	utils.disp(diag)
 
 	appStateReload(true, true)
 }
@@ -136,11 +141,11 @@ function appStateReload(proj: boolean, cfg: boolean) {
 					onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg, true) // happens in onDone for good, but also must occur before below event triggers
 					if (proj) {
 						º.appState.proj = latestAppState.proj
-						onProjRefreshed.now(º.appState.proj)
+						events.projRefreshed.now(º.appState.proj)
 					}
 					if (cfg) {
 						º.appState.config = latestAppState.config
-						onCfgRefreshed.now(º.appState.config)
+						events.cfgRefreshed.now(º.appState.config)
 					}
 					if (proj && cfg)
 						everLoadedFully = true
@@ -167,8 +172,8 @@ function appStateSave(proj: boolean, cfg: boolean) {
 				req.onErr(resp)
 			else {
 				onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg, true) // happens in onDone for good, but also must occur before below event triggers
-				if (proj) onProjSaved.now(º.appState.proj)
-				if (cfg) onCfgSaved.now(º.appState.config)
+				if (proj) events.projSaved.now(º.appState.proj)
+				if (cfg) events.cfgSaved.now(º.appState.config)
 				statusBarItem.text = "$(pass-filled) ComicLab saved changes to " + msg_suffix
 			}
 		})

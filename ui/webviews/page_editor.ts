@@ -74,9 +74,9 @@ function createGui() {
     ˍ.top_toolbar_dbg = html.div({ 'id': 'top_toolbar_dbg', 'class': 'top-toolbar-block' }, "Debug info here")
     ˍ.top_toolbar = html.div({ 'id': 'top_toolbar' },
         html.div({ 'class': 'top-toolbar-block' },
-            html.a({ 'class': 'btn', 'title': 'Original size', 'style': cssIcon('zoom-in'), 'onclick': () => setZoom(orig_size_zoom_percent) }),
+            html.a({ 'class': 'btn', 'title': 'Original size', 'style': cssIcon('screen-full'), 'onclick': () => setZoom(orig_size_zoom_percent) }),
             ˍ.top_toolbar_zoom_text = html.span({}, orig_size_zoom_percent + '%'),
-            html.a({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('zoom-out'), 'onclick': () => setZoom(0) }),
+            html.a({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('screen-normal'), 'onclick': () => setZoom(0) }),
             ˍ.top_toolbar_zoom = html.input({
                 'type': 'range', 'min': '0.5', 'max': '222', 'step': '1', 'value': orig_size_zoom_percent, 'onchange': (evt) => {
                     setZoom(parseFloat(ˍ.top_toolbar_zoom.value))

@@ -21,7 +21,7 @@ class ConfigEditor extends base_editor.WebviewPanel {
     override onMessage(msg: any): void {
         switch (msg.ident) {
             case 'onAppStateCfgModified':
-                app.onCfgModified.now(msg.payload as º.Config)
+                app.events.cfgModified.now(msg.payload as º.Config)
                 break
             default:
                 super.onMessage(msg)

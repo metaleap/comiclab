@@ -51,12 +51,12 @@ func httpHandle(httpResp http.ResponseWriter, httpReq *http.Request) {
 			postedState, err = FromJSON[state](body)
 			println(string(body))
 			if err == nil && postedState.Config != nil {
-				if postedState.Config, err = writeJSONFile(State.Config.FilePath(), postedState.Config); err == nil {
+				if err = writeJSONFile(State.Config.FilePath(), postedState.Config); err == nil {
 					State.Config = postedState.Config
 				}
 			}
 			if err == nil && postedState.Proj != nil {
-				if postedState.Proj, err = writeJSONFile(State.Proj.FilePath(), postedState.Proj); err == nil {
+				if err = writeJSONFile(State.Proj.FilePath(), postedState.Proj); err == nil {
 					State.Proj = postedState.Proj
 				}
 			}

@@ -24,12 +24,12 @@ func readJSONFile[T any](filePath string, ifNotExists T) (ret T, err error) {
 	return
 }
 
-func writeJSONFile[T any](filePath string, obj T) (T, error) {
+func writeJSONFile[T any](filePath string, obj T) error {
 	file_bytes, err := JSON(obj)
 	if err == nil {
 		err = writeFile(filePath, file_bytes)
 	}
-	return obj, err
+	return err
 }
 
 func writeFile(filePath string, fileBytes []byte) error {
