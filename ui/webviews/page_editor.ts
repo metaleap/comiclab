@@ -82,8 +82,9 @@ function createGui() {
                 'type': 'range', 'min': zoomMin, 'max': zoomMax, 'step': '0.5', 'value': orig_size_zoom_percent, 'onchange': (evt) =>
                     zoomSet(parseFloat(ˍ.top_toolbar_zoom_input.value))
             }),
-            html.a({ 'class': 'btn', 'title': `Original size (${page_size.wMm / 10} × ${page_size.hMm / 10} cm)`, 'style': cssIcon('screen-full'), 'onclick': () => zoomSet(orig_size_zoom_percent) }),
             ˍ.top_toolbar_zoom_text = html.span({}, orig_size_zoom_percent + '%'),
+            html.a({ 'class': 'btn', 'title': `Original size (${page_size.wMm / 10} × ${page_size.hMm / 10} cm)`, 'style': cssIcon('screen-full'), 'onclick': () => zoomSet(orig_size_zoom_percent) }),
+            html.a({ 'class': 'btn', 'title': `View size (${((page_size.wMm / 1.41414141) / 10).toFixed(1)} × ${((page_size.hMm / 1.41414141) / 10).toFixed(1)} cm)`, 'style': cssIcon('preview'), 'onclick': () => zoomSet(orig_size_zoom_percent / 1.41414141) }),
             html.a({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('screen-normal'), 'onclick': () => zoomSet() }),
         ),
         ˍ.top_toolbar_dbg,

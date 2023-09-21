@@ -82,23 +82,25 @@ function cmdMainMenu() {
 	let itemSaveBoth: vs.QuickPickItem = { label: "Save Both", iconPath: new vs.ThemeIcon('save-all'), alwaysShow: true }
 	let itemReloadProj: vs.QuickPickItem = { label: "Reload Project", iconPath: new vs.ThemeIcon('refresh'), alwaysShow: true }
 	let itemReloadCfg: vs.QuickPickItem = { label: "Reload Config", iconPath: new vs.ThemeIcon('refresh'), alwaysShow: true }
-	let itemReloadBoth: vs.QuickPickItem = { label: "Reload Both", iconPath: new vs.ThemeIcon('refresh'), alwaysShow: true }
+	let itemReloadBoth: vs.QuickPickItem = { label: everLoadedFully ? "Reload Both" : "Reload", iconPath: new vs.ThemeIcon('refresh'), alwaysShow: true }
 	let itemConfig: vs.QuickPickItem = { label: "Config...", iconPath: new vs.ThemeIcon('tools'), alwaysShow: true }
 	let items: vs.QuickPickItem[] = [itemConfig]
 	if (!everLoadedFully)
-		items.push(itemReloadBoth, itemReloadProj, itemReloadCfg)
-	if (dirtyProj)
-		items.push(itemSaveProj)
-	if (dirtyCfg)
-		items.push(itemSaveCfg)
-	if (dirtyCfg && dirtyProj)
-		items.push(itemSaveBoth)
-	if (dirtyProj && everLoadedFully)
-		items.push(itemReloadProj)
-	if (dirtyCfg && everLoadedFully)
-		items.push(itemReloadCfg)
-	if (dirtyCfg && dirtyProj && everLoadedFully)
 		items.push(itemReloadBoth)
+	else {
+		if (dirtyProj)
+			items.push(itemSaveProj)
+		if (dirtyCfg)
+			items.push(itemSaveCfg)
+		if (dirtyCfg && dirtyProj)
+			items.push(itemSaveBoth)
+		if (dirtyProj)
+			items.push(itemReloadProj)
+		if (dirtyCfg)
+			items.push(itemReloadCfg)
+		if (dirtyCfg && dirtyProj)
+			items.push(itemReloadBoth)
+	}
 
 	vs.window.showQuickPick(items, { title: "ComicLab" }).then((item) => {
 		switch (item) {
