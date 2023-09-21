@@ -18,4 +18,9 @@ type PageLayout struct {
 }
 
 type Panel struct {
+	X     int     `json:"x"`
+	Y     int     `json:"y"`
+	W     int     `json:"w"`
+	H     int     `json:"h"`
+	Round float64 `json:"round"`
 }

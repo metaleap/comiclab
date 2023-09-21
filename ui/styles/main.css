@@ -167,6 +167,9 @@ body>#top_toolbar {
 body>#top_toolbar>div.top-toolbar-block {
     display: inline-block;
     white-space: nowrap;
+    border-right: 1px solid var(--vscode-tab-inactiveForeground);
+    padding-left: 0.22em;
+    padding-right: 0.22em;
 }
 
 body>#top_toolbar>div.top-toolbar-block>* {

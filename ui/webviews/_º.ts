@@ -45,6 +45,11 @@ export type Page = {
 }
 
 export type Panel = {
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    round: number,
 }
 
 type CollOrProj = { name?: string, collections: Collection[] }

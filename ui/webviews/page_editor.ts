@@ -77,7 +77,7 @@ function createGui() {
     ˍ.top_toolbar = html.div({ 'id': 'top_toolbar' },
         html.div({ 'id': 'top_toolbar_zoom', 'class': 'top-toolbar-block' },
             ˍ.top_toolbar_zoom_input = html.input({
-                'type': 'range', 'min': zoomMin, 'max': zoomMax, 'step': '1', 'value': orig_size_zoom_percent, 'onchange': (evt) =>
+                'type': 'range', 'min': zoomMin, 'max': zoomMax, 'step': '0.5', 'value': orig_size_zoom_percent, 'onchange': (evt) =>
                     zoomSet(parseFloat(ˍ.top_toolbar_zoom_input.value))
             }),
             html.a({ 'class': 'btn', 'title': `Original size (${page_size.wMm / 10} × ${page_size.hMm / 10} cm)`, 'style': cssIcon('screen-full'), 'onclick': () => zoomSet(orig_size_zoom_percent) }),
@@ -91,7 +91,7 @@ function createGui() {
         'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`,
         'onwheel': (evt: WheelEvent) => {
             if (evt.shiftKey)
-                zoomSet(zoomGet() + (((evt.deltaX + evt.deltaY) * 0.5)) * 0.1,
+                zoomSet(zoomGet() + (((evt.deltaX + evt.deltaY) * 0.5)) * 0.05,
                     { x: evt.clientX, y: evt.clientY })
             else {
                 posY((posY() + (evt.deltaY * -0.1)))
@@ -133,8 +133,8 @@ function zoomSet(newZoom?: number, mouse?: { x: number, y: number }) {
     const htop = (() => (ˍ.top_toolbar.clientHeight * (100 / (newZoom as number))))
     if (newZoom !== undefined) {
         const w_old = ˍ.main.clientWidth, h_old = ˍ.main.clientHeight
-        let x_mid_off = (ˍ.page_canvas.clientWidth / 2), y_mid_off = (ˍ.page_canvas.clientHeight / 2)
-        let x_mid_old = posX() + x_mid_off, y_mid_old = posY() + y_mid_off
+        const x_mid_off = (ˍ.page_canvas.clientWidth / 2), y_mid_off = (ˍ.page_canvas.clientHeight / 2)
+        const x_mid_old = posX() + x_mid_off, y_mid_old = posY() + y_mid_off
         const x_rel = (w_old / x_mid_old), y_rel = (h_old / y_mid_old)
         main_style.zoom = (newZoom = Math.max(zoomMin, Math.min(zoomMax, newZoom))).toString() + '%'
         const x_mid_new = ˍ.main.clientWidth / x_rel, y_mid_new = ˍ.main.clientHeight / y_rel
@@ -153,7 +153,7 @@ function zoomSet(newZoom?: number, mouse?: { x: number, y: number }) {
         posY(((ˍ.main.clientHeight - ˍ.page_canvas.clientHeight) / 2) + (htop() / 2))
     }
     ˍ.top_toolbar_zoom_input.value = newZoom.toString()
-    ˍ.top_toolbar_zoom_text.innerText = ˍ.top_toolbar_zoom_input.value + "%"
+    ˍ.top_toolbar_zoom_text.innerText = newZoom.toFixed(1).padStart(5, "0") + "%"
 }
 
 function dbg(...msg: any[]) {
