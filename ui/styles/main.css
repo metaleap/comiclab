@@ -145,7 +145,7 @@ body>div#page_editor_main {
     overflow: hidden;
 }
 
-body>div#page_editor_main>div#page_canvas {
+body>div#page_editor_main>#page_canvas {
     background-color: #fff;
     position: relative;
     margin: 0;

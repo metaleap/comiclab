@@ -20,16 +20,16 @@ export type RecFunc = (rec: Rec) => void
 export type RecsFunc = (recs: Rec[]) => void
 
 
-export function create(ctlId: string, fields: Field[], dynFields: State<Field[]> | undefined, onDataUserModified: RecFunc): { ctl: ChildDom, onDataChangedAtSource: RecFunc } {
+export function create(domId: string, fields: Field[], dynFields: State<Field[]> | undefined, onDataUserModified: RecFunc): { dom: ChildDom, onDataChangedAtSource: RecFunc } {
     let latest_rec = van.state({} as Rec)
 
     let fieldRow = (field: Field, isDyn: boolean): ChildDom => {
         return html.div({ 'class': 'inputform-field' },
             html.div({ 'class': 'inputform-field-label' }, (isDyn ? html.em : html.strong)(field.title + ":")),
             html.div({ 'class': 'inputform-field-input' },
-                htmlDataList(ctlId, field),
-                htmlInput(false, ctlId, '', field, (_) => { // onChange
-                    const input_field = document.getElementById(htmlId(ctlId, '', field)) as HTMLInputElement
+                htmlDataList(domId, field),
+                htmlInput(false, domId, '', field, (_) => { // onChange
+                    const input_field = document.getElementById(htmlId(domId, '', field)) as HTMLInputElement
                     const new_value = input_field.value.trim()
                     const rec = latest_rec.val
                     if (!validate(rec, new_value, field))
@@ -43,11 +43,11 @@ export function create(ctlId: string, fields: Field[], dynFields: State<Field[]>
                     return rec[field.id] ?? ''
                 })))
     }
-    const table = html.div({ 'class': 'inputform', 'id': ctlId },
+    const table = html.div({ 'class': 'inputform', 'id': domId },
         html.span(...fields.map((_) => fieldRow(_, false))),
         (dynFields ? (() => html.span(...dynFields.val.map((_) => fieldRow(_, true)))) : null))
     return {
-        ctl: table,
+        dom: table,
         onDataChangedAtSource: (sourceObj) => {
             const rec = utils.dictClone(latest_rec.val)
             let mut = false
@@ -65,21 +65,21 @@ export function create(ctlId: string, fields: Field[], dynFields: State<Field[]>
     }
 }
 
-export function htmlId(ctlId: string, recId: string, field?: Field, prefix?: string) {
-    return (prefix ? (prefix + '_') : '') + ctlId + '_' + recId + '_' + (field ? field.id : 'id')
+export function htmlId(domId: string, recId: string, field?: Field, prefix?: string) {
+    return (prefix ? (prefix + '_') : '') + domId + '_' + recId + '_' + (field ? field.id : 'id')
 }
 
-export function htmlDataList(ctlId: string, field: Field): ChildDom {
+export function htmlDataList(domId: string, field: Field): ChildDom {
     if (field.lookUp)
-        return () => html.datalist({ 'id': htmlId(ctlId, '', field, '_list') }, ...utils.dictToArr(field.lookUp?.val, (k, v) => html.option({ 'value': k }, v)))
+        return () => html.datalist({ 'id': htmlId(domId, '', field, '_list') }, ...utils.dictToArr(field.lookUp?.val, (k, v) => html.option({ 'value': k }, v)))
     return null
 }
 
-export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field: Field, onChange: (evt: Event) => any, value?: () => string, placeholder?: string): HTMLInputElement {
+export function htmlInput(isAddRec: boolean, domId: string, recId: string, field: Field, onChange: (evt: Event) => any, value?: () => string, placeholder?: string): HTMLInputElement {
     const is_bool = (field.lookUp == lookupBool)
     const init: Props = {
         'class': 'inputfield' + (isAddRec ? ' inputfield-addrec' : ''),
-        'id': htmlId(ctlId, recId, field),
+        'id': htmlId(domId, recId, field),
         'data-rec-id': recId,
         'data-field-id': field.id,
         'readOnly': field.readOnly ? (!isAddRec) : false,
@@ -91,7 +91,7 @@ export function htmlInput(isAddRec: boolean, ctlId: string, recId: string, field
     if (onChange)
         init.onchange = onChange
     if (field.lookUp)
-        init.list = htmlId(ctlId, '', field, '_list')
+        init.list = htmlId(domId, '', field, '_list')
     if (field.num) {
         const num: any = field.num as any
         for (const prop of ['min', 'max', 'step'])

@@ -1,11 +1,11 @@
 import van from './vanjs/van-1.2.0.js'
 import * as º from './_º.js'
 import * as utils from './utils.js'
+import * as ctl_svgcanvas from './ctl/svgcanvas.js'
 
 
 // type SvgNode = HTMLElement & SVGElement
 const html = van.tags
-const svg = van.tagsNS("http://www.w3.org/2000/svg")
 const zoomMin = 0.5
 const zoomMax = 321.5
 
@@ -16,7 +16,7 @@ let vscCfg: object
 
 let ˍ: {
     main: HTMLDivElement,
-    page_canvas: HTMLDivElement,
+    page_canvas: ctl_svgcanvas.SvgCanvas,
     top_toolbar: HTMLDivElement,
     top_toolbar_dbg: HTMLDivElement,
     top_toolbar_zoom_input: HTMLInputElement,
@@ -110,22 +110,23 @@ function createGui() {
         //     }
         //     dbg(evt.clientX.toString())
         // },
-    }, ˍ.page_canvas = html.div({
-        'id': 'page_canvas', 'style': `left: 22px; top: 44px; width: ${page_size.wMm}mm; height: ${page_size.hMm}mm;`,
-    }))
+    },
+        (ˍ.page_canvas = ctl_svgcanvas.create('page_canvas', page,
+            { 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`, 'background-color': '#fff' })).dom,
+    )
     van.add(document.body, ˍ.main, ˍ.top_toolbar)
     zoomSet()
 }
 
 function posX(newX?: number): number {
     if (newX !== undefined)
-        ˍ.page_canvas.style.left = newX.toString() + 'px'
-    return parseInt(ˍ.page_canvas.style.left)
+        ˍ.page_canvas.dom.style.left = newX.toString() + 'px'
+    return parseInt(ˍ.page_canvas.dom.style.left)
 }
 function posY(newY?: number): number {
     if (newY !== undefined)
-        ˍ.page_canvas.style.top = newY.toString() + 'px'
-    return parseInt(ˍ.page_canvas.style.top)
+        ˍ.page_canvas.dom.style.top = newY.toString() + 'px'
+    return parseInt(ˍ.page_canvas.dom.style.top)
 }
 
 function zoomGet(): number {
@@ -136,7 +137,7 @@ function zoomSet(newZoom?: number, mouse?: { x: number, y: number }) {
     const htop = (() => (ˍ.top_toolbar.clientHeight * (100 / (newZoom as number))))
     if (newZoom !== undefined) {
         const w_old = ˍ.main.clientWidth, h_old = ˍ.main.clientHeight
-        const x_mid_off = (ˍ.page_canvas.clientWidth / 2), y_mid_off = (ˍ.page_canvas.clientHeight / 2)
+        const x_mid_off = (ˍ.page_canvas.dom.clientWidth / 2), y_mid_off = (ˍ.page_canvas.dom.clientHeight / 2)
         const x_mid_old = posX() + x_mid_off, y_mid_old = posY() + y_mid_off
         const x_rel = (w_old / x_mid_old), y_rel = (h_old / y_mid_old)
         main_style.zoom = (newZoom = Math.max(zoomMin, Math.min(zoomMax, newZoom))).toString() + '%'
@@ -147,13 +148,13 @@ function zoomSet(newZoom?: number, mouse?: { x: number, y: number }) {
         newZoom = 1
         main_style.zoom = '1%'
         const wmax = (() => ˍ.main.clientWidth), hmax = (() => ˍ.main.clientHeight - htop())
-        if (ˍ.page_canvas.clientWidth < wmax() && ˍ.page_canvas.clientHeight < hmax()) {
-            const fw = wmax() / ˍ.page_canvas.clientWidth, fh = hmax() / ˍ.page_canvas.clientHeight
+        if (ˍ.page_canvas.dom.clientWidth < wmax() && ˍ.page_canvas.dom.clientHeight < hmax()) {
+            const fw = wmax() / ˍ.page_canvas.dom.clientWidth, fh = hmax() / ˍ.page_canvas.dom.clientHeight
             newZoom = Math.min(fw, fh) - 2
             main_style.zoom = newZoom.toString() + '%'
         }
-        posX((ˍ.main.clientWidth - ˍ.page_canvas.clientWidth) / 2)
-        posY(((ˍ.main.clientHeight - ˍ.page_canvas.clientHeight) / 2) + (htop() / 2))
+        posX((ˍ.main.clientWidth - ˍ.page_canvas.dom.clientWidth) / 2)
+        posY(((ˍ.main.clientHeight - ˍ.page_canvas.dom.clientHeight) / 2) + (htop() / 2))
     }
     ˍ.top_toolbar_zoom_input.value = newZoom.toString()
     ˍ.top_toolbar_zoom_text.innerText = newZoom.toFixed(1).padStart(5, "0") + "%"

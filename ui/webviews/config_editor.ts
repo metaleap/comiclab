@@ -32,12 +32,12 @@ let grid_paperformats = ctl_inputgrid.create('config_paperformats', [
 
 let main_tabs = ctl_tabs.create('config_editor_main', {
     "Content Authoring": ctl_multipanel.create('config_contentauthoring', {
-        "Authors": grid_authors.ctl,
-        "Languages": grid_languages.ctl,
-        "Custom Content Fields": grid_contentfields.ctl,
+        "Authors": grid_authors.dom,
+        "Languages": grid_languages.dom,
+        "Custom Content Fields": grid_contentfields.dom,
     }),
     "Paper-Related": ctl_multipanel.create('config_paperrelated', {
-        "Paper Formats": grid_paperformats.ctl,
+        "Paper Formats": grid_paperformats.dom,
     }),
 })
 
