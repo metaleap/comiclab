@@ -23,6 +23,10 @@ export function create(domId: string, page: º.Page, style: { [_: string]: strin
             panels.push(svg.rect({
                 'x': `${panel.x}mm`, 'y': `${panel.y}mm`, 'width': `${panel.w}mm`, 'height': `${panel.h}mm`,
                 'stroke-width': '0.77mm', 'fill': '#ffffff', 'stroke': '#000000',
+                'onclick': (evt: MouseEvent) => {
+                    evt.preventDefault()
+                    utils.alert('clickPNL')
+                },
             }) as SVGElement)
         }
         const dom = svg.svg({
@@ -30,6 +34,7 @@ export function create(domId: string, page: º.Page, style: { [_: string]: strin
             'width': `${page_size.wMm}mm`,
             'height': `${page_size.hMm}mm`,
             'style': style_css,
+            'onclick': () => { utils.alert('clickSVG') },
         }, ...panels)
 
         if (!ret.dom)
