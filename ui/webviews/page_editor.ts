@@ -1,10 +1,9 @@
 import van from './vanjs/van-1.2.0.js'
 import * as º from './_º.js'
 import * as utils from './utils.js'
-import * as ctl_svgcanvas from './ctl/svgcanvas.js'
+import * as ctl_pagecanvas from './ctl/pagecanvas.js'
 
 
-// type SvgNode = HTMLElement & SVGElement
 const html = van.tags
 const zoomMin = 0.5
 const zoomMax = 321.5
@@ -16,9 +15,10 @@ let vscCfg: object
 
 let ˍ: {
     main: HTMLDivElement,
-    page_canvas: ctl_svgcanvas.SvgCanvas,
+    page_canvas: ctl_pagecanvas.PageCanvas,
     top_toolbar: HTMLDivElement,
     top_toolbar_dbg: HTMLDivElement,
+    top_toolbar_mpos_text: HTMLSpanElement,
     top_toolbar_zoom_input: HTMLInputElement,
     top_toolbar_zoom_text: HTMLSpanElement,
 } = {} as any
@@ -76,6 +76,9 @@ function createGui() {
     const orig_size_zoom_percent: number = (utils.vscCfg && utils.vscCfg['pageEditorDefaultZoom']) ? (utils.vscCfg['pageEditorDefaultZoom'] as number) : 122.5
     const page_size = º.pageSizeMm(page)
     ˍ.top_toolbar_dbg = html.div({ 'id': 'top_toolbar_dbg', 'class': 'top-toolbar-block' }, "Debug info here")
+    ˍ.top_toolbar_dbg = html.div({ 'class': 'top-toolbar-block top-toolbar-block-right' },
+        ˍ.top_toolbar_mpos_text = html.span({}, ' '),
+    )
     ˍ.top_toolbar = html.div({ 'id': 'top_toolbar' },
         html.div({ 'id': 'top_toolbar_zoom', 'class': 'top-toolbar-block' },
             ˍ.top_toolbar_zoom_input = html.input({
@@ -84,7 +87,7 @@ function createGui() {
             }),
             ˍ.top_toolbar_zoom_text = html.span({}, orig_size_zoom_percent + '%'),
             html.a({ 'class': 'btn', 'title': `Original size (${page_size.wMm / 10} × ${page_size.hMm / 10} cm)`, 'style': cssIcon('screen-full'), 'onclick': () => zoomSet(orig_size_zoom_percent) }),
-            html.a({ 'class': 'btn', 'title': `View size (${((page_size.wMm / 1.41414141) / 10).toFixed(1)} × ${((page_size.hMm / 1.41414141) / 10).toFixed(1)} cm)`, 'style': cssIcon('preview'), 'onclick': () => zoomSet(orig_size_zoom_percent / 1.41414141) }),
+            html.a({ 'class': 'btn', 'title': `View size (${((page_size.wMm / 1.5) / 10).toFixed(1)} × ${((page_size.hMm / 1.5) / 10).toFixed(1)} cm)`, 'style': cssIcon('preview'), 'onclick': () => zoomSet(orig_size_zoom_percent / 1.5) }),
             html.a({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('screen-normal'), 'onclick': () => zoomSet() }),
         ),
         ˍ.top_toolbar_dbg,
@@ -101,6 +104,13 @@ function createGui() {
                 posX(posX() + (evt.deltaX * -0.1))
             }
         },
+        'onmousemove': (evt: MouseEvent) => {
+            const zoom = zoomGet()
+            const xmin = posX(), ymin = posY()
+            const xptr = ((100 / zoom) * evt.clientX) - posX(), yptr = ((100 / zoom) * evt.clientY) - posY()
+            const xfac = xptr / ˍ.page_canvas.dom.clientWidth, yfac = yptr / ˍ.page_canvas.dom.clientHeight
+            ˍ.top_toolbar_mpos_text.innerText = `X:${(page_size.wMm * xfac * 0.1).toFixed(1)}cm , Y:${(page_size.hMm * yfac * 0.1).toFixed(1)}cm`
+        },
         // 'ondragstart': (evt: DragEvent) => {
         //     console.log(evt)
         //     if (evt.dataTransfer) {
@@ -111,9 +121,8 @@ function createGui() {
         //     dbg(evt.clientX.toString())
         // },
     },
-        (ˍ.page_canvas = ctl_svgcanvas.create('page_canvas', page,
-            { 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`, 'background-color': '#fff' })).dom,
-    )
+        (ˍ.page_canvas = ctl_pagecanvas.create('page_canvas', page,
+            { 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`, 'background-color': '#fff' })).dom)
     van.add(document.body, ˍ.main, ˍ.top_toolbar)
     zoomSet()
 }
@@ -157,11 +166,11 @@ function zoomSet(newZoom?: number, mouse?: { x: number, y: number }) {
         posY(((ˍ.main.clientHeight - ˍ.page_canvas.dom.clientHeight) / 2) + (htop() / 2))
     }
     ˍ.top_toolbar_zoom_input.value = newZoom.toString()
-    ˍ.top_toolbar_zoom_text.innerText = newZoom.toFixed(1).padStart(5, "0") + "%"
+    ˍ.top_toolbar_zoom_text.innerText = newZoom.toFixed(1) + "%"
 }
 
 function dbg(...msg: any[]) {
-    ˍ.top_toolbar_dbg.innerText = msg.join(" ")
+    ˍ.top_toolbar_dbg.innerText = msg.join("\u00A0\u00A0\u00A0\u00A0")
 }
 
 function dom(id: string): HTMLElement {

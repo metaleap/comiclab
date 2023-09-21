@@ -73,6 +73,7 @@ export function activate(context: vs.ExtensionContext) {
 	appStateReload(true, true)
 		.then(() => vs.commands.executeCommand('workbench.view.extension.comiclabExplorer'))
 		.then(() => vs.commands.executeCommand('comiclabExplorerProjColls.focus'))
+		.then(() => setTimeout(() => vs.commands.executeCommand('comiclab.proj.colls.openPage', 'short-stories/2309-just-drive/page001'), 123))
 }
 
 function cmdMainMenu() {

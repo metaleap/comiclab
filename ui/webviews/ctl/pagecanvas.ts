@@ -5,13 +5,13 @@ import * as º from '../_º.js'
 const html = van.tags
 const svg = van.tagsNS("http://www.w3.org/2000/svg")
 
-export type SvgCanvas = {
+export type PageCanvas = {
     dom: HTMLElement & SVGElement
     render: (_: º.Page) => void,
 }
 
-export function create(domId: string, page: º.Page, style: { [_: string]: string }): SvgCanvas {
-    const ret = {} as SvgCanvas
+export function create(domId: string, page: º.Page, style: { [_: string]: string }): PageCanvas {
+    const ret = {} as PageCanvas
     const page_size = º.pageSizeMm(page)
     let style_css = ''
     if (style) for (const k in style)
