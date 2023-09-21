@@ -78,11 +78,11 @@ function createGui() {
         html.div({ 'id': 'top_toolbar_zoom', 'class': 'top-toolbar-block' },
             ˍ.top_toolbar_zoom_input = html.input({
                 'type': 'range', 'min': zoomMin, 'max': zoomMax, 'step': '1', 'value': orig_size_zoom_percent, 'onchange': (evt) =>
-                    setZoom(parseFloat(ˍ.top_toolbar_zoom_input.value))
+                    zoomSet(parseFloat(ˍ.top_toolbar_zoom_input.value))
             }),
-            html.a({ 'class': 'btn', 'title': `Original size (${page_size.wMm / 10} × ${page_size.hMm / 10} cm)`, 'style': cssIcon('screen-full'), 'onclick': () => setZoom(orig_size_zoom_percent) }),
+            html.a({ 'class': 'btn', 'title': `Original size (${page_size.wMm / 10} × ${page_size.hMm / 10} cm)`, 'style': cssIcon('screen-full'), 'onclick': () => zoomSet(orig_size_zoom_percent) }),
             ˍ.top_toolbar_zoom_text = html.span({}, orig_size_zoom_percent + '%'),
-            html.a({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('screen-normal'), 'onclick': () => setZoom() }),
+            html.a({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('screen-normal'), 'onclick': () => zoomSet() }),
         ),
         ˍ.top_toolbar_dbg,
     )
@@ -91,7 +91,7 @@ function createGui() {
         'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`,
         'onwheel': (evt: WheelEvent) => {
             if (evt.shiftKey)
-                setZoom(parseFloat(ˍ.top_toolbar_zoom_input.value) + (((evt.deltaX + evt.deltaY) * 0.5)) * 0.1,
+                zoomSet(zoomGet() + (((evt.deltaX + evt.deltaY) * 0.5)) * 0.1,
                     { x: evt.clientX, y: evt.clientY })
             else {
                 posY((posY() + (evt.deltaY * -0.1)))
@@ -111,7 +111,7 @@ function createGui() {
         'id': 'page_canvas', 'style': `left: 22px; top: 44px; width: ${page_size.wMm}mm; height: ${page_size.hMm}mm;`,
     }))
     van.add(document.body, ˍ.main, ˍ.top_toolbar)
-    setZoom()
+    zoomSet()
 }
 
 function posX(newX?: number): number {
@@ -125,17 +125,21 @@ function posY(newY?: number): number {
     return parseInt(ˍ.page_canvas.style.top)
 }
 
-function setZoom(newZoom?: number, mouse?: { x: number, y: number }) {
+function zoomGet(): number {
+    return parseFloat((ˍ.main.style as any).zoom)
+}
+function zoomSet(newZoom?: number, mouse?: { x: number, y: number }) {
     const main_style = ˍ.main.style as any
     const htop = (() => (ˍ.top_toolbar.clientHeight * (100 / (newZoom as number))))
     if (newZoom !== undefined) {
         const w_old = ˍ.main.clientWidth, h_old = ˍ.main.clientHeight
-        const x_mid_old = posX() + (ˍ.page_canvas.clientWidth / 2), y_mid_old = posY() + (ˍ.page_canvas.clientHeight / 2)
+        let x_mid_off = (ˍ.page_canvas.clientWidth / 2), y_mid_off = (ˍ.page_canvas.clientHeight / 2)
+        let x_mid_old = posX() + x_mid_off, y_mid_old = posY() + y_mid_off
         const x_rel = (w_old / x_mid_old), y_rel = (h_old / y_mid_old)
         main_style.zoom = (newZoom = Math.max(zoomMin, Math.min(zoomMax, newZoom))).toString() + '%'
         const x_mid_new = ˍ.main.clientWidth / x_rel, y_mid_new = ˍ.main.clientHeight / y_rel
-        posX(x_mid_new - (ˍ.page_canvas.clientWidth / 2))
-        posY(y_mid_new - (ˍ.page_canvas.clientHeight / 2))
+        posX(x_mid_new - x_mid_off)
+        posY(y_mid_new - y_mid_off)
     } else { // fit in viewport
         newZoom = 1
         main_style.zoom = '1%'
