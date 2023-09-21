@@ -22,10 +22,10 @@ class CollEditor extends base_editor.WebviewPanel {
     override title(): string {
         return º.collFromPath(this.collPath)?.name ?? '?!bug?!'
     }
-    override onRefreshedEventMessage(): any {
-        return {
-            ident: 'onAppStateRefreshed', payload: º.appState,
-        }
+    override onRefreshedEventMessage(evt: app.StateEvent): any {
+        if (evt.proj || evt.cfg)
+            return { ident: 'onAppStateRefreshed', payload: º.appState }
+        return undefined
     }
     override onMessage(msg: any): void {
         const coll = º.collFromPath(this.collPath)
@@ -34,7 +34,7 @@ class CollEditor extends base_editor.WebviewPanel {
         switch (msg.ident) {
             case 'onCollModified':
                 coll.props = msg.payload.props
-                app.events.projModified.now(º.appState.proj)
+                app.events.modifiedProj.now(º.appState.proj)
                 break
             default:
                 super.onMessage(msg)

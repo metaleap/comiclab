@@ -15,13 +15,15 @@ class ConfigEditor extends base_editor.WebviewPanel {
     override title(): string {
         return "ComicLab Config"
     }
-    override onRefreshedEventMessage() {
-        return { ident: 'onAppStateCfgRefreshed', payload: º.appState.config }
+    override onRefreshedEventMessage(evt: app.StateEvent) {
+        if (evt.cfg)
+            return { ident: 'onAppStateCfgRefreshed', payload: º.appState.config }
+        return undefined
     }
     override onMessage(msg: any): void {
         switch (msg.ident) {
             case 'onAppStateCfgModified':
-                app.events.cfgModified.now(msg.payload as º.Config)
+                app.events.modifiedCfg.now(msg.payload as º.Config)
                 break
             default:
                 super.onMessage(msg)

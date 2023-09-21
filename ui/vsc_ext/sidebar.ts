@@ -49,15 +49,17 @@ export function onInit() {
     utils.disp(treeColls.onInit(vs.window.createTreeView('comiclabExplorerProjColls', { treeDataProvider: treeColls, showCollapseAll: true })))
     utils.disp(treeBooks.onInit(vs.window.createTreeView('comiclabExplorerProjBooks', { treeDataProvider: treeBooks, showCollapseAll: true })))
     utils.disp(treeSites.onInit(vs.window.createTreeView('comiclabExplorerProjSites', { treeDataProvider: treeSites, showCollapseAll: true })))
-    app.events.projSaved.on((_) => {
-        for (const tree of [treeColls, treeBooks, treeSites])
-            tree.refreshTitle()
+    app.events.saved.on((_) => {
+        if (_.proj)
+            for (const tree of [treeColls, treeBooks, treeSites])
+                tree.refreshTitle()
     })
-    app.events.projRefreshed.on((_) => {
-        for (const tree of [treeColls, treeBooks, treeSites]) {
-            tree.refreshEmitter.fire()
-            tree.refreshTitle()
-        }
+    app.events.refreshed.on((_) => {
+        if (_.proj)
+            for (const tree of [treeColls, treeBooks, treeSites]) {
+                tree.refreshEmitter.fire()
+                tree.refreshTitle()
+            }
     })
 }
 

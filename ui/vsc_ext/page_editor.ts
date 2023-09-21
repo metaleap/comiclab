@@ -22,10 +22,10 @@ class PageEditor extends base_editor.WebviewPanel {
     override title(): string {
         return º.pageFromPath(this.pagePath)?.name ?? '?!bug?!'
     }
-    override onRefreshedEventMessage(): any {
-        return {
-            ident: 'onAppStateRefreshed', payload: º.appState,
-        }
+    override onRefreshedEventMessage(evt: app.StateEvent): any {
+        if (evt.proj || evt.cfg)
+            return { ident: evt.fromReload ? 'onAppStateReloaded' : 'onAppStateRefreshed', payload: º.appState }
+        return undefined
     }
     override onMessage(msg: any): void {
         const page = º.pageFromPath(this.pagePath)
@@ -35,7 +35,7 @@ class PageEditor extends base_editor.WebviewPanel {
             case 'onPageModified':
                 page.props = msg.payload.props
                 page.panels = msg.payload.panels
-                app.events.projModified.now(º.appState.proj)
+                app.events.modifiedProj.now(º.appState.proj)
                 break
             default:
                 super.onMessage(msg)

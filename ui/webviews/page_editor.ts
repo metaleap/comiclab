@@ -52,6 +52,7 @@ function onMessage(evt: MessageEvent) {
     const msg = evt.data;
     switch (msg.ident) {
         case 'onAppStateRefreshed':
+        case 'onAppStateReloaded':
             if (msg.payload.config)
                 º.appState.config = msg.payload.config
             if (msg.payload.proj)
@@ -90,6 +91,9 @@ function createGui() {
         ),
     )
 
+    ˍ.page_canvas = ctl_pagecanvas.create('page_canvas', page,
+        { 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`, 'background-color': '#fff' })
+
     ˍ.main = html.div({
         'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`,
         'onwheel': (evt: WheelEvent) => {
@@ -116,9 +120,7 @@ function createGui() {
         //     }
         //     dbg(evt.clientX.toString())
         // },
-    },
-        (ˍ.page_canvas = ctl_pagecanvas.create('page_canvas', page,
-            { 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`, 'background-color': '#fff' })).dom)
+    }, ˍ.page_canvas.dom)
     van.add(document.body, ˍ.main, ˍ.top_toolbar)
     zoomSet()
 }

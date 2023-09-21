@@ -93,7 +93,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                     else
                         º.appState.proj.collections = (º.appState.proj.collections ?? []).concat([new_coll])
                 }
-                app.events.projModified.now(º.appState.proj)
+                app.events.modifiedProj.now(º.appState.proj)
             }
         })
     }
@@ -125,7 +125,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                     page_editor.close(page)
                     page.name = newName
                 }
-                app.events.projModified.now(º.appState.proj)
+                app.events.modifiedProj.now(º.appState.proj)
             }
         })
     }
@@ -142,7 +142,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                         parents[0].collections = parents[0].collections.filter(_ => (_ != coll))
                     else
                         º.appState.proj.collections = º.appState.proj.collections.filter(_ => (_ != coll))
-                    app.events.projModified.now(º.appState.proj)
+                    app.events.modifiedProj.now(º.appState.proj)
                 }
             })
     }
@@ -154,7 +154,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                 if (_ == "OK") {
                     page_editor.close(page)
                     coll.pages = coll.pages.filter(_ => (_ != page))
-                    app.events.projModified.now(º.appState.proj)
+                    app.events.modifiedProj.now(º.appState.proj)
                 }
             })
     }
@@ -185,7 +185,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                         º.appState.proj.collections.push(coll)
                     else
                         (º.collFromPath(path.substring(1)) as º.Collection).collections.push(coll)
-                    app.events.projModified.now(º.appState.proj)
+                    app.events.modifiedProj.now(º.appState.proj)
                 }
             })
         return new_parent_candidates
@@ -212,7 +212,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                     coll_parent.collections = utils.arrayMoveItem(coll_parent.collections, idx_cur, idx_new)
                 else if (page && page_parent && page_parent.pages)
                     page_parent.pages = utils.arrayMoveItem(page_parent.pages, idx_cur, idx_new)
-                app.events.projModified.now(º.appState.proj)
+                app.events.modifiedProj.now(º.appState.proj)
             }
         }
         return can_move

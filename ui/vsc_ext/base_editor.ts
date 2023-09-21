@@ -33,16 +33,19 @@ export abstract class WebviewPanel {
             this.webviewPanel.title = this.title() + (this.dirtyIndicator() ? "*" : "")
     }
 
-    onSaved() {
-        this.refreshTitle()
+    onSaved(evt: app.StateEvent) {
+        if ((evt.cfg && this.targetsCfg) || (evt.proj && this.targetsProj))
+            this.refreshTitle()
     }
-    onRefreshed() {
+    onRefreshed(evt: app.StateEvent) {
         this.refreshTitle()
-        if (this.webviewPanel)
-            this.webviewPanel.webview.postMessage(this.onRefreshedEventMessage())
-                .then(() => { }, utils.alert)
+        if (this.webviewPanel && ((evt.cfg && this.targetsCfg) || (evt.proj && this.targetsProj))) {
+            const msg = this.onRefreshedEventMessage(evt)
+            if (msg)
+                this.webviewPanel.webview.postMessage(msg).then(() => { }, utils.alert)
+        }
     }
-    abstract onRefreshedEventMessage(): any;
+    abstract onRefreshedEventMessage(evt: app.StateEvent): any;
 
     onMessage(msg: any) {
         switch (msg.ident) {
@@ -58,16 +61,10 @@ export abstract class WebviewPanel {
         if (this.webviewPanel)
             return this.webviewPanel.reveal(vs.ViewColumn.One)
 
-        const on_refreshed = () => this.onRefreshed()
-        const on_saved = () => this.onSaved()
-        if (this.targetsCfg) {
-            app.events.cfgRefreshed.on(on_refreshed)
-            app.events.cfgSaved.on(on_saved)
-        }
-        if (this.targetsProj) {
-            app.events.projRefreshed.on(on_refreshed)
-            app.events.projSaved.on(on_saved)
-        }
+        const on_refreshed = (_: app.StateEvent) => this.onRefreshed(_)
+        const on_saved = (_: app.StateEvent) => this.onSaved(_)
+        app.events.saved.on(on_saved)
+        app.events.refreshed.on(on_refreshed)
         utils.disp(this.webviewPanel = vs.window.createWebviewPanel(this.viewTypeIdent, this.title(), vs.ViewColumn.One, {
             retainContextWhenHidden: true,
             enableCommandUris: true,
@@ -92,16 +89,18 @@ export abstract class WebviewPanel {
         this.webviewPanel.iconPath = utils.codiconPath(this.codicon)
         utils.disp(this.webviewPanel.onDidDispose(() => {
             if (this.targetsCfg) {
-                app.events.cfgRefreshed.no(on_refreshed)
-                app.events.cfgSaved.no(on_saved)
+                app.events.refreshed.no(on_refreshed)
+                app.events.saved.no(on_saved)
             }
             if (this.targetsProj) {
-                app.events.projRefreshed.no(on_refreshed)
-                app.events.projSaved.no(on_saved)
+                app.events.refreshed.no(on_refreshed)
+                app.events.saved.no(on_saved)
             }
             this.onDisposed()
         }))
-        setTimeout(on_refreshed, 345) // below 3xx was sometimes to soon..
+        setTimeout(() => {
+            on_refreshed({ proj: true, cfg: true, fromReload: true })
+        }, 345) // below 3xx was sometimes to soon..
     }
 
     close() {
