@@ -4,6 +4,8 @@ import * as utils from './utils.js'
 
 
 const html = van.tags
+const zoomMin = 0.5
+const zoomMax = 321.5
 
 
 let pagePath: string = ''
@@ -75,9 +77,8 @@ function createGui() {
     ˍ.top_toolbar = html.div({ 'id': 'top_toolbar' },
         html.div({ 'id': 'top_toolbar_zoom', 'class': 'top-toolbar-block' },
             ˍ.top_toolbar_zoom_input = html.input({
-                'type': 'range', 'min': '0.5', 'max': '222', 'step': '1', 'value': orig_size_zoom_percent, 'onchange': (evt) => {
+                'type': 'range', 'min': zoomMin, 'max': zoomMax, 'step': '1', 'value': orig_size_zoom_percent, 'onchange': (evt) =>
                     setZoom(parseFloat(ˍ.top_toolbar_zoom_input.value))
-                }
             }),
             html.a({ 'class': 'btn', 'title': `Original size (${page_size.wMm / 10} × ${page_size.hMm / 10} cm)`, 'style': cssIcon('screen-full'), 'onclick': () => setZoom(orig_size_zoom_percent) }),
             ˍ.top_toolbar_zoom_text = html.span({}, orig_size_zoom_percent + '%'),
@@ -89,7 +90,13 @@ function createGui() {
     ˍ.main = html.div({
         'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`,
         'onwheel': (evt: WheelEvent) => {
-            ˍ.top_toolbar_dbg.innerText = "X" + evt.deltaX + ",Y" + evt.deltaY
+            ˍ.top_toolbar_dbg.innerText = "X·" + evt.deltaX + "——Y·" + evt.deltaY
+            if (evt.shiftKey)
+                setZoom(parseFloat(ˍ.top_toolbar_zoom_input.value) + (((evt.deltaX + evt.deltaY) * 0.5)) * 0.1)
+            else {
+                ˍ.page_canvas.style.top = (parseInt(ˍ.page_canvas.style.top) + (evt.deltaY * -0.1)).toString() + 'px'
+                ˍ.page_canvas.style.left = (parseInt(ˍ.page_canvas.style.left) + (evt.deltaX * -0.1)).toString() + 'px'
+            }
         },
         // 'ondragstart': (evt: DragEvent) => {
         //     console.log(evt)
@@ -111,7 +118,7 @@ function setZoom(zoom?: number) {
     const main_style = ˍ.main.style as any
     const htop = (() => (ˍ.top_toolbar.clientHeight * (100 / (zoom as number))))
     if (zoom !== undefined)
-        main_style.zoom = zoom.toString() + '%'
+        main_style.zoom = (zoom = Math.max(zoomMin, Math.min(zoomMax, zoom))).toString() + '%'
     else { // fit in viewport
         zoom = 1
         main_style.zoom = '1%'

@@ -87,14 +87,18 @@ function cmdMainMenu() {
 	let items: vs.QuickPickItem[] = [itemConfig]
 	if (!everLoadedFully)
 		items.push(itemReloadBoth, itemReloadProj, itemReloadCfg)
-	if (dirtyCfg && dirtyProj)
-		items.push(itemSaveBoth)
-	if (dirtyCfg)
-		items.push(itemSaveCfg)
 	if (dirtyProj)
 		items.push(itemSaveProj)
-	if (everLoadedFully)
-		items.push(itemReloadBoth, itemReloadProj, itemReloadCfg)
+	if (dirtyCfg)
+		items.push(itemSaveCfg)
+	if (dirtyCfg && dirtyProj)
+		items.push(itemSaveBoth)
+	if (dirtyProj && everLoadedFully)
+		items.push(itemReloadProj)
+	if (dirtyCfg && everLoadedFully)
+		items.push(itemReloadCfg)
+	if (dirtyCfg && dirtyProj && everLoadedFully)
+		items.push(itemReloadBoth)
 
 	vs.window.showQuickPick(items, { title: "ComicLab" }).then((item) => {
 		switch (item) {
