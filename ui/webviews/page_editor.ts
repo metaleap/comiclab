@@ -3,7 +3,9 @@ import * as º from './_º.js'
 import * as utils from './utils.js'
 
 
+// type SvgNode = HTMLElement & SVGElement
 const html = van.tags
+const svg = van.tagsNS("http://www.w3.org/2000/svg")
 const zoomMin = 0.5
 const zoomMax = 321.5
 
