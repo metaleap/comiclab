@@ -90,12 +90,12 @@ function createGui() {
     ˍ.main = html.div({
         'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`,
         'onwheel': (evt: WheelEvent) => {
-            ˍ.top_toolbar_dbg.innerText = "X·" + evt.deltaX + "——Y·" + evt.deltaY
             if (evt.shiftKey)
-                setZoom(parseFloat(ˍ.top_toolbar_zoom_input.value) + (((evt.deltaX + evt.deltaY) * 0.5)) * 0.1)
+                setZoom(parseFloat(ˍ.top_toolbar_zoom_input.value) + (((evt.deltaX + evt.deltaY) * 0.5)) * 0.1,
+                    { x: evt.clientX, y: evt.clientY })
             else {
-                ˍ.page_canvas.style.top = (parseInt(ˍ.page_canvas.style.top) + (evt.deltaY * -0.1)).toString() + 'px'
-                ˍ.page_canvas.style.left = (parseInt(ˍ.page_canvas.style.left) + (evt.deltaX * -0.1)).toString() + 'px'
+                posY((posY() + (evt.deltaY * -0.1)))
+                posX(posX() + (evt.deltaX * -0.1))
             }
         },
         // 'ondragstart': (evt: DragEvent) => {
@@ -105,35 +105,55 @@ function createGui() {
         //         evt.dataTransfer.dropEffect = "move"
         //         evt.dataTransfer.setDragImage(new Image(), 0, 0)
         //     }
-        //     htmls.top_toolbar_dbg.innerText = evt.clientX.toString()
+        //     dbg(evt.clientX.toString())
         // },
     }, ˍ.page_canvas = html.div({
-        'id': 'page_canvas', 'style': `left: 22px; top: 44px; width: ${page_size.wMm}mm; height: ${page_size.hMm}mm;`
+        'id': 'page_canvas', 'style': `left: 22px; top: 44px; width: ${page_size.wMm}mm; height: ${page_size.hMm}mm;`,
     }))
     van.add(document.body, ˍ.main, ˍ.top_toolbar)
     setZoom()
 }
 
-function setZoom(zoom?: number) {
+function posX(newX?: number): number {
+    if (newX !== undefined)
+        ˍ.page_canvas.style.left = newX.toString() + 'px'
+    return parseInt(ˍ.page_canvas.style.left)
+}
+function posY(newY?: number): number {
+    if (newY !== undefined)
+        ˍ.page_canvas.style.top = newY.toString() + 'px'
+    return parseInt(ˍ.page_canvas.style.top)
+}
+
+function setZoom(newZoom?: number, mouse?: { x: number, y: number }) {
     const main_style = ˍ.main.style as any
-    const htop = (() => (ˍ.top_toolbar.clientHeight * (100 / (zoom as number))))
-    if (zoom !== undefined)
-        main_style.zoom = (zoom = Math.max(zoomMin, Math.min(zoomMax, zoom))).toString() + '%'
-    else { // fit in viewport
-        zoom = 1
+    const htop = (() => (ˍ.top_toolbar.clientHeight * (100 / (newZoom as number))))
+    if (newZoom !== undefined) {
+        const w_old = ˍ.main.clientWidth, h_old = ˍ.main.clientHeight
+        const x_mid_old = posX() + (ˍ.page_canvas.clientWidth / 2), y_mid_old = posY() + (ˍ.page_canvas.clientHeight / 2)
+        const x_rel = (w_old / x_mid_old), y_rel = (h_old / y_mid_old)
+        main_style.zoom = (newZoom = Math.max(zoomMin, Math.min(zoomMax, newZoom))).toString() + '%'
+        const x_mid_new = ˍ.main.clientWidth / x_rel, y_mid_new = ˍ.main.clientHeight / y_rel
+        posX(x_mid_new - (ˍ.page_canvas.clientWidth / 2))
+        posY(y_mid_new - (ˍ.page_canvas.clientHeight / 2))
+    } else { // fit in viewport
+        newZoom = 1
         main_style.zoom = '1%'
         const wmax = (() => ˍ.main.clientWidth), hmax = (() => ˍ.main.clientHeight - htop())
         if (ˍ.page_canvas.clientWidth < wmax() && ˍ.page_canvas.clientHeight < hmax()) {
             const fw = wmax() / ˍ.page_canvas.clientWidth, fh = hmax() / ˍ.page_canvas.clientHeight
-            const f = Math.min(fw, fh) - 2
-            zoom = f
-            main_style.zoom = zoom.toString() + '%'
+            newZoom = Math.min(fw, fh) - 2
+            main_style.zoom = newZoom.toString() + '%'
         }
+        posX((ˍ.main.clientWidth - ˍ.page_canvas.clientWidth) / 2)
+        posY(((ˍ.main.clientHeight - ˍ.page_canvas.clientHeight) / 2) + (htop() / 2))
     }
-    ˍ.page_canvas.style.left = ((ˍ.main.clientWidth - ˍ.page_canvas.clientWidth) / 2) + 'px'
-    ˍ.page_canvas.style.top = (((ˍ.main.clientHeight - ˍ.page_canvas.clientHeight) / 2) + (htop() / 2)) + 'px'
-    ˍ.top_toolbar_zoom_input.value = zoom.toString()
+    ˍ.top_toolbar_zoom_input.value = newZoom.toString()
     ˍ.top_toolbar_zoom_text.innerText = ˍ.top_toolbar_zoom_input.value + "%"
+}
+
+function dbg(...msg: any[]) {
+    ˍ.top_toolbar_dbg.innerText = msg.join(" ")
 }
 
 function dom(id: string): HTMLElement {
