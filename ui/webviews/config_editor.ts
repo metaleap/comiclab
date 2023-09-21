@@ -1,4 +1,4 @@
-import van from './vanjs/van-1.2.0.js'
+import van from './vanjs/van-1.2.1.js'
 import * as º from './_º.js'
 import * as utils from './utils.js'
 

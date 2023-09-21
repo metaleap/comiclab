@@ -1,4 +1,4 @@
-import van, { ChildDom } from '../vanjs/van-1.2.0.js'
+import van, { ChildDom } from '../vanjs/van-1.2.1.js'
 import { htmlInput, htmlDataList, htmlId, Rec, Field, RecsFunc, ValidateFunc, validate, validatorNonEmpty, validatorNumeric } from './inputform.js'
 
 

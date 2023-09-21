@@ -1,4 +1,4 @@
-import van from './vanjs/van-1.2.0.js'
+import van from './vanjs/van-1.2.1.js'
 import * as º from './_º.js'
 import * as utils from './utils.js'
 import * as ctl_pagecanvas from './ctl/pagecanvas.js'
@@ -76,7 +76,7 @@ function onMessage(evt: MessageEvent) {
 function createGui() {
     const orig_size_zoom_percent: number = (utils.vscCfg && utils.vscCfg['pageEditorDefaultZoom']) ? (utils.vscCfg['pageEditorDefaultZoom'] as number) : 122.5
     const page_size = º.pageSizeMm(page)
-    ˍ.top_toolbar = html.div({ 'id': 'top_toolbar' },
+    ˍ.top_toolbar = html.div({ 'id': 'top_toolbar', 'tabindex': -1 },
         html.div({ 'id': 'top_toolbar_dbg', 'class': 'top-toolbar-block top-toolbar-block-right' }, ˍ.top_toolbar_dbg = html.span({}, "Debug info here")),
         html.div({ 'class': 'top-toolbar-block top-toolbar-block-right' }, ˍ.top_toolbar_mpos_text = html.span({}, " ")),
         html.div({ 'id': 'top_toolbar_zoom', 'class': 'top-toolbar-block' },
@@ -92,7 +92,7 @@ function createGui() {
     )
 
     ˍ.page_canvas = ctl_pagecanvas.create('page_canvas', page,
-        { 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`, 'background-color': '#fff' })
+        { 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`, 'background-color': '#fff' }, dbg)
 
     ˍ.main = html.div({
         'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`,

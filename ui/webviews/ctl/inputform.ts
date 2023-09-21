@@ -1,4 +1,4 @@
-import van, { ChildDom, Props, State } from '../vanjs/van-1.2.0.js'
+import van, { ChildDom, Props, State } from '../vanjs/van-1.2.1.js'
 import * as utils from '../utils.js'
 
 const html = van.tags

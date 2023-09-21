@@ -158,8 +158,8 @@ body>div#page_editor_main>#page_canvas>rect.panel {
     stroke-width: 0.77mm;
 }
 
-body>div#page_editor_main>#page_canvas>rect.panel-selected {
-    fill: #aacc00;
+body>div#page_editor_main>#page_canvas>rect.panel:focus {
+    fill: gold;
 }
 
 body>#top_toolbar {
