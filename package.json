@@ -3,7 +3,7 @@
   "displayName": "ComicLab",
   "publisher": "metaleap",
   "version": "0.0.1",
-  "activationEvents": [ ],
+  "activationEvents": [ "*" ],
   "main": "ui/vsc_ext/js/app.js",
   "contributes": {
     "viewsContainers": {

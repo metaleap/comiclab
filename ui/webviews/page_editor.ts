@@ -89,8 +89,7 @@ function createGui() {
     ˍ.main = html.div({
         'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`,
         'onwheel': (evt: WheelEvent) => {
-            console.log(evt)
-            ˍ.top_toolbar_dbg.innerText = evt.toString()
+            ˍ.top_toolbar_dbg.innerText = "X" + evt.deltaX + ",Y" + evt.deltaY
         },
         // 'ondragstart': (evt: DragEvent) => {
         //     console.log(evt)

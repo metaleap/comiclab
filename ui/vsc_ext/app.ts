@@ -71,6 +71,8 @@ export function activate(context: vs.ExtensionContext) {
 	utils.disp(diag)
 
 	appStateReload(true, true)
+		.then(() => vs.commands.executeCommand('workbench.view.extension.comiclabExplorer'))
+		.then(() => vs.commands.executeCommand('comiclabExplorerProjColls.focus'))
 }
 
 function cmdMainMenu() {
@@ -130,7 +132,7 @@ function appStateReload(proj: boolean, cfg: boolean) {
 	const msg_suffix = msgSuffix(proj, cfg)
 	statusBarItem.text = "$(sync~spin) ComicLab reloading " + msg_suffix + "..."
 	const req = prepFetch(proj, cfg)
-	fetch(apiUri + '/appState', { method: 'POST' })
+	return fetch(apiUri + '/appState', { method: 'POST' })
 		.then((resp) => {
 			if (!resp.ok)
 				return req.onErr(resp)
