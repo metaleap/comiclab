@@ -14,11 +14,12 @@ export type PageCanvas = {
     onUserModified: () => void
 }
 
-export function create(domId: string, page: º.Page, style: { [_: string]: string }, onUserModified: (_: º.Page) => void, dbg: (...msg: any[]) => void): PageCanvas {
+export function create(domId: string, page: º.Page, onUserModified: (_: º.Page) => void, dbg: (...msg: any[]) => void): PageCanvas {
+    const page_size = º.pageSizeMm(page)
     const ret: PageCanvas = {
         domId: domId,
         page: page,
-        domStyle: style,
+        domStyle: { 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`, 'background-color': '#fff' },
         onUserModified: () =>
             onUserModified(ret.page),
         onReloaded: (newPage: º.Page) => {

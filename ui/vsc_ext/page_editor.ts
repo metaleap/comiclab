@@ -24,7 +24,7 @@ class PageEditor extends base_editor.WebviewPanel {
     }
     override onRefreshedEventMessage(evt: app.StateEvent): any {
         if (evt.proj || evt.cfg)
-            return { ident: evt.fromReload ? 'onAppStateReloaded' : 'onAppStateRefreshed', payload: º.appState }
+            return { ident: 'onAppStateRefreshed', payload: º.appState }
         return undefined
     }
     override onMessage(msg: any): void {

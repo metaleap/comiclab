@@ -39,7 +39,6 @@ function onMessage(evt: MessageEvent) {
     const msg = evt.data;
     switch (msg.ident) {
         case 'onAppStateRefreshed':
-        case 'onAppStateReloaded':
             if (msg.payload.config)
                 º.appState.config = msg.payload.config
             if (msg.payload.proj)
@@ -47,12 +46,17 @@ function onMessage(evt: MessageEvent) {
 
             const proj_page = º.pageFromPath(pagePath) as º.Page
             const changed = (!page) || !º.deepEq(page, proj_page)
-            console.log(msg.ident, changed, (!ˍ.main) ? "NO" : "YO")
             page = proj_page
             if (!ˍ.main)
                 createGui()
-            else if (changed)
-                ˍ.page_canvas.onReloaded(page)
+            else if (changed) {
+                const x = posX(), y = posY()
+                const old_dom = ˍ.page_canvas.dom
+                ˍ.page_canvas = ctl_pagecanvas.create('page_canvas', page, onUserModified, dbg)
+                posX(x)
+                posY(y)
+                old_dom!.replaceWith(ˍ.page_canvas.dom!)
+            }
             break
         default:
             utils.vs.postMessage({ 'unknown_msg': msg })
@@ -78,8 +82,7 @@ function createGui() {
         ),
     )
 
-    ˍ.page_canvas = ctl_pagecanvas.create('page_canvas', page,
-        { 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`, 'background-color': '#fff' }, onUserModified, dbg)
+    ˍ.page_canvas = ctl_pagecanvas.create('page_canvas', page, onUserModified, dbg)
 
     ˍ.main = html.div({
         'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`,

@@ -124,7 +124,7 @@ export let validatorLookup: ValidateFunc = (_: Rec, field: Field, newFieldValue:
     if (field.lookUp && newFieldValue.length > 0) {
         const valid_values = utils.dictToArr(field.lookUp.val, (k, v) => k)
         if (!valid_values.includes(newFieldValue))
-            return { name: 'Invalid', message: `'${field.title}' must be one of:\n— '${valid_values.join("' or\n— '")}'` }
+            return { name: 'Invalid', message: `'${field.title}' must be one of:\n\n— '${valid_values.join("' or\n— '")}'` }
     }
     return undefined
 }

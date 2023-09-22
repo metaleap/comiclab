@@ -18,7 +18,7 @@ export let events = {
 	modifiedProj: new utils.Event<º.Proj>(),
 	modifiedCfg: new utils.Event<º.Config>(),
 }
-export type StateEvent = { cfg?: boolean, proj?: boolean, fromReload: boolean }
+export type StateEvent = { cfg?: boolean, proj?: boolean, from: { reload?: boolean, userModify?: boolean } }
 
 
 const apiUri = 'http://localhost:64646'
@@ -58,21 +58,22 @@ export function activate(context: vs.ExtensionContext) {
 	events.modifiedCfg.on((modifiedCfg) => {
 		onDirty(dirtyProj, true, false)
 		º.appState.config = modifiedCfg
-		events.refreshed.now({ cfg: true, fromReload: false })
+		events.refreshed.now({ cfg: true, from: { userModify: true } })
 	})
 	events.modifiedProj.on((modifiedProj) => {
 		onDirty(true, dirtyCfg, false)
 		º.appState.proj = modifiedProj
-		events.refreshed.now({ proj: true, fromReload: false })
+		events.refreshed.now({ proj: true, from: { userModify: true } })
 	})
 
 	const diag = vs.languages.createDiagnosticCollection("ComicLab")
 	utils.disp(diag)
 
-	appStateReload(true, true)
-		.then(() => vs.commands.executeCommand('workbench.view.extension.comiclabExplorer'))
-		.then(() => vs.commands.executeCommand('comiclabExplorerProjColls.focus'))
-		.then(() => setTimeout(() => vs.commands.executeCommand('comiclab.proj.colls.openPage', 'short-stories/2309-just-drive/page001'), 345))
+	appStateReload(true, true, () => {
+		vs.commands.executeCommand('workbench.view.extension.comiclabExplorer')
+			.then(() => vs.commands.executeCommand('comiclabExplorerProjColls.focus'))
+			.then(() => vs.commands.executeCommand('comiclab.proj.colls.openPage', 'short-stories/2309-just-drive/page001'))
+	})
 }
 
 function cmdMainMenu() {
@@ -134,11 +135,11 @@ function msgSuffix(proj: boolean, cfg: boolean) {
 	return ((proj && cfg) ? "project and config." : (proj ? "project." : (cfg ? "config." : "?!?!")))
 }
 
-function appStateReload(proj: boolean, cfg: boolean) {
+function appStateReload(proj: boolean, cfg: boolean, onSuccess?: () => void) {
 	const msg_suffix = msgSuffix(proj, cfg)
 	statusBarItem.text = "$(sync~spin) ComicLab reloading " + msg_suffix + "..."
 	const req = prepFetch(proj, cfg)
-	return fetch(apiUri + '/appState', { method: 'POST' })
+	fetch(apiUri + '/appState', { method: 'POST' })
 		.then((resp) => {
 			if (!resp.ok)
 				return req.onErr(resp)
@@ -151,11 +152,12 @@ function appStateReload(proj: boolean, cfg: boolean) {
 						º.appState.proj = latestAppState.proj
 					if (cfg)
 						º.appState.config = latestAppState.config
-					if (proj && cfg) {
+					if (proj && cfg)
 						everLoadedFully = true
-						events.refreshed.now({ proj: proj, cfg: cfg, fromReload: true })
-					}
+					if (proj || cfg)
+						events.refreshed.now({ proj: proj, cfg: cfg, from: { reload: true } })
 					statusBarItem.text = "$(pass-filled) ComicLab reloaded " + msg_suffix
+					if (onSuccess) onSuccess()
 				})
 				.catch(req.onErr)
 		})
@@ -178,7 +180,7 @@ function appStateSave(proj: boolean, cfg: boolean) {
 				req.onErr(resp)
 			else {
 				onDirty(proj ? false : dirtyProj, cfg ? false : dirtyCfg, true) // happens in onDone for good, but also must occur before below event triggers
-				events.saved.now({ proj: proj, cfg: cfg, fromReload: false })
+				events.saved.now({ proj: proj, cfg: cfg, from: { reload: true } })
 				statusBarItem.text = "$(pass-filled) ComicLab saved changes to " + msg_suffix
 			}
 		})

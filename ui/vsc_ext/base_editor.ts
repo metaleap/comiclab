@@ -99,7 +99,7 @@ export abstract class WebviewPanel {
             this.onDisposed()
         }))
         setTimeout(() => {
-            on_refreshed({ proj: true, cfg: true, fromReload: true })
+            on_refreshed({ proj: true, cfg: true, from: { reload: true } })
         }, 345) // below 3xx was sometimes to soon..
     }
 
