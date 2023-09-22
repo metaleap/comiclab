@@ -6,18 +6,40 @@ const html = van.tags
 const svg = van.tagsNS("http://www.w3.org/2000/svg")
 
 export type PageCanvas = {
-    dom: HTMLElement & SVGElement
+    page: º.Page
+    domId: string
+    domStyle: { [_: string]: string }
+    dom?: HTMLElement & SVGElement
     onReloaded(page: º.Page): void
+    onUserModified: () => void
 }
 
 export function create(domId: string, page: º.Page, style: { [_: string]: string }, onUserModified: (_: º.Page) => void, dbg: (...msg: any[]) => void): PageCanvas {
-    const ret = {} as PageCanvas
-    const page_size = º.pageSizeMm(page)
+    const ret: PageCanvas = {
+        domId: domId,
+        page: page,
+        domStyle: style,
+        onUserModified: () =>
+            onUserModified(ret.page),
+        onReloaded: (newPage: º.Page) => {
+            ret.page = newPage
+            render(ret)
+        },
+    }
+    render(ret)
+    return ret
+}
+
+function render(me: PageCanvas) {
+    const old_dom = me.dom
+    me.dom = undefined
+
+    const page_size = º.pageSizeMm(me.page)
     let sel_panel_idx: number | undefined = undefined
 
-    const panels: SVGElement[] = []
-    for (let pidx = 0; pidx < page.panels.length; pidx++) {
-        const panel = page.panels[pidx]
+    const panels: Element[] = []
+    for (let pidx = 0; pidx < me.page.panels.length; pidx++) {
+        const panel = me.page.panels[pidx]
         const rect = svg.rect({
             'class': 'panel', 'id': 'panel_' + pidx, 'data-pidx': pidx, 'tabindex': 2,
             'x': `${panel.x}mm`, 'y': `${panel.y}mm`, 'width': `${panel.w}mm`, 'height': `${panel.h}mm`,
@@ -44,22 +66,21 @@ export function create(domId: string, page: º.Page, style: { [_: string]: strin
                             panel.y = panel.y + ((evt.shiftKey ? 10 : 1) * factor)
                             rect.setAttribute('y', panel.y + 'mm')
                         }
-                        onUserModified(page)
+                        me.onUserModified()
                         break
                 }
             }
-        }) as any
+        })
         panels.push(rect)
     }
 
-    ret.dom = svg.svg({
-        'id': domId, 'tabindex': 1,
+    const dom = svg.svg({
+        'id': me.domId, 'tabindex': 1,
         'width': `${page_size.wMm}mm`,
         'height': `${page_size.hMm}mm`,
-        'style': utils.dictToArr(style, (k, v) => k + ':' + v).join(';'),
-    }, ...panels) as any
-    ret.onReloaded = (newPage: º.Page) => {
-        page = newPage
-    }
-    return ret
+        'style': utils.dictToArr(me.domStyle, (k, v) => k + ':' + v).join(';'),
+    }, ...panels)
+    if (old_dom)
+        old_dom.replaceWith(dom)
+    me.dom = dom as any
 }

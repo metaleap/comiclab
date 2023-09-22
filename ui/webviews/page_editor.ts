@@ -29,13 +29,7 @@ export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMess
     window.addEventListener('message', onMessage)
 }
 
-function setDisabled(disabled: boolean) {
-    if (ˍ.main)
-        ˍ.main.style.visibility = disabled ? 'hidden' : 'visible'
-}
-
 function onUserModified(userModifiedPage: º.Page): º.Page {
-    setDisabled(true)
     º.pageUpdate(pagePath, page = userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
     return page
@@ -53,12 +47,12 @@ function onMessage(evt: MessageEvent) {
 
             const proj_page = º.pageFromPath(pagePath) as º.Page
             const changed = (!page) || !º.deepEq(page, proj_page)
+            console.log(msg.ident, changed, (!ˍ.main) ? "NO" : "YO")
             page = proj_page
             if (!ˍ.main)
                 createGui()
             else if (changed)
                 ˍ.page_canvas.onReloaded(page)
-            setDisabled(false)
             break
         default:
             utils.vs.postMessage({ 'unknown_msg': msg })
@@ -101,7 +95,7 @@ function createGui() {
         'onmousemove': (evt: MouseEvent) => {
             const zoom = zoomGet()
             const xptr = ((100 / zoom) * evt.clientX) - posX(), yptr = ((100 / zoom) * evt.clientY) - posY()
-            const xfac = xptr / ˍ.page_canvas.dom.clientWidth, yfac = yptr / ˍ.page_canvas.dom.clientHeight
+            const xfac = xptr / ˍ.page_canvas.dom!.clientWidth, yfac = yptr / ˍ.page_canvas.dom!.clientHeight
             ˍ.top_toolbar_mpos_text.innerText = `X:${(page_size.wMm * xfac * 0.1).toFixed(1)}cm , Y:${(page_size.hMm * yfac * 0.1).toFixed(1)}cm`
         },
         // 'ondragstart': (evt: DragEvent) => {
@@ -120,13 +114,13 @@ function createGui() {
 
 function posX(newX?: number): number {
     if (newX !== undefined)
-        ˍ.page_canvas.dom.style.left = newX.toString() + 'px'
-    return parseInt(ˍ.page_canvas.dom.style.left)
+        ˍ.page_canvas.dom!.style.left = newX.toString() + 'px'
+    return parseInt(ˍ.page_canvas.dom!.style.left)
 }
 function posY(newY?: number): number {
     if (newY !== undefined)
-        ˍ.page_canvas.dom.style.top = newY.toString() + 'px'
-    return parseInt(ˍ.page_canvas.dom.style.top)
+        ˍ.page_canvas.dom!.style.top = newY.toString() + 'px'
+    return parseInt(ˍ.page_canvas.dom!.style.top)
 }
 
 function zoomGet(): number {
@@ -137,7 +131,7 @@ function zoomSet(newZoom?: number, mouse?: { x: number, y: number }) {
     const htop = (() => (ˍ.top_toolbar.clientHeight * (100 / (newZoom as number))))
     if (newZoom !== undefined) {
         const w_old = ˍ.main.clientWidth, h_old = ˍ.main.clientHeight
-        const x_mid_off = (ˍ.page_canvas.dom.clientWidth / 2), y_mid_off = (ˍ.page_canvas.dom.clientHeight / 2)
+        const x_mid_off = (ˍ.page_canvas.dom!.clientWidth / 2), y_mid_off = (ˍ.page_canvas.dom!.clientHeight / 2)
         const x_mid_old = posX() + x_mid_off, y_mid_old = posY() + y_mid_off
         const x_rel = (w_old / x_mid_old), y_rel = (h_old / y_mid_old)
         main_style.zoom = (newZoom = Math.max(zoomMin, Math.min(zoomMax, newZoom))).toString() + '%'
@@ -148,13 +142,13 @@ function zoomSet(newZoom?: number, mouse?: { x: number, y: number }) {
         newZoom = 1
         main_style.zoom = '1%'
         const wmax = (() => ˍ.main.clientWidth), hmax = (() => ˍ.main.clientHeight - htop())
-        if (ˍ.page_canvas.dom.clientWidth < wmax() && ˍ.page_canvas.dom.clientHeight < hmax()) {
-            const fw = wmax() / ˍ.page_canvas.dom.clientWidth, fh = hmax() / ˍ.page_canvas.dom.clientHeight
+        if (ˍ.page_canvas.dom!.clientWidth < wmax() && ˍ.page_canvas.dom!.clientHeight < hmax()) {
+            const fw = wmax() / ˍ.page_canvas.dom!.clientWidth, fh = hmax() / ˍ.page_canvas.dom!.clientHeight
             newZoom = Math.min(fw, fh) - 2
             main_style.zoom = newZoom.toString() + '%'
         }
-        posX((ˍ.main.clientWidth - ˍ.page_canvas.dom.clientWidth) / 2)
-        posY(((ˍ.main.clientHeight - ˍ.page_canvas.dom.clientHeight) / 2) + (htop() / 2))
+        posX((ˍ.main.clientWidth - ˍ.page_canvas.dom!.clientWidth) / 2)
+        posY(((ˍ.main.clientHeight - ˍ.page_canvas.dom!.clientHeight) / 2) + (htop() / 2))
     }
     ˍ.top_toolbar_zoom_input.value = newZoom.toString()
     ˍ.top_toolbar_zoom_text.innerText = newZoom.toFixed(1) + "%"

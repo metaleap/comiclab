@@ -155,7 +155,7 @@ export function pageSizeMm(page: Page): { wMm: number, hMm: number } {
         if (page_format)
             return { wMm: page_format.widthMm, hMm: page_format.heightMm }
     }
-    return {} as any
+    return { wMm: 0, hMm: 0 }
 }
 
 export function strPaperFormat(_: PaperFormat): string {
