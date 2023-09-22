@@ -162,15 +162,21 @@ body>div#page_editor_main>#page_editor_canvas>rect.panel:focus {
     fill: gold;
 }
 
-body>#page_editor_top_toolbar {
+body>.page-editor-top-toolbar {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    background-color: var(--vscode-tab-activeBackground);
     box-shadow: 0 0 0.44em 0 #000;
     padding: 0.22em;
     overflow: hidden;
+}
+
+body>#page_editor_top_toolbar {
+    top: 0;
+    background-color: var(--vscode-tab-activeBackground);
+    height: 1.88em;
+    max-height: 1.88em;
 }
 
 body>#page_editor_top_toolbar>div.page-editor-top-toolbar-block {
@@ -193,11 +199,8 @@ body>#page_editor_top_toolbar>#page_editor_top_toolbar_dbg {
     background-color: #d0d0d0;
 }
 
-body>div#page_editor_panel_widget {
-    position: absolute;
-    top: 4em;
-    left: 2em;
-    background-color: gold;
-    padding: 2em;
-    border-radius: 0.22em;
+body>div#page_editor_panel_toolbar {
+    padding-top: 2.22em;
+    padding-bottom: 0.44em;
+    background-color: #e8e8e8;
 }

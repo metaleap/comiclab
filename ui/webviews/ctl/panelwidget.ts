@@ -6,23 +6,31 @@ const html = van.tags
 
 export type PanelWidget = {
     dom: HTMLElement,
-    onPanelSelected: (page: º.Page, idx?: number) => void,
+    selPanelIdx?: number,
+    onUserModifiedOutsideWidget: (page: º.Page, pIdx?: number) => void,
+    onPanelSelected: (page: º.Page, pIdx?: number) => void,
 }
 
-export function create(domId: string, onUserModified: (_: º.Page) => void, dbg: (...msg: any[]) => void): PanelWidget {
+export function create(domId: string, onUserModifiedInWidget: (page: º.Page, pIdx?: number) => void, dbg: (...msg: any[]) => void): PanelWidget {
     const dummy = html.span("(Panel Widget)")
-    const dom = html.div({ 'id': domId, 'class': 'page-editor-panel-widget', 'style': 'display:none' },
-        dummy)
-    return {
-        dom: dom,
+    const it: PanelWidget = {
+        dom: html.div({ 'id': domId, 'class': 'page-editor-top-toolbar', 'style': 'display:none' },
+            dummy),
         onPanelSelected(page: º.Page, panelIdx?: number) {
-            if (panelIdx === undefined) {
-                dom.style.display = 'none'
+            if ((it.selPanelIdx = panelIdx) === undefined) {
+                it.dom.style.display = 'none'
                 return
             }
-
-            dom.style.display = 'inline-block'
-            dummy.innerText = `'${page.name}' panel #${panelIdx + 1}`
+            const panel = page.panels[it.selPanelIdx]
+            dummy.innerText = `'SEL: ${page.name}' panel #${it.selPanelIdx + 1} @ ${JSON.stringify(panel)}`
+            it.dom.style.display = 'block'
+        },
+        onUserModifiedOutsideWidget: (page: º.Page, pIdx?: number) => {
+            if (it.selPanelIdx === undefined || it.selPanelIdx !== pIdx)
+                return
+            const panel = page.panels[it.selPanelIdx]
+            dummy.innerText = `'MOD: ${page.name}' panel #${(it.selPanelIdx) + 1} @ ${JSON.stringify(panel)}`
         }
     }
+    return it
 }

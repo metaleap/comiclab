@@ -31,9 +31,10 @@ export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMess
     window.addEventListener('message', onMessage)
 }
 
-function onUserModified(userModifiedPage: º.Page): º.Page {
+function onUserModified(userModifiedPage: º.Page, panelIdx?: number): º.Page {
     º.pageUpdate(pagePath, page = userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
+    ˍ.panel_widget.onUserModifiedOutsideWidget(page, panelIdx)
     return page
 }
 
@@ -79,7 +80,7 @@ function createPageCanvas() {
 function createGui() {
     const orig_size_zoom_percent: number = (utils.vscCfg && utils.vscCfg['pageEditorDefaultZoom']) ? (utils.vscCfg['pageEditorDefaultZoom'] as number) : 122.5
     const page_size = º.pageSizeMm(page)
-    ˍ.top_toolbar = html.div({ 'id': 'page_editor_top_toolbar', 'tabindex': -1 },
+    ˍ.top_toolbar = html.div({ 'id': 'page_editor_top_toolbar', 'class': 'page-editor-top-toolbar', 'tabindex': -1 },
         html.div({ 'id': 'page_editor_top_toolbar_dbg', 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' }, ˍ.top_toolbar_dbg = html.span({}, "Debug info here")),
         html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' }, ˍ.top_toolbar_mpos_text = html.span({}, " ")),
         html.div({ 'id': 'page_editor_top_toolbar_zoom', 'class': 'page-editor-top-toolbar-block' },
@@ -93,8 +94,7 @@ function createGui() {
             html.a({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('screen-normal'), 'onclick': () => zoomSet() }),
         ),
     )
-
-    ˍ.panel_widget = ctl_panelwidget.create('page_editor_panel_widget', onUserModified, dbg)
+    ˍ.panel_widget = ctl_panelwidget.create('page_editor_panel_toolbar', onUserModified, dbg)
     createPageCanvas()
 
     ˍ.main = html.div({
@@ -124,7 +124,7 @@ function createGui() {
         //     dbg(evt.clientX.toString())
         // },
     }, ˍ.page_canvas.dom)
-    van.add(document.body, ˍ.main, ˍ.top_toolbar, ˍ.panel_widget.dom)
+    van.add(document.body, ˍ.main, ˍ.panel_widget.dom, ˍ.top_toolbar)
     zoomSet()
 }
 

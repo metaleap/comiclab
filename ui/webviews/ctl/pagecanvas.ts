@@ -9,7 +9,7 @@ export type PageCanvas = {
     selPanelIdx?: number,
 }
 
-export function create(domId: string, page: º.Page, onPanelSelection: () => void, onUserModified: (_: º.Page) => void, dbg: (...msg: any[]) => void): PageCanvas {
+export function create(domId: string, page: º.Page, onPanelSelection: () => void, onUserModified: (page: º.Page, pIdx?: number) => void, dbg: (...msg: any[]) => void): PageCanvas {
     const page_size = º.pageSizeMm(page)
     const it: PageCanvas = {}
 
@@ -33,15 +33,17 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                     case 'ArrowDown':
                     case 'ArrowUp':
                         evt.stopPropagation()
-                        const factor = ((evt.key == 'ArrowLeft') || (evt.key == 'ArrowUp')) ? -1 : 1
-                        if ((evt.key == 'ArrowLeft') || (evt.key == 'ArrowRight')) {
-                            panel.x = panel.x + ((evt.shiftKey ? 10 : 1) * factor)
-                            rect.setAttribute('x', panel.x + 'mm')
-                        } else if ((evt.key == 'ArrowUp') || (evt.key == 'ArrowDown')) {
-                            panel.y = panel.y + ((evt.shiftKey ? 10 : 1) * factor)
-                            rect.setAttribute('y', panel.y + 'mm')
+                        const factor = ((evt.key == 'ArrowLeft') || (evt.key == 'ArrowUp')) ? -1 : 1,
+                            min = evt.altKey ? 10 : undefined,
+                            prop_name = ((evt.key == 'ArrowLeft') || (evt.key == 'ArrowRight'))
+                                ? (evt.altKey ? 'width' : 'x')
+                                : (evt.altKey ? 'height' : 'y'),
+                            new_val = (panel as any)[prop_name[0]] + ((evt.shiftKey ? 10 : 1) * factor) as number
+                        if ((min === undefined) || new_val >= min) {
+                            (panel as any)[prop_name[0]] = new_val
+                            rect.setAttribute(prop_name, (panel as any)[prop_name[0]] + 'mm')
+                            onUserModified(page, pidx)
                         }
-                        onUserModified(page)
                         break
                 }
             }
