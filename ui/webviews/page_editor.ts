@@ -34,12 +34,12 @@ export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMess
 function onUserModified(userModifiedPage: º.Page, panelIdx?: number): º.Page {
     º.pageUpdate(pagePath, page = userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
-    ˍ.panel_widget.onUserModifiedOutsideWidget(page, panelIdx)
+    ˍ.panel_widget.refresh(page, panelIdx)
     return page
 }
 
 function onPanelSelection() {
-    ˍ.panel_widget.onPanelSelected(page, ˍ.page_canvas.selPanelIdx)
+    ˍ.panel_widget.refresh(page, ˍ.page_canvas.selPanelIdx)
 }
 
 function onMessage(evt: MessageEvent) {
@@ -57,14 +57,13 @@ function onMessage(evt: MessageEvent) {
             if (!ˍ.main)
                 createGui()
             else if (changed) {
-                ˍ.panel_widget.onPanelSelected(page)
-                const x = posX(), y = posY()
-                const old_dom = ˍ.page_canvas.dom, panel_idx = ˍ.page_canvas.selPanelIdx
+                ˍ.panel_widget.refresh(page)
+                const x = posX(), y = posY(), old_dom = ˍ.page_canvas.dom, panel_idx = ˍ.page_canvas.selPanelIdx
                 createPageCanvas()
                 posX(x)
                 posY(y)
                 old_dom!.replaceWith(ˍ.page_canvas.dom!)
-                ˍ.panel_widget.onPanelSelected(page, panel_idx)
+                ˍ.panel_widget.refresh(page, panel_idx)
             }
             break
         default:

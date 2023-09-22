@@ -7,30 +7,40 @@ const html = van.tags
 export type PanelWidget = {
     dom: HTMLElement,
     selPanelIdx?: number,
-    onUserModifiedOutsideWidget: (page: º.Page, pIdx?: number) => void,
-    onPanelSelected: (page: º.Page, pIdx?: number) => void,
+    refresh: (page: º.Page, panelIdx?: number) => void,
 }
 
 export function create(domId: string, onUserModifiedInWidget: (page: º.Page, pIdx?: number) => void, dbg: (...msg: any[]) => void): PanelWidget {
-    const dummy = html.span("(Panel Widget)")
+    const ˍ = {
+        input_width: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1' }),
+        input_height: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1' }),
+        input_pos_x: html.input({ 'type': 'number', 'step': '0.1' }),
+        input_pos_y: html.input({ 'type': 'number', 'step': '0.1' }),
+    }
     const it: PanelWidget = {
         dom: html.div({ 'id': domId, 'class': 'page-editor-top-toolbar', 'style': 'display:none' },
-            dummy),
-        onPanelSelected(page: º.Page, panelIdx?: number) {
+            'x=',
+            ˍ.input_pos_x,
+            'cm · y=',
+            ˍ.input_pos_y,
+            'cm · w=',
+            ˍ.input_width,
+            'cm · h=',
+            ˍ.input_height,
+        ),
+        refresh: (page: º.Page, panelIdx?: number) => {
             if ((it.selPanelIdx = panelIdx) === undefined) {
                 it.dom.style.display = 'none'
                 return
             }
             const panel = page.panels[it.selPanelIdx]
-            dummy.innerText = `'SEL: ${page.name}' panel #${it.selPanelIdx + 1} @ ${JSON.stringify(panel)}`
+            ˍ.input_width.value = (panel.w * 0.1).toFixed(1)
+            ˍ.input_height.value = (panel.h * 0.1).toFixed(1)
+            ˍ.input_pos_x.value = (panel.x * 0.1).toFixed(1)
+            ˍ.input_pos_y.value = (panel.y * 0.1).toFixed(1)
+
             it.dom.style.display = 'block'
         },
-        onUserModifiedOutsideWidget: (page: º.Page, pIdx?: number) => {
-            if (it.selPanelIdx === undefined || it.selPanelIdx !== pIdx)
-                return
-            const panel = page.panels[it.selPanelIdx]
-            dummy.innerText = `'MOD: ${page.name}' panel #${(it.selPanelIdx) + 1} @ ${JSON.stringify(panel)}`
-        }
     }
     return it
 }
