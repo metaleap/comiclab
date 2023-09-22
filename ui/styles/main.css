@@ -145,24 +145,24 @@ body>div#page_editor_main {
     overflow: hidden;
 }
 
-body>div#page_editor_main>#page_canvas {
+body>div#page_editor_main>#page_editor_canvas {
     position: relative;
     margin: 0;
     padding: 0;
     display: inline-block;
 }
 
-body>div#page_editor_main>#page_canvas>rect.panel {
+body>div#page_editor_main>#page_editor_canvas>rect.panel {
     fill: #ffffff;
     stroke: #000000;
     stroke-width: 0.77mm;
 }
 
-body>div#page_editor_main>#page_canvas>rect.panel:focus {
+body>div#page_editor_main>#page_editor_canvas>rect.panel:focus {
     fill: gold;
 }
 
-body>#top_toolbar {
+body>#page_editor_top_toolbar {
     position: absolute;
     top: 0;
     left: 0;
@@ -173,7 +173,7 @@ body>#top_toolbar {
     overflow: hidden;
 }
 
-body>#top_toolbar>div.top-toolbar-block {
+body>#page_editor_top_toolbar>div.page-editor-top-toolbar-block {
     display: inline-block;
     white-space: nowrap;
     border-right: 1px solid var(--vscode-tab-inactiveForeground);
@@ -181,14 +181,23 @@ body>#top_toolbar>div.top-toolbar-block {
     padding-right: 0.22em;
 }
 
-body>#top_toolbar>div.top-toolbar-block>* {
+body>#page_editor_top_toolbar>div.page-editor-top-toolbar-block>* {
     vertical-align: middle;
 }
 
-body>#top_toolbar>div.top-toolbar-block-right {
+body>#page_editor_top_toolbar>div.page-editor-top-toolbar-block-right {
     float: right;
 }
 
-body>#top_toolbar>#top_toolbar_dbg {
+body>#page_editor_top_toolbar>#page_editor_top_toolbar_dbg {
     background-color: #d0d0d0;
+}
+
+body>div#page_editor_panel_widget {
+    position: absolute;
+    top: 4em;
+    left: 2em;
+    background-color: gold;
+    padding: 2em;
+    border-radius: 0.22em;
 }

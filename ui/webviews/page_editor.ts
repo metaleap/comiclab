@@ -2,6 +2,7 @@ import van from './vanjs/van-1.2.1.js'
 import * as º from './_º.js'
 import * as utils from './utils.js'
 import * as ctl_pagecanvas from './ctl/pagecanvas.js'
+import * as ctl_panelwidget from './ctl/panelwidget.js'
 
 
 const html = van.tags
@@ -16,6 +17,7 @@ let vscCfg: object
 let ˍ: {
     main: HTMLDivElement,
     page_canvas: ctl_pagecanvas.PageCanvas,
+    panel_widget: ctl_panelwidget.PanelWidget,
     top_toolbar: HTMLDivElement,
     top_toolbar_dbg: HTMLSpanElement,
     top_toolbar_mpos_text: HTMLSpanElement,
@@ -35,6 +37,10 @@ function onUserModified(userModifiedPage: º.Page): º.Page {
     return page
 }
 
+function onPanelSelection() {
+    ˍ.panel_widget.onPanelSelected(page, ˍ.page_canvas.selPanelIdx)
+}
+
 function onMessage(evt: MessageEvent) {
     const msg = evt.data;
     switch (msg.ident) {
@@ -50,12 +56,14 @@ function onMessage(evt: MessageEvent) {
             if (!ˍ.main)
                 createGui()
             else if (changed) {
+                ˍ.panel_widget.onPanelSelected(page)
                 const x = posX(), y = posY()
-                const old_dom = ˍ.page_canvas.dom
-                ˍ.page_canvas = ctl_pagecanvas.create('page_canvas', page, onUserModified, dbg)
+                const old_dom = ˍ.page_canvas.dom, panel_idx = ˍ.page_canvas.selPanelIdx
+                createPageCanvas()
                 posX(x)
                 posY(y)
                 old_dom!.replaceWith(ˍ.page_canvas.dom!)
+                ˍ.panel_widget.onPanelSelected(page, panel_idx)
             }
             break
         default:
@@ -64,13 +72,17 @@ function onMessage(evt: MessageEvent) {
     }
 }
 
+function createPageCanvas() {
+    ˍ.page_canvas = ctl_pagecanvas.create('page_editor_canvas', page, onPanelSelection, onUserModified, dbg)
+}
+
 function createGui() {
     const orig_size_zoom_percent: number = (utils.vscCfg && utils.vscCfg['pageEditorDefaultZoom']) ? (utils.vscCfg['pageEditorDefaultZoom'] as number) : 122.5
     const page_size = º.pageSizeMm(page)
-    ˍ.top_toolbar = html.div({ 'id': 'top_toolbar', 'tabindex': -1 },
-        html.div({ 'id': 'top_toolbar_dbg', 'class': 'top-toolbar-block top-toolbar-block-right' }, ˍ.top_toolbar_dbg = html.span({}, "Debug info here")),
-        html.div({ 'class': 'top-toolbar-block top-toolbar-block-right' }, ˍ.top_toolbar_mpos_text = html.span({}, " ")),
-        html.div({ 'id': 'top_toolbar_zoom', 'class': 'top-toolbar-block' },
+    ˍ.top_toolbar = html.div({ 'id': 'page_editor_top_toolbar', 'tabindex': -1 },
+        html.div({ 'id': 'page_editor_top_toolbar_dbg', 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' }, ˍ.top_toolbar_dbg = html.span({}, "Debug info here")),
+        html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' }, ˍ.top_toolbar_mpos_text = html.span({}, " ")),
+        html.div({ 'id': 'page_editor_top_toolbar_zoom', 'class': 'page-editor-top-toolbar-block' },
             ˍ.top_toolbar_zoom_input = html.input({
                 'type': 'range', 'min': zoomMin, 'max': zoomMax, 'step': '0.5', 'value': orig_size_zoom_percent, 'onchange': (evt) =>
                     zoomSet(parseFloat(ˍ.top_toolbar_zoom_input.value))
@@ -82,7 +94,8 @@ function createGui() {
         ),
     )
 
-    ˍ.page_canvas = ctl_pagecanvas.create('page_canvas', page, onUserModified, dbg)
+    ˍ.panel_widget = ctl_panelwidget.create('page_editor_panel_widget', onUserModified, dbg)
+    createPageCanvas()
 
     ˍ.main = html.div({
         'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`,
@@ -111,7 +124,7 @@ function createGui() {
         //     dbg(evt.clientX.toString())
         // },
     }, ˍ.page_canvas.dom)
-    van.add(document.body, ˍ.main, ˍ.top_toolbar)
+    van.add(document.body, ˍ.main, ˍ.top_toolbar, ˍ.panel_widget.dom)
     zoomSet()
 }
 
