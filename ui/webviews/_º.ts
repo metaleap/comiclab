@@ -108,6 +108,13 @@ export function pageFromPath(path: string): Page | undefined {
     return undefined
 }
 
+export function pageUpdate(pagePath: string, newPage: Page) {
+    const cur_page = pageFromPath(pagePath)
+    const parent = cur_page ? pageParent(cur_page) : undefined
+    if (parent)
+        parent.pages[parent.pages.findIndex((_) => (_ == cur_page))] = newPage
+}
+
 export function collChildPage(coll: Collection, id: string, ...ignore: Page[]): Page | undefined {
     return coll.pages.find(_ => (_.name == id) && !ignore.includes(_))
 }

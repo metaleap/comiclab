@@ -7,10 +7,10 @@ const svg = van.tagsNS("http://www.w3.org/2000/svg")
 
 export type PageCanvas = {
     dom: HTMLElement & SVGElement
-    onDataChangedAtSource: (page: º.Page) => void
+    onReloaded(page: º.Page): void
 }
 
-export function create(domId: string, page: º.Page, style: { [_: string]: string }, dbg: (...msg: any[]) => void): PageCanvas {
+export function create(domId: string, page: º.Page, style: { [_: string]: string }, onUserModified: (_: º.Page) => void, dbg: (...msg: any[]) => void): PageCanvas {
     const ret = {} as PageCanvas
     const page_size = º.pageSizeMm(page)
     let sel_panel_idx: number | undefined = undefined
@@ -44,6 +44,7 @@ export function create(domId: string, page: º.Page, style: { [_: string]: strin
                             panel.y = panel.y + ((evt.shiftKey ? 10 : 1) * factor)
                             rect.setAttribute('y', panel.y + 'mm')
                         }
+                        onUserModified(page)
                         break
                 }
             }
@@ -57,7 +58,7 @@ export function create(domId: string, page: º.Page, style: { [_: string]: strin
         'height': `${page_size.hMm}mm`,
         'style': utils.dictToArr(style, (k, v) => k + ':' + v).join(';'),
     }, ...panels) as any
-    ret.onDataChangedAtSource = (newPage: º.Page) => {
+    ret.onReloaded = (newPage: º.Page) => {
         page = newPage
     }
     return ret

@@ -34,18 +34,11 @@ function setDisabled(disabled: boolean) {
         ˍ.main.style.visibility = disabled ? 'hidden' : 'visible'
 }
 
-function onUserModified() {
+function onUserModified(userModifiedPage: º.Page): º.Page {
     setDisabled(true)
-    const proj_page = º.pageFromPath(pagePath) as º.Page
-    proj_page.props = page.props
-    proj_page.panels = page.panels
-    utils.vs.postMessage({ ident: 'onPageModified', payload: proj_page })
-}
-
-function onPotentiallyChangedAtSource() {
-    if (!page) {
-        page = º.pageFromPath(pagePath) as º.Page
-    }
+    º.pageUpdate(pagePath, page = userModifiedPage)
+    utils.vs.postMessage({ ident: 'onPageModified', payload: page })
+    return page
 }
 
 function onMessage(evt: MessageEvent) {
@@ -58,14 +51,14 @@ function onMessage(evt: MessageEvent) {
             if (msg.payload.proj)
                 º.appState.proj = msg.payload.proj
 
-            const proj_page = º.pageFromPath(pagePath)
-            if (proj_page && ((!page) || !º.deepEq(page, proj_page))) {
-                page = proj_page
-                if (!ˍ.main)
-                    createGui()
-                onPotentiallyChangedAtSource()
-                setDisabled(false)
-            }
+            const proj_page = º.pageFromPath(pagePath) as º.Page
+            const changed = (!page) || !º.deepEq(page, proj_page)
+            page = proj_page
+            if (!ˍ.main)
+                createGui()
+            else if (changed)
+                ˍ.page_canvas.onReloaded(page)
+            setDisabled(false)
             break
         default:
             utils.vs.postMessage({ 'unknown_msg': msg })
@@ -92,7 +85,7 @@ function createGui() {
     )
 
     ˍ.page_canvas = ctl_pagecanvas.create('page_canvas', page,
-        { 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`, 'background-color': '#fff' }, dbg)
+        { 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`, 'background-color': '#fff' }, onUserModified, dbg)
 
     ˍ.main = html.div({
         'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`,
