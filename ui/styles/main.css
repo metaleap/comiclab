@@ -157,10 +157,12 @@ body>div#page_editor_main>svg#page_editor_canvas>rect.panel {
     fill: #ffffff;
     stroke: #000000;
     stroke-width: 0.77mm;
+    opacity: 0.22;
 }
 
-body>div#page_editor_main>svg#page_editor_canvas>rect.panel-selected {
-    fill: lightcyan;
+body>div#page_editor_main>svg#page_editor_canvas>rect.panel-selected,
+body>div#page_editor_main>svg#page_editor_canvas:not(:has(rect.panel-selected))>rect.panel {
+    opacity: 1.0;
 }
 
 body>.page-editor-top-toolbar {

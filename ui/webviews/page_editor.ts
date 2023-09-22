@@ -104,8 +104,19 @@ function createGui() {
     ˍ.panel_widget = ctl_panelwidget.create('page_editor_panel_toolbar', onUserModifiedPanel, dbg)
     createPageCanvas()
 
+    document.onkeydown = (evt: KeyboardEvent) => {
+        switch (evt.key) {
+            case '+':
+            case '-':
+                evt.preventDefault()
+                zoomSet(zoomGet() + (5 * ((evt.key == '+') ? 1 : -1)))
+                break
+        }
+    }
     ˍ.main = html.div({
-        'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`,
+        'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`, 'onclick': (evt) => {
+            ˍ.page_canvas.panelSelect(evt)
+        },
         'onwheel': (evt: WheelEvent) => {
             if (evt.shiftKey)
                 zoomSet(zoomGet() + (((evt.deltaX + evt.deltaY) * 0.5)) * 0.05,
