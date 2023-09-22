@@ -19,13 +19,13 @@ export function create(domId: string, onUserModifiedInWidget: (page: º.Page, pI
     }
     const it: PanelWidget = {
         dom: html.div({ 'id': domId, 'class': 'page-editor-top-toolbar', 'style': 'display:none' },
-            'x=',
+            'X=',
             ˍ.input_pos_x,
-            'cm · y=',
+            'cm — Y=',
             ˍ.input_pos_y,
-            'cm · w=',
+            'cm — W=',
             ˍ.input_width,
-            'cm · h=',
+            'cm — H=',
             ˍ.input_height,
         ),
         refresh: (page: º.Page, panelIdx?: number) => {
@@ -34,10 +34,10 @@ export function create(domId: string, onUserModifiedInWidget: (page: º.Page, pI
                 return
             }
             const panel = page.panels[it.selPanelIdx]
-            ˍ.input_width.value = (panel.w * 0.1).toFixed(1)
-            ˍ.input_height.value = (panel.h * 0.1).toFixed(1)
-            ˍ.input_pos_x.value = (panel.x * 0.1).toFixed(1)
-            ˍ.input_pos_y.value = (panel.y * 0.1).toFixed(1)
+            ˍ.input_width.value = (panel.w * 0.1).toFixed(1).padStart(4, '0')
+            { ˍ.input_height.value = (panel.h * 0.1).toFixed(1).padStart(4, '0') }
+            ˍ.input_pos_x.value = (panel.x * 0.1).toFixed(1).padStart(4, '0')
+            ˍ.input_pos_y.value = (panel.y * 0.1).toFixed(1).padStart(4, '0')
 
             it.dom.style.display = 'block'
         },

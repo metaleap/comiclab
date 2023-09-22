@@ -14,9 +14,12 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
     const it: PageCanvas = {}
 
     const panels: Element[] = []
-    const onFocusChanged = (idx?: number) => (evt: MouseEvent) => {
-        evt.stopPropagation()
-        it.selPanelIdx = idx
+    const onPanelSelect = (pIdx?: number) => (evt: MouseEvent) => {
+        if (it.selPanelIdx !== undefined)
+            document.getElementById('panel_' + it.selPanelIdx)?.classList.remove('panel-selected')
+        it.selPanelIdx = pIdx
+        if (it.selPanelIdx !== undefined)
+            document.getElementById('panel_' + it.selPanelIdx)?.classList.add('panel-selected')
         onPanelSelection()
     }
     for (let pidx = 0; pidx < page.panels.length; pidx++) {
@@ -24,8 +27,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
         const rect = svg.rect({
             'class': 'panel', 'id': 'panel_' + pidx, 'data-pidx': pidx, 'tabindex': 2,
             'x': `${panel.x}mm`, 'y': `${panel.y}mm`, 'width': `${panel.w}mm`, 'height': `${panel.h}mm`,
-            'onfocus': onFocusChanged(pidx),
-            'onblur': onFocusChanged(),
+            'onfocus': onPanelSelect(pidx),
             'onkeydown': (evt: KeyboardEvent) => {
                 switch (evt.key) {
                     case 'ArrowLeft':
@@ -53,10 +55,9 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
 
     const dom_style = { 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`, 'background-color': '#fff' }
     it.dom = svg.svg({
-        'id': domId, 'tabindex': 1,
-        'width': `${page_size.wMm}mm`,
-        'height': `${page_size.hMm}mm`,
+        'id': domId, 'tabindex': 1, 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`,
         'style': utils.dictToArr(dom_style, (k, v) => k + ':' + v).join(';'),
+        'onfocus': onPanelSelect()
     }, ...panels) as any
     return it
 }

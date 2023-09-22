@@ -158,8 +158,8 @@ body>div#page_editor_main>#page_editor_canvas>rect.panel {
     stroke-width: 0.77mm;
 }
 
-body>div#page_editor_main>#page_editor_canvas>rect.panel:focus {
-    fill: gold;
+body>div#page_editor_main>#page_editor_canvas>rect.panel-selected {
+    fill: lightcyan;
 }
 
 body>.page-editor-top-toolbar {
@@ -203,4 +203,10 @@ body>div#page_editor_panel_toolbar {
     padding-top: 2.22em;
     padding-bottom: 0.44em;
     background-color: #e8e8e8;
+}
+
+body>div#page_editor_panel_toolbar input {
+    text-align: right;
+    width: 3.77em;
+    margin: 0;
 }
