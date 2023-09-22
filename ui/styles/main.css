@@ -4,6 +4,7 @@ body {
     padding: 0;
 }
 
+a,
 .btn {
     cursor: pointer;
 }
@@ -14,7 +15,7 @@ body {
 
 a.btn {
     display: inline-block;
-    text-decoration: none;
+    text-decoration: none !important;
     margin: 0;
     padding: 0;
     margin-left: 0.44em;
@@ -171,8 +172,12 @@ body>.page-editor-top-toolbar {
     left: 0;
     right: 0;
     box-shadow: 0 0 0.44em 0 #000;
-    padding: 0.22em;
+    padding: 0.22em 0.44em;
     overflow: hidden;
+}
+
+body>.page-editor-top-toolbar a {
+    text-decoration: underline;
 }
 
 body>#page_editor_top_toolbar {

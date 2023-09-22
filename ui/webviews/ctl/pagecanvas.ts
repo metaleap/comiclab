@@ -42,6 +42,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                 switch (evt.key) {
                     case 'Escape':
                         it.panelSelect(evt)
+                        it.dom?.focus()
                         break
                     case 'ArrowLeft':
                     case 'ArrowRight':

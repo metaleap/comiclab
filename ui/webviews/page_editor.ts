@@ -37,7 +37,7 @@ function onUserModifiedPage(userModifiedPage: º.Page, panelIdx?: number): º.Pa
     ˍ.panel_widget.refresh(page, panelIdx)
     return page
 }
-function onUserModifiedPanel(userModifiedPage: º.Page, panelIdx: number): º.Page {
+function onUserModifiedPanel(userModifiedPage: º.Page, panelIdx?: number): º.Page {
     º.pageUpdate(pagePath, page = userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
     reRenderPageCanvas(panelIdx)
@@ -106,6 +106,9 @@ function createGui() {
 
     document.onkeydown = (evt: KeyboardEvent) => {
         switch (evt.key) {
+            case 'Escape':
+                ˍ.panel_widget.toggleDeletePrompt(false)
+                break
             case '+':
             case '-':
                 evt.preventDefault()
