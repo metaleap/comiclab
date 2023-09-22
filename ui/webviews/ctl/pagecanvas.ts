@@ -14,7 +14,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
     const it: PageCanvas = { selPanelIdx: selPanelIdx }
 
     const panels: Element[] = []
-    const onPanelSelect = (pIdx?: number) => (evt: MouseEvent) => {
+    const onPanelSelect = (evt: Event, pIdx?: number) => {
         if (it.selPanelIdx !== undefined)
             document.getElementById('panel_' + it.selPanelIdx)?.classList.remove('panel-selected')
         it.selPanelIdx = pIdx
@@ -27,9 +27,12 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
         const rect = svg.rect({
             'class': 'panel' + ((pidx === selPanelIdx) ? ' panel-selected' : ''), 'id': 'panel_' + pidx, 'data-pidx': pidx, 'tabindex': 2,
             'x': `${panel.x}mm`, 'y': `${panel.y}mm`, 'width': `${panel.w}mm`, 'height': `${panel.h}mm`,
-            'onfocus': onPanelSelect(pidx),
+            'onfocus': (evt: Event) => onPanelSelect(evt, pidx),
             'onkeydown': (evt: KeyboardEvent) => {
                 switch (evt.key) {
+                    case 'Escape':
+                        onPanelSelect(evt)
+                        break
                     case 'ArrowLeft':
                     case 'ArrowRight':
                     case 'ArrowDown':
@@ -57,7 +60,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
     it.dom = svg.svg({
         'id': domId, 'tabindex': 1, 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`,
         'style': utils.dictToArr(dom_style, (k, v) => k + ':' + v).join(';'),
-        'onfocus': onPanelSelect()
+        'onfocus': (evt) => onPanelSelect(evt)
     }, ...panels) as any
     return it
 }

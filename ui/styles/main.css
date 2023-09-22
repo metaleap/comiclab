@@ -201,13 +201,18 @@ body>#page_editor_top_toolbar>#page_editor_top_toolbar_dbg {
 }
 
 body>div#page_editor_panel_toolbar {
-    padding-top: 2.22em;
+    padding-top: 2.44em;
     padding-bottom: 0.44em;
     background-color: var(--vscode-sideBar-background);
 }
 
-body>div#page_editor_panel_toolbar input {
+body>div#page_editor_panel_toolbar>span {
+    display: inline-block;
+}
+
+body>div#page_editor_panel_toolbar>span>input {
     text-align: right;
-    width: 3.77em;
+    width: 3.11em;
     margin: 0;
+    padding: 0;
 }
