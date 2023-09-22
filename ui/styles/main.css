@@ -145,20 +145,21 @@ body>div#page_editor_main {
     overflow: hidden;
 }
 
-body>div#page_editor_main>#page_editor_canvas {
+body>div#page_editor_main>svg#page_editor_canvas {
     position: relative;
     margin: 0;
     padding: 0;
     display: inline-block;
+    overflow: visible;
 }
 
-body>div#page_editor_main>#page_editor_canvas>rect.panel {
+body>div#page_editor_main>svg#page_editor_canvas>rect.panel {
     fill: #ffffff;
     stroke: #000000;
     stroke-width: 0.77mm;
 }
 
-body>div#page_editor_main>#page_editor_canvas>rect.panel-selected {
+body>div#page_editor_main>svg#page_editor_canvas>rect.panel-selected {
     fill: lightcyan;
 }
 
@@ -202,7 +203,7 @@ body>#page_editor_top_toolbar>#page_editor_top_toolbar_dbg {
 body>div#page_editor_panel_toolbar {
     padding-top: 2.22em;
     padding-bottom: 0.44em;
-    background-color: #e8e8e8;
+    background-color: var(--vscode-sideBar-background);
 }
 
 body>div#page_editor_panel_toolbar input {

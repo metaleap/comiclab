@@ -9,9 +9,9 @@ export type PageCanvas = {
     selPanelIdx?: number,
 }
 
-export function create(domId: string, page: º.Page, onPanelSelection: () => void, onUserModified: (page: º.Page, pIdx?: number) => void, dbg: (...msg: any[]) => void): PageCanvas {
+export function create(domId: string, page: º.Page, onPanelSelection: () => void, selPanelIdx: number | undefined, onUserModified: (page: º.Page, pIdx?: number) => void, dbg: (...msg: any[]) => void): PageCanvas {
     const page_size = º.pageSizeMm(page)
-    const it: PageCanvas = {}
+    const it: PageCanvas = { selPanelIdx: selPanelIdx }
 
     const panels: Element[] = []
     const onPanelSelect = (pIdx?: number) => (evt: MouseEvent) => {
@@ -25,7 +25,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
     for (let pidx = 0; pidx < page.panels.length; pidx++) {
         const panel = page.panels[pidx]
         const rect = svg.rect({
-            'class': 'panel', 'id': 'panel_' + pidx, 'data-pidx': pidx, 'tabindex': 2,
+            'class': 'panel' + ((pidx === selPanelIdx) ? ' panel-selected' : ''), 'id': 'panel_' + pidx, 'data-pidx': pidx, 'tabindex': 2,
             'x': `${panel.x}mm`, 'y': `${panel.y}mm`, 'width': `${panel.w}mm`, 'height': `${panel.h}mm`,
             'onfocus': onPanelSelect(pidx),
             'onkeydown': (evt: KeyboardEvent) => {

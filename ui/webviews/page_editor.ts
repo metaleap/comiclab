@@ -31,10 +31,16 @@ export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMess
     window.addEventListener('message', onMessage)
 }
 
-function onUserModified(userModifiedPage: º.Page, panelIdx?: number): º.Page {
+function onUserModifiedPage(userModifiedPage: º.Page, panelIdx?: number): º.Page {
     º.pageUpdate(pagePath, page = userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
     ˍ.panel_widget.refresh(page, panelIdx)
+    return page
+}
+function onUserModifiedPanel(userModifiedPage: º.Page, panelIdx: number): º.Page {
+    º.pageUpdate(pagePath, page = userModifiedPage)
+    utils.vs.postMessage({ ident: 'onPageModified', payload: page })
+    reRenderPageCanvas(panelIdx)
     return page
 }
 
@@ -56,15 +62,8 @@ function onMessage(evt: MessageEvent) {
             page = proj_page
             if (!ˍ.main)
                 createGui()
-            else if (changed) {
-                ˍ.panel_widget.refresh(page)
-                const x = posX(), y = posY(), old_dom = ˍ.page_canvas.dom, panel_idx = ˍ.page_canvas.selPanelIdx
-                createPageCanvas()
-                posX(x)
-                posY(y)
-                old_dom!.replaceWith(ˍ.page_canvas.dom!)
-                ˍ.panel_widget.refresh(page, panel_idx)
-            }
+            else if (changed)
+                ˍ.panel_widget.refresh(page, reRenderPageCanvas(ˍ.page_canvas.selPanelIdx))
             break
         default:
             utils.vs.postMessage({ 'unknown_msg': msg })
@@ -72,8 +71,17 @@ function onMessage(evt: MessageEvent) {
     }
 }
 
-function createPageCanvas() {
-    ˍ.page_canvas = ctl_pagecanvas.create('page_editor_canvas', page, onPanelSelection, onUserModified, dbg)
+function reRenderPageCanvas(selPanelIdx?: number) {
+    const x = posX(), y = posY(), old_dom = ˍ.page_canvas.dom
+    createPageCanvas(selPanelIdx)
+    posX(x)
+    posY(y)
+    old_dom!.replaceWith(ˍ.page_canvas.dom!)
+    return selPanelIdx
+}
+
+function createPageCanvas(panelIdx?: number) {
+    ˍ.page_canvas = ctl_pagecanvas.create('page_editor_canvas', page, onPanelSelection, panelIdx, onUserModifiedPage, dbg)
 }
 
 function createGui() {
@@ -93,7 +101,7 @@ function createGui() {
             html.a({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('screen-normal'), 'onclick': () => zoomSet() }),
         ),
     )
-    ˍ.panel_widget = ctl_panelwidget.create('page_editor_panel_toolbar', onUserModified, dbg)
+    ˍ.panel_widget = ctl_panelwidget.create('page_editor_panel_toolbar', onUserModifiedPanel, dbg)
     createPageCanvas()
 
     ˍ.main = html.div({
