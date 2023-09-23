@@ -4,7 +4,7 @@ import * as utils from './utils'
 import * as app from './app'
 
 
-const editors = new Map<string, WebviewPanel>();
+export const editors: { [_: string]: WebviewPanel } = {};
 export const reuseKeySep = ':'
 
 
@@ -109,28 +109,28 @@ export abstract class WebviewPanel {
     }
     onDisposed() {
         this.webviewPanel = null
-        editors.delete(this.reuseKey)
+        delete editors[this.reuseKey]
     }
 
 }
 
 
 export function show(reuseKey: string, newT: () => WebviewPanel) {
-    let editor = editors.get(reuseKey)
+    let editor = editors[reuseKey]
     if (!editor) {
         editor = newT()
         editor.reuseKey = reuseKey
-        editors.set(reuseKey, editor)
+        editors[reuseKey] = editor
     }
     editor.show()
 }
 
 export function close(reuseKey: string) {
-    const editor = editors.get(reuseKey)
+    const editor = editors[reuseKey]
     if (editor)
         editor.close()
 }
 
 export function isOpen(reuseKey: string) {
-    return editors.get(reuseKey) ? true : false
+    return editors[reuseKey] ? true : false
 }

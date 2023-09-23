@@ -23,10 +23,10 @@ export function create(domId: string, onUserModified: (page: º.Page, pIdx?: num
         input_pos_y: html.input({ 'type': 'number', 'step': '0.1' }),
         input_round: html.input({ 'type': 'number', 'step': 0.01, min: 0, max: 1 }),
         label_delete_prompt: html.span({ 'style': 'display:none' }, 'Sure to ', html.a({ 'onclick': () => it.deletePanel() }, ' delete '), ' this panel?'),
-        btn_move_first: html.button({ 'class': 'btn', 'title': `Send to Back`, 'style': cssIcon('fold-up'), 'data-movehow': 0, 'disabled': true, }),
-        btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to Front`, 'style': cssIcon('fold-down'), 'disabled': true, }),
-        btn_move_next: html.button({ 'class': 'btn', 'title': `Bring Forward`, 'style': cssIcon('chevron-down'), 'data-movehow': 1, 'disabled': true, }),
-        btn_move_prev: html.button({ 'class': 'btn', 'title': `Send Backward`, 'style': cssIcon('chevron-up'), 'data-movehow': -1, 'disabled': true, }),
+        btn_move_first: html.button({ 'class': 'btn', 'title': `Send to Back`, 'style': cssIcon('fold-down'), 'data-movehow': 0, 'disabled': true, }),
+        btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to Front`, 'style': cssIcon('fold-up'), 'disabled': true, }),
+        btn_move_next: html.button({ 'class': 'btn', 'title': `Bring Forward`, 'style': cssIcon('chevron-up'), 'data-movehow': 1, 'disabled': true, }),
+        btn_move_prev: html.button({ 'class': 'btn', 'title': `Send Backward`, 'style': cssIcon('chevron-down'), 'data-movehow': -1, 'disabled': true, }),
     }
     const it: PanelWidget = {
         dom: html.div({ 'id': domId, 'class': 'page-editor-top-toolbar', 'style': 'display:none' },
@@ -55,13 +55,15 @@ export function create(domId: string, onUserModified: (page: º.Page, pIdx?: num
         },
         onUserModifiedInsideWidget(evt: Event, page: º.Page) {
             it.toggleDeletePrompt(false)
-            const panel = page.panels[it.selPanelIdx!]
-            panel.w = parseInt((parseFloat(ˍ.input_width.value) * 10).toFixed(0))
-            panel.h = parseInt((parseFloat(ˍ.input_height.value) * 10).toFixed(0))
-            panel.x = parseInt((parseFloat(ˍ.input_pos_x.value) * 10).toFixed(0))
-            panel.y = parseInt((parseFloat(ˍ.input_pos_y.value) * 10).toFixed(0))
-            panel.round = parseFloat(ˍ.input_round.value)
-            onUserModified(page, it.selPanelIdx!)
+            if (it.selPanelIdx !== undefined) { // accounts for the move-to-front/send-to-back/etc `page.panels` array reorderings
+                const panel = page.panels[it.selPanelIdx]
+                panel.w = parseInt((parseFloat(ˍ.input_width.value) * 10).toFixed(0))
+                panel.h = parseInt((parseFloat(ˍ.input_height.value) * 10).toFixed(0))
+                panel.x = parseInt((parseFloat(ˍ.input_pos_x.value) * 10).toFixed(0))
+                panel.y = parseInt((parseFloat(ˍ.input_pos_y.value) * 10).toFixed(0))
+                panel.round = parseFloat(ˍ.input_round.value)
+            }
+            onUserModified(page, it.selPanelIdx)
         },
         refresh(page: º.Page, panelIdx?: number) {
             it.toggleDeletePrompt(false)
@@ -83,6 +85,8 @@ export function create(domId: string, onUserModified: (page: º.Page, pIdx?: num
             for (const btn of [ˍ.btn_move_first, ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev])
                 btn.onclick = (evt) => {
                     º.pageMovePanel(page, it.selPanelIdx!, parseInt(btn.getAttribute('data-movehow') ?? ''))
+                    it.selPanelIdx = undefined
+                    it.refresh(it.page!)
                     it.onUserModifiedInsideWidget(evt, page)
                 }
             ˍ.btn_move_prev.disabled = (page.panels.length <= 1) || (it.selPanelIdx === 0)

@@ -5,7 +5,7 @@ import * as app from './app'
 import * as base_editor from './base_editor'
 
 
-const viewTypeIdent = 'page_editor'
+export const viewTypeIdent = 'page_editor'
 
 
 export function onInit() {

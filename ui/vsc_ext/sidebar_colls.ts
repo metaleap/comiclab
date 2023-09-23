@@ -119,7 +119,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
         }).then((newName) => {
             if (newName && ((newName = newName.trim()).length > 0) && (newName != old_name)) {
                 if (coll) {
-                    coll_editor.close(coll)
+                    coll_editor.close(coll, false)
                     coll.name = newName
                 } else if (page) {
                     page_editor.close(page)
@@ -136,7 +136,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
         if (coll)
             vs.window.showWarningMessage(`Really remove '${coll.name}' from the project?`, { modal: true, detail: this.deletionNote }, "OK").then((_) => {
                 if (_ == "OK") {
-                    coll_editor.close(coll)
+                    coll_editor.close(coll, true)
                     const parents = º.collParents(coll)
                     if (parents.length > 0)
                         parents[0].collections = parents[0].collections.filter(_ => (_ != coll))
@@ -191,7 +191,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
         return new_parent_candidates
     }
 
-    move(treeNode: vs.TreeItem, direction: º.MoveHow, dontDoIt?: boolean): boolean {
+    move(treeNode: vs.TreeItem, direction: º.MoveDirection, dontDoIt?: boolean): boolean {
         let can_move: boolean = false
         const coll = (sidebar.treeNodeCat(treeNode) == 'coll') ? collFromNodeId(treeNode.id as string) : undefined
         const page = (sidebar.treeNodeCat(treeNode) == 'page') ? pageFromNodeId(treeNode.id as string) : undefined
@@ -199,19 +199,13 @@ export class TreeColls extends sidebar.TreeDataProvider {
         const page_parent = page ? º.pageParent(page) : undefined
         const arr: any[] | undefined = (coll && coll_parent && coll_parent.collections) ? coll_parent.collections : ((page && page_parent && page_parent.pages) ? page_parent.pages : undefined)
         if (arr) {
-            can_move = (arr.length > 1)
             const idx_cur = arr.indexOf(coll ?? page)
-            const idx_new =
-                (direction == 1) ? (idx_cur + 1)
-                    : ((direction == -1) ? (idx_cur - 1)
-                        : ((direction == 0) ? 0
-                            : (arr.length - 1)))
-            can_move = (idx_new != idx_cur) && (idx_new >= 0) && (idx_new < arr.length)
-            if (can_move && !dontDoIt) {
+            const idx_new = º.arrayCanMove(arr, idx_cur, direction)
+            if ((can_move = (idx_new !== undefined)) && !dontDoIt) {
                 if (coll && coll_parent && coll_parent.collections)
-                    coll_parent.collections = º.arrayMoveItemTo(coll_parent.collections, idx_cur, idx_new)
+                    coll_parent.collections = º.arrayMoveItem(coll_parent.collections, idx_cur, idx_new)
                 else if (page && page_parent && page_parent.pages)
-                    page_parent.pages = º.arrayMoveItemTo(page_parent.pages, idx_cur, idx_new)
+                    page_parent.pages = º.arrayMoveItem(page_parent.pages, idx_cur, idx_new)
                 app.events.modifiedProj.now(º.appState.proj)
             }
         }

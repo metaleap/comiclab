@@ -158,29 +158,31 @@ export function pageSizeMm(page: Page): { wMm: number, hMm: number } {
     return { wMm: 0, hMm: 0 }
 }
 
-export type MoveHow = 0 | 1 | -1 | typeof NaN
+export type MoveDirection = 0 | 1 | -1 | typeof NaN
 
-export function pageMovePanel(page: Page, panelIdx: number, direction: MoveHow) {
-    page.panels = arrayMoveItemHow(page.panels, panelIdx, direction)
+export function pageMovePanel(page: Page, panelIdx: number, direction: MoveDirection) {
+    const idx_new = arrayCanMove(page.panels, panelIdx, direction)
+    if (idx_new !== undefined)
+        page.panels = arrayMoveItem(page.panels, panelIdx, idx_new)
 }
 
 export function strPaperFormat(_: PaperFormat): string {
     return _ ? (_.widthMm + "×" + _.heightMm + " mm") : ''
 }
 
-export function arrayMoveItemHow<T>(arr: T[], idxOld: number, direction: MoveHow): T[] {
+export function arrayCanMove<T>(arr: T[], idxOld: number, direction: MoveDirection): number | undefined {
+    if (arr.length < 2)
+        return undefined
     const idx_new =
         (direction == 1) ? (idxOld + 1)
             : ((direction == -1) ? (idxOld - 1)
                 : ((direction == 0) ? 0
                     : (arr.length - 1)))
     const can_move = (idx_new != idxOld) && (idx_new >= 0) && (idx_new < arr.length)
-    if (can_move)
-        arr = arrayMoveItemTo(arr, idxOld, idx_new)
-    return arr
+    return can_move ? idx_new : undefined
 }
 
-export function arrayMoveItemTo<T>(arr: T[], idxOld: number, idxNew: number): T[] {
+export function arrayMoveItem<T>(arr: T[], idxOld: number, idxNew: number): T[] {
     const item = arr[idxOld]
     arr.splice(idxOld, 1)
     arr.splice(idxNew, 0, item)
