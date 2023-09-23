@@ -26,14 +26,14 @@ export function create(domId: string, onUserModified: (page: º.Page, pIdx?: num
     }
     const it: PanelWidget = {
         dom: html.div({ 'id': domId, 'class': 'page-editor-top-toolbar', 'style': 'display:none' },
-            html.div({ 'class': 'page-editor-top-toolbar-block' }, ˍ.label_panel_idx),
-            html.div({ 'class': 'page-editor-top-toolbar-block' },
-                ' — X,Y=', ˍ.input_pos_x, ',', ˍ.input_pos_y, ' — W,H=', ˍ.input_width, ',', ˍ.input_height, ' — roundness=', ˍ.input_round,
-            ),
             html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
                 html.a({ 'class': 'btn', 'title': `Delete panel`, 'style': cssIcon('trash'), 'onclick': () => it.toggleDeletePrompt(true) }),
                 ˍ.label_delete_prompt,
-            )
+            ),
+            html.div({ 'class': 'page-editor-top-toolbar-block' },
+                ˍ.label_panel_idx,
+                ' — X,Y=', ˍ.input_pos_x, ',', ˍ.input_pos_y, ' — W,H=', ˍ.input_width, ',', ˍ.input_height, ' — roundness=', ˍ.input_round,
+            ),
         ),
         deletePanel: () => {
             it.page!.panels = it.page!.panels.filter((_: º.Panel, idx: number) => (idx !== it.selPanelIdx))

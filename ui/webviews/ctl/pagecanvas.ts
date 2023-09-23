@@ -7,10 +7,13 @@ const svg = van.tagsNS("http://www.w3.org/2000/svg")
 export type PageCanvas = {
     dom?: HTMLElement & SVGElement
     selPanelIdx?: number,
+    xMm?: number,
+    yMm?: number,
+    addNewPanel: () => void,
     panelSelect: (evt?: Event, pIdx?: number) => void,
 }
 
-export function create(domId: string, page: º.Page, onPanelSelection: () => void, selPanelIdx: number | undefined, onUserModified: (page: º.Page, pIdx?: number) => void, dbg: (...msg: any[]) => void): PageCanvas {
+export function create(domId: string, page: º.Page, onPanelSelection: () => void, selPanelIdx: number | undefined, onUserModified: (page: º.Page, pIdx?: number, reRender?: boolean) => void, dbg: (...msg: any[]) => void): PageCanvas {
     const page_size = º.pageSizeMm(page)
     const it: PageCanvas = {
         selPanelIdx: selPanelIdx,
@@ -18,10 +21,18 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
             if (it.selPanelIdx !== undefined)
                 document.getElementById('panel_' + it.selPanelIdx)?.classList.remove('panel-selected')
             it.selPanelIdx = pIdx
-            if (it.selPanelIdx !== undefined)
-                document.getElementById('panel_' + it.selPanelIdx)?.classList.add('panel-selected')
+            if (it.selPanelIdx !== undefined) {
+                const dom = document.getElementById('panel_' + it.selPanelIdx)
+                dom?.classList.add('panel-selected')
+                dom?.focus()
+            }
             onPanelSelection()
-        }
+        },
+        addNewPanel: () => {
+            const mx = parseInt((it.xMm ?? 0).toFixed(0)), my = parseInt((it.yMm ?? 0).toFixed(0))
+            page.panels.push({ x: mx, y: my, w: 100, h: 100, round: 0 })
+            onUserModified(page, page.panels.length - 1, true)
+        },
     }
 
     const panels: Element[] = []
@@ -54,7 +65,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                             prop_name = ((evt.key == 'ArrowLeft') || (evt.key == 'ArrowRight'))
                                 ? (evt.altKey ? 'width' : 'x')
                                 : (evt.altKey ? 'height' : 'y'),
-                            new_val = (panel as any)[prop_name[0]] + ((evt.shiftKey ? 10 : 1) * factor) as number
+                            new_val = parseInt(((panel as any)[prop_name[0]] + ((evt.shiftKey ? 10 : 1) * factor)).toFixed(0))
                         if ((min === undefined) || new_val >= min) {
                             (panel as any)[prop_name[0]] = new_val
                             rect.setAttribute(prop_name, (panel as any)[prop_name[0]] + 'mm')

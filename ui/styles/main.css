@@ -224,11 +224,12 @@ body>div#page_editor_panel_toolbar {
 body>div#page_editor_panel_toolbar>div.page-editor-top-toolbar-block,
 body>div#page_editor_panel_toolbar>div.page-editor-top-toolbar-block>* {
     vertical-align: bottom;
+    background-color: var(--vscode-sideBar-background);
 }
 
 body>div#page_editor_panel_toolbar>div.page-editor-top-toolbar-block>input {
     text-align: right;
-    width: 3.11em;
+    width: 3.22em;
     margin: 0;
     padding: 0;
 }

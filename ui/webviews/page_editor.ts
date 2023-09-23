@@ -31,9 +31,11 @@ export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMess
     window.addEventListener('message', onMessage)
 }
 
-function onUserModifiedPage(userModifiedPage: º.Page, panelIdx?: number): º.Page {
+function onUserModifiedPage(userModifiedPage: º.Page, panelIdx?: number, reRender?: boolean): º.Page {
     º.pageUpdate(pagePath, page = userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
+    if (reRender)
+        reRenderPageCanvas(panelIdx)
     ˍ.panel_widget.refresh(page, panelIdx)
     return page
 }
@@ -128,7 +130,7 @@ function createGui() {
             }
         },
         'onauxclick': (evt: MouseEvent) => {
-            dbg("OA", evt.button, new Date().getTime(), evt.buttons, evt.detail)
+            ˍ.page_canvas.addNewPanel()
         },
         'onclick': (evt: MouseEvent) => {
             ˍ.page_canvas.panelSelect(evt)
@@ -143,13 +145,16 @@ function createGui() {
             }
         },
         'onmouseout': (evt: Event) => {
-            ˍ.top_toolbar_mpos_text.innerHTML = 'Add panel: <i>mid-click</i>. — Add balloon: <i>shift+mid-click</i>.'
+            [ˍ.page_canvas.xMm, ˍ.page_canvas.yMm] = [undefined, undefined]
+            ˍ.top_toolbar_mpos_text.innerHTML = 'Add panel: <i>mid-click</i>.&nbsp;&nbsp;—&nbsp;&nbsp;Add balloon: <i>shift+mid-click</i>.'
         },
         'onmousemove': (evt: MouseEvent) => {
             const zoom = zoomGet()
             const xptr = ((100 / zoom) * evt.clientX) - posX(), yptr = ((100 / zoom) * evt.clientY) - posY()
             const xfac = xptr / ˍ.page_canvas.dom!.clientWidth, yfac = yptr / ˍ.page_canvas.dom!.clientHeight
-            ˍ.top_toolbar_mpos_text.innerText = `X: ${(page_size.wMm * xfac * 0.1).toFixed(1)} , Y:${(page_size.hMm * yfac * 0.1).toFixed(1)}`
+            ˍ.page_canvas.xMm = page_size.wMm * xfac
+            ˍ.page_canvas.yMm = page_size.hMm * yfac
+            ˍ.top_toolbar_mpos_text.innerText = `X: ${(ˍ.page_canvas.xMm * 0.1).toFixed(1)} , Y:${(ˍ.page_canvas.yMm * 0.1).toFixed(1)}`
         },
         // 'ondragstart': (evt: DragEvent) => {
         //     console.log(evt)
