@@ -90,9 +90,15 @@ input[type='number'] {
     border-width: 1px;
     padding: var(--input-padding-vertical) var(--input-padding-horizontal);
     font-family: var(--vscode-font-family);
-    color: var(--vscode-input-foreground);
+    color: var(--vscode-input-foreground) !important;
     outline-color: var(--vscode-input-border);
-    background-color: var(--vscode-input-background);
+    background-color: var(--vscode-input-background) !important;
+}
+
+select,
+option {
+    background-color: var(--vscode-input-background) !important;
+    color: var(--vscode-input-foreground);
 }
 
 input::placeholder,

@@ -23,6 +23,7 @@ let ˍ: {
     top_toolbar_mpos_text: HTMLSpanElement,
     top_toolbar_zoom_input: HTMLInputElement,
     top_toolbar_zoom_text: HTMLSpanElement,
+    menu_panel_grid: HTMLSelectElement,
 } = {} as any
 
 export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfgSettings: object, appState: º.AppState) {
@@ -94,6 +95,19 @@ function createPageCanvas(panelIdx?: number) {
 function createGui() {
     const orig_size_zoom_percent: number = (utils.vscCfg && utils.vscCfg['pageEditorDefaultZoom']) ? (utils.vscCfg['pageEditorDefaultZoom'] as number) : 122.5
     const page_size = º.pageSizeMm(page)
+    ˍ.menu_panel_grid = html.select({
+        'class': 'placeholder',
+        'onchange': () => {
+            const [rows_first, num_rows, num_cols] = JSON.parse(ˍ.menu_panel_grid.value) as number[]
+            ˍ.page_canvas.addNewPanelGrid(num_rows, num_cols, (rows_first === 1))
+        }
+    }, html.option({ 'value': '', 'class': 'placeholder' }, '(Add new page-sized full panel grid...)'),
+        [true, false].flatMap((rowsFirst) => [3, 4, 2, 1, 5].flatMap((numRows) => [2, 3, 1, 4, 5].flatMap((numCols) =>
+            rowsFirst
+                ? html.option({ 'value': `${JSON.stringify([1, numRows, numCols])}` }, `${numRows} row(s), ${numCols} column(s)`)
+                : html.option({ 'value': `${JSON.stringify([0, numRows, numCols])}` }, `${numCols} column/s, ${numRows} row(s)`)
+        ))),
+    )
     ˍ.top_toolbar = html.div({ 'id': 'page_editor_top_toolbar', 'class': 'page-editor-top-toolbar', 'tabindex': -1 },
         html.div({ 'id': 'page_editor_top_toolbar_zoom', 'class': 'page-editor-top-toolbar-block' },
             ˍ.top_toolbar_zoom_input = html.input({
@@ -106,19 +120,7 @@ function createGui() {
             html.button({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('screen-normal'), 'onclick': () => zoomSet() }),
         ),
         html.div({ 'class': 'page-editor-top-toolbar-block', },
-            html.select({
-                'class': 'placeholder',
-                'onchange': () => {
-                    utils.alert('this.value')
-                }
-            },
-                html.option({ 'value': '', 'class': 'placeholder' }, '(Add new panel grid...)'),
-                [true, false].flatMap((rowsFirst) => [3, 4, 2, 1, 0, 5].flatMap((numRows) => [2, 3, 0, 1, 4, 5].flatMap((numCols) =>
-                    rowsFirst
-                        ? html.option({ 'value': `R${numRows}C${numCols}` }, `${numRows} row(s), ${numCols} column(s)`)
-                        : html.option({ 'value': `C${numCols}R${numRows}` }, `${numCols} column/s, ${numRows} row(s)`)
-                ))),
-            ),
+            ˍ.menu_panel_grid,
         ),
         html.div({ 'id': 'page_editor_top_toolbar_dbg', 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
             ˍ.top_toolbar_dbg = html.span({}, "...")),

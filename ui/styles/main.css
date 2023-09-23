@@ -18,7 +18,7 @@ a,
 }
 
 select option:not([value='']) {
-    color: var(--vscode-inputOption-activeForeground) !important;
+    color: var(--vscode-input-foreground) !important;
 }
 
 button.btn {
