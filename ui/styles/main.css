@@ -252,3 +252,20 @@ body>div#page_editor_panel_toolbar>div.page-editor-top-toolbar-block>input {
     margin: 0;
     padding: 0;
 }
+
+body>div.page-editor-panel-bar {
+    background-color: gold;
+    display: inline-block;
+    min-width: 1em;
+    min-height: 1em;
+}
+
+body>div#page_editor_panel_bar_left,
+body>div#page_editor_panel_bar_right {
+    width: 1em;
+}
+
+body>div#page_editor_panel_bar_top,
+body>div#page_editor_panel_bar_bottom {
+    height: 1em;
+}
