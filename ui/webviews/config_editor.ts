@@ -41,26 +41,31 @@ let main_tabs = ctl_tabs.create('config_editor_main', {
     }),
 })
 
-export function onInit(_: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfgSettings: object) {
-    utils.onInit(vscode, extUri, vscCfgSettings)
-    window.addEventListener('message', onMessage)
+export function onInit(_: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfgSettings: object, appState: º.AppState) {
+    utils.onInit(vscode, extUri, vscCfgSettings, appState)
+    onAppStateCfgRefreshed(appState.config)
     van.add(document.body, main_tabs)
+    window.addEventListener('message', onMessage)
 }
 
 function setDisabled(disabled: boolean) {
     (main_tabs as HTMLElement).style.visibility = disabled ? 'hidden' : 'visible'
 }
 
+function onAppStateCfgRefreshed(newConfig: º.Config) {
+    º.appState.config = newConfig as º.Config
+    grid_authors.onDataChangedAtSource(curAuthors())
+    grid_paperformats.onDataChangedAtSource(curPaperFormats())
+    grid_languages.onDataChangedAtSource(curLanguages())
+    grid_contentfields.onDataChangedAtSource(curContentFields())
+    setDisabled(false)
+}
+
 function onMessage(evt: MessageEvent) {
     const msg = evt.data
     switch (msg.ident) {
         case 'onAppStateCfgRefreshed':
-            º.appState.config = msg.payload as º.Config
-            grid_authors.onDataChangedAtSource(curAuthors())
-            grid_paperformats.onDataChangedAtSource(curPaperFormats())
-            grid_languages.onDataChangedAtSource(curLanguages())
-            grid_contentfields.onDataChangedAtSource(curContentFields())
-            setDisabled(false)
+            onAppStateCfgRefreshed(msg.payload)
             break
         default:
             utils.vs.postMessage({ 'unknown_msg': msg })

@@ -1,13 +1,19 @@
+import * as º from './_º.js'
+
 export let vs: { postMessage: (_: any) => any }
 export let extUri = ''
 export let vscCfg: any
 
-export function onInit(vscode: { postMessage: (_: any) => any }, baseUri: string, vscCfgSettings: object) {
-    vscCfg = vscCfgSettings
-    extUri = baseUri
+export function onInit(vscode: { postMessage: (_: any) => any }, baseUri: string, vscCfgSettings: object, appState: º.AppState) {
+    [vs, vscCfg, extUri] = [vscode, vscCfgSettings, baseUri]
     while (extUri.endsWith('/'))
         extUri = extUri.substring(0, extUri.length - 1)
-    vs = vscode
+    if (appState) {
+        if (appState.config)
+            º.appState.config = appState.config
+        if (appState.proj)
+            º.appState.proj = appState.proj
+    }
 }
 
 export function codiconPath(name: string) {

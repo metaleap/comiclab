@@ -25,9 +25,10 @@ let ˍ: {
     top_toolbar_zoom_text: HTMLSpanElement,
 } = {} as any
 
-export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfgSettings: object) {
+export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfgSettings: object, appState: º.AppState) {
     pagePath = editorReuseKeyDerivedPagePath
-    utils.onInit(vscode, extUri, vscCfgSettings)
+    utils.onInit(vscode, extUri, vscCfgSettings, appState)
+    onAppStateRefreshed(appState)
     window.addEventListener('message', onMessage)
 }
 
@@ -50,22 +51,26 @@ function onPanelSelection() {
     ˍ.panel_widget.refresh(page, ˍ.page_canvas.selPanelIdx)
 }
 
+function onAppStateRefreshed(newAppState: º.AppState) {
+    if (newAppState.config)
+        º.appState.config = newAppState.config
+    if (newAppState.proj)
+        º.appState.proj = newAppState.proj
+
+    const proj_page = º.pageFromPath(pagePath) as º.Page
+    const changed = (!page) || !º.deepEq(page, proj_page, true)
+    page = proj_page
+    if (!ˍ.main)
+        createGui()
+    else if (changed)
+        ˍ.panel_widget.refresh(page, reRenderPageCanvas(ˍ.page_canvas.selPanelIdx))
+}
+
 function onMessage(evt: MessageEvent) {
     const msg = evt.data;
     switch (msg.ident) {
         case 'onAppStateRefreshed':
-            if (msg.payload.config)
-                º.appState.config = msg.payload.config
-            if (msg.payload.proj)
-                º.appState.proj = msg.payload.proj
-
-            const proj_page = º.pageFromPath(pagePath) as º.Page
-            const changed = (!page) || !º.deepEq(page, proj_page, true)
-            page = proj_page
-            if (!ˍ.main)
-                createGui()
-            else if (changed)
-                ˍ.panel_widget.refresh(page, reRenderPageCanvas(ˍ.page_canvas.selPanelIdx))
+            onAppStateRefreshed(msg.payload)
             break
         default:
             utils.vs.postMessage({ 'unknown_msg': msg })
@@ -115,7 +120,6 @@ function createGui() {
                 break
             case '+':
             case '-':
-                console.log(ˍ.page_canvas.selPanelIdx, evt.shiftKey, evt.ctrlKey, evt.altKey, evt.metaKey)
                 if (!(evt.shiftKey || evt.ctrlKey || evt.altKey || evt.metaKey)) {
                     evt.preventDefault()
                     zoomSet(zoomGet() + (5 * ((evt.key == '+') ? 1 : -1)))
@@ -162,15 +166,6 @@ function createGui() {
             ˍ.page_canvas.yMm = page_size.hMm * yfac
             ˍ.top_toolbar_mpos_text.innerText = `X: ${(ˍ.page_canvas.xMm * 0.1).toFixed(1)} , Y:${(ˍ.page_canvas.yMm * 0.1).toFixed(1)}`
         },
-        // 'ondragstart': (evt: DragEvent) => {
-        //     console.log(evt)
-        //     if (evt.dataTransfer) {
-        //         evt.dataTransfer.effectAllowed = "move"
-        //         evt.dataTransfer.dropEffect = "move"
-        //         evt.dataTransfer.setDragImage(new Image(), 0, 0)
-        //     }
-        //     dbg(evt.clientX.toString())
-        // },
     }, ˍ.page_canvas.dom)
     van.add(document.body, ˍ.main, ˍ.panel_widget.dom, ˍ.top_toolbar)
     zoomSet()

@@ -37,16 +37,13 @@ export abstract class WebviewPanel {
         if ((evt.cfg && this.targetsCfg) || (evt.proj && this.targetsProj))
             this.refreshTitle()
     }
-    onRefreshed(evt: app.StateEvent, isStartup?: boolean) {
+    onRefreshed(evt: app.StateEvent) {
         this.refreshTitle()
         if (this.webviewPanel && ((evt.cfg && this.targetsCfg) || (evt.proj && this.targetsProj))) {
             const msg = this.onRefreshedEventMessage(evt)
             if (msg)
                 this.webviewPanel.webview.postMessage(msg).then(() => { }, (fail) => utils.alert(fail))
-            else if (isStartup)
-                utils.alert("NEW BUG: no onRefreshedEventMessage() on base_editor init")
-        } else if (isStartup)
-            utils.alert("NEW BUG: no onRefreshedEventMessage() conditions on base_editor init")
+        }
     }
     abstract onRefreshedEventMessage(evt: app.StateEvent): any;
 
@@ -76,6 +73,7 @@ export abstract class WebviewPanel {
             enableScripts: true,
             localResourceRoots: [utils.extUri, utils.homeDirPath]
         }))
+        utils.disp(this.webviewPanel.webview.onDidReceiveMessage((msg) => this.onMessage(msg)))
         this.webviewPanel.webview.html = `<!DOCTYPE html>
                 <html><head>
                     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -84,11 +82,16 @@ export abstract class WebviewPanel {
                     <link rel='stylesheet' type='text/css' href='${this.htmlUri(utils.cssPath('main'))}'>
                 </head><body>
                     <script type='module'>
-                        import * as main from '${this.htmlUri(utils.jsPath(this.viewTypeIdent))}'
-                        main.onInit('${this.reuseKey.substring(this.reuseKey.indexOf(reuseKeySep) + 1)}', acquireVsCodeApi(), '${this.htmlUri(utils.extUri).toString()}', ${JSON.stringify(vs.workspace.getConfiguration().get("comiclab"))})
+                        import * as main_view from '${this.htmlUri(utils.jsPath(this.viewTypeIdent))}'
+                        main_view.onInit(
+                            '${this.reuseKey.substring(this.reuseKey.indexOf(reuseKeySep) + 1)}',
+                            acquireVsCodeApi(),
+                            '${this.htmlUri(utils.extUri).toString()}',
+                            ${JSON.stringify(vs.workspace.getConfiguration().get("comiclab"))},
+                            ${JSON.stringify(º.appState)},
+                        )
                     </script>
                 </body></html>`
-        utils.disp(this.webviewPanel.webview.onDidReceiveMessage((msg) => this.onMessage(msg)))
         this.webviewPanel.iconPath = utils.codiconPath(this.codicon)
         utils.disp(this.webviewPanel.onDidDispose(() => {
             if (this.targetsCfg) {
@@ -101,7 +104,6 @@ export abstract class WebviewPanel {
             }
             this.onDisposed()
         }))
-        this.onRefreshed({ proj: true, cfg: true, from: { reload: true } }, true)
     }
 
     close() {
