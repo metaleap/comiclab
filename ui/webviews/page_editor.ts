@@ -3,6 +3,7 @@ import * as º from './_º.js'
 import * as utils from './utils.js'
 import * as ctl_pagecanvas from './ctl/pagecanvas.js'
 import * as ctl_paneltoolbar from './ctl/paneltoolbar.js'
+import * as ctl_paneledgebar from './ctl/paneledgebar.js'
 
 
 const html = van.tags
@@ -12,7 +13,6 @@ const zoomMax = 321.5
 
 let pagePath: string = ''
 let page: º.Page
-let vscCfg: object
 
 let ˍ: {
     main: HTMLDivElement,
@@ -22,12 +22,15 @@ let ˍ: {
     top_toolbar_zoom_input: HTMLInputElement,
     top_toolbar_menu_addpanelgrid: HTMLSelectElement,
     panel_toolbar: ctl_paneltoolbar.PanelToolbar,
-    panelbar_left: HTMLDivElement,
+    panelbar_left: ctl_paneledgebar.PanelEdgeBar,
+    panelbar_right: ctl_paneledgebar.PanelEdgeBar,
+    panelbar_upper: ctl_paneledgebar.PanelEdgeBar,
+    panelbar_lower: ctl_paneledgebar.PanelEdgeBar,
 } = {} as any
 
-export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfgSettings: object, appState: º.AppState) {
+export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfg: object, appState: º.AppState) {
     pagePath = editorReuseKeyDerivedPagePath
-    utils.onInit(vscode, extUri, vscCfgSettings, appState)
+    utils.onInit(vscode, extUri, vscCfg, appState)
     onAppStateRefreshed(appState)
     window.addEventListener('message', onMessage)
 }
@@ -37,7 +40,7 @@ function onUserModifiedPage(userModifiedPage: º.Page, panelIdx?: number, reRend
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
     if (reRender)
         reRenderPageCanvas(panelIdx)
-    ˍ.panel_toolbar.refresh(page, panelIdx)
+    refreshPanelBars(panelIdx)
     return page
 }
 function onUserModifiedPanel(userModifiedPage: º.Page, panelIdx?: number): º.Page {
@@ -48,7 +51,29 @@ function onUserModifiedPanel(userModifiedPage: º.Page, panelIdx?: number): º.P
 }
 
 function onPanelSelection() {
-    ˍ.panel_toolbar.refresh(page, ˍ.page_canvas.selPanelIdx)
+    refreshPanelBars(ˍ.page_canvas.selPanelIdx)
+}
+
+function refreshPanelBars(selPanelIdx?: number, edgeBarsOnly?: boolean) {
+    if (!edgeBarsOnly)
+        ˍ.panel_toolbar.refresh(page, selPanelIdx)
+    if (selPanelIdx !== undefined) {
+        const panel = page.panels[selPanelIdx]
+        const page_size = º.pageSizeMm(page)
+        const panel_px_pos = mmToPx(panel.x, panel.y, true, page_size)
+        const panel_px_size = mmToPx(panel.w, panel.h, false, page_size)
+        ˍ.panelbar_upper.dom.style.left = ((panel_px_pos.xPx + (panel_px_size.xPx / 2)) - (ˍ.panelbar_upper.dom.clientWidth / 2)).toFixed(0) + 'px'
+        ˍ.panelbar_lower.dom.style.left = ˍ.panelbar_upper.dom.style.left
+        ˍ.panelbar_upper.dom.style.top = (panel_px_pos.xPy - 12).toFixed(0) + 'px'
+        ˍ.panelbar_lower.dom.style.top = (panel_px_pos.xPy + panel_px_size.xPy).toFixed(0) + 'px'
+
+        ˍ.panelbar_left.dom.style.top = ((panel_px_pos.xPy + (panel_px_size.xPy / 2)) - (ˍ.panelbar_left.dom.clientHeight / 2)).toFixed(0) + 'px'
+        ˍ.panelbar_right.dom.style.top = ˍ.panelbar_left.dom.style.top
+        ˍ.panelbar_left.dom.style.left = (panel_px_pos.xPx - 12).toFixed(0) + 'px'
+        ˍ.panelbar_right.dom.style.left = (panel_px_pos.xPx + panel_px_size.xPx).toFixed(0) + 'px'
+    }
+    for (const panel_bar of [ˍ.panelbar_left, ˍ.panelbar_right, ˍ.panelbar_upper, ˍ.panelbar_lower])
+        panel_bar.refresh(page, selPanelIdx)
 }
 
 function onAppStateRefreshed(newAppState: º.AppState) {
@@ -63,7 +88,7 @@ function onAppStateRefreshed(newAppState: º.AppState) {
     if (!ˍ.main)
         createGui()
     else if (changed)
-        ˍ.panel_toolbar.refresh(page, reRenderPageCanvas(ˍ.page_canvas.selPanelIdx))
+        refreshPanelBars(reRenderPageCanvas(ˍ.page_canvas.selPanelIdx))
 }
 
 function onMessage(evt: MessageEvent) {
@@ -128,6 +153,10 @@ function createGui() {
     )
     createPageCanvas()
     ˍ.panel_toolbar = ctl_paneltoolbar.create('page_editor_panel_toolbar', ˍ.page_canvas, onUserModifiedPanel, dbg)
+    ˍ.panelbar_left = ctl_paneledgebar.create('page_editor_panel_edgebar_left', ˍ.page_canvas, º.DirLeft)
+    ˍ.panelbar_right = ctl_paneledgebar.create('page_editor_panel_edgebar_right', ˍ.page_canvas, º.DirRight)
+    ˍ.panelbar_upper = ctl_paneledgebar.create('page_editor_panel_edgebar_upper', ˍ.page_canvas, º.DirUp)
+    ˍ.panelbar_lower = ctl_paneledgebar.create('page_editor_panel_edgebar_lower', ˍ.page_canvas, º.DirDown)
     document.onkeydown = (evt: KeyboardEvent) => {
         switch (evt.key) {
             case 'Escape':
@@ -174,26 +203,46 @@ function createGui() {
             ˍ.top_toolbar_mpos_text.innerHTML = 'Add panel: <i>mid-click</i>.&nbsp;&nbsp;—&nbsp;&nbsp;Add balloon: <i>shift+mid-click</i>.'
         },
         'onmousemove': (evt: MouseEvent) => {
-            const zoom = zoomGet()
-            const xptr = ((100 / zoom) * evt.clientX) - posX(), yptr = ((100 / zoom) * evt.clientY) - posY()
-            const xfac = xptr / ˍ.page_canvas.dom!.clientWidth, yfac = yptr / ˍ.page_canvas.dom!.clientHeight
-            ˍ.page_canvas.xMm = page_size.wMm * xfac
-            ˍ.page_canvas.yMm = page_size.hMm * yfac
+            const mm = mmFromPx(evt.clientX, evt.clientY, true, page_size)
+            ˍ.page_canvas.xMm = mm.xPx
+            ˍ.page_canvas.yMm = mm.yPx
             ˍ.top_toolbar_mpos_text.innerText = `X: ${(ˍ.page_canvas.xMm * 0.1).toFixed(1)} , Y:${(ˍ.page_canvas.yMm * 0.1).toFixed(1)}`
         },
-    }, ˍ.page_canvas.dom)
+    }, ˍ.page_canvas.dom, ˍ.panelbar_left.dom, ˍ.panelbar_right.dom, ˍ.panelbar_upper.dom, ˍ.panelbar_lower.dom)
     van.add(document.body, ˍ.main, ˍ.panel_toolbar.dom, ˍ.top_toolbar)
     zoomSet()
 }
 
+function mmFromPx(xPx: number, yPx: number, areUnzoomed: boolean, pageSize?: º.PageSize) {
+    const zoom = zoomGet()
+    xPx = ((100 / zoom) * xPx) - posX()
+    yPx = ((100 / zoom) * yPx) - posY()
+    const xfac = areUnzoomed ? (xPx / ˍ.page_canvas.dom!.clientWidth) : 1, yfac = areUnzoomed ? (yPx / ˍ.page_canvas.dom!.clientHeight) : 1
+    if (!pageSize)
+        pageSize = º.pageSizeMm(page)
+    return { xPx: pageSize.wMm * xfac, yPx: pageSize.hMm * yfac }
+}
+
+function mmToPx(mmX: number, mmY: number, isPos: boolean, pageSize?: º.PageSize)/*: º.PageSize*/ {
+    if (!pageSize)
+        pageSize = º.pageSizeMm(page)
+    const px_per_mm = ˍ.page_canvas.dom!.clientWidth / pageSize.wMm
+    const x_off = isPos ? posX() : 0, y_off = isPos ? posY() : 0
+    return { xPx: (px_per_mm * mmX) + x_off, xPy: (px_per_mm * mmY) + y_off }
+}
+
 function posX(newX?: number): number {
-    if (newX !== undefined)
+    if (newX !== undefined) {
         ˍ.page_canvas.dom!.style.left = newX.toString() + 'px'
+        refreshPanelBars(ˍ.page_canvas.selPanelIdx, true)
+    }
     return parseInt(ˍ.page_canvas.dom!.style.left)
 }
 function posY(newY?: number): number {
-    if (newY !== undefined)
+    if (newY !== undefined) {
         ˍ.page_canvas.dom!.style.top = newY.toString() + 'px'
+        refreshPanelBars(ˍ.page_canvas.selPanelIdx, true)
+    }
     return parseInt(ˍ.page_canvas.dom!.style.top)
 }
 
@@ -226,12 +275,9 @@ function zoomSet(newZoom?: number, mouse?: { x: number, y: number }) {
     }
     ˍ.top_toolbar_zoom_input.value = newZoom.toString()
     ˍ.top_toolbar_zoom_text.innerText = newZoom.toFixed(1) + "%"
+    refreshPanelBars(ˍ.page_canvas.selPanelIdx, true)
 }
 
 function dbg(...msg: any[]) {
     ˍ.top_toolbar_dbg_text.innerText = msg.join("\u00A0\u00A0\u00A0\u00A0")
-}
-
-function dom(id: string): HTMLElement {
-    return document.getElementById(id) as HTMLElement
 }

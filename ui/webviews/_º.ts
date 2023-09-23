@@ -148,7 +148,8 @@ export function collPageFormat(coll: Collection): PaperFormat | undefined {
     return undefined
 }
 
-export function pageSizeMm(page: Page): { wMm: number, hMm: number } {
+export type PageSize = { wMm: number, hMm: number }
+export function pageSizeMm(page: Page): PageSize {
     const coll = pageParent(page)
     if (coll) {
         const page_format = collPageFormat(coll)
@@ -163,6 +164,10 @@ export const DirPrev: Direction = -1
 export const DirNext: Direction = 1
 export const DirStart: Direction = 0
 export const DirEnd: Direction = NaN
+export const DirLeft = DirPrev
+export const DirRight = DirNext
+export const DirUp = DirStart
+export const DirDown = DirEnd
 
 export function pageMovePanel(page: Page, panelIdx: number, direction: Direction, dontDoIt?: boolean): boolean {
     const idx_new = arrayCanMove(page.panels, panelIdx, direction)

@@ -18,6 +18,7 @@ export type PanelEdgeBar = {
     page?: º.Page,
     selPanelIdx?: number,
     edge: º.Direction,
+    refresh: (page: º.Page, panelIdx?: number) => void,
 }
 
 export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, edge: º.Direction): PanelEdgeBar {
@@ -27,12 +28,24 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, edg
         buttons.push({ codicon: 'triangle-left', title: 'Snap leftwards', onClick: () => { } }, { codicon: 'triangle-right', title: 'Snap rightwards', onClick: () => { } })
     else
         buttons.push({ codicon: 'triangle-up', title: 'Snap upwards', onClick: () => { } }, { codicon: 'triangle-down', title: 'Snap downwards', onClick: () => { } })
-    const ret: PanelEdgeBar = {
+    const it: PanelEdgeBar = {
         canvas: pageCanvas,
         dom: dom,
         edge: edge,
-        buttons: buttons.map(_ => html.button({ 'class': 'btn ', 'title': _.title, 'style': utils.codiconCss(_.codicon), onclick: _.onClick }))
+        buttons: buttons.map(_ => html.button({ 'class': 'btn ', 'title': _.title, 'style': utils.codiconCss(_.codicon), onclick: _.onClick })),
+        refresh(page: º.Page, panelIdx?: number) {
+            it.page = page
+            if ((it.selPanelIdx = panelIdx) === undefined) {
+                it.dom.style.display = 'none'
+                return
+            }
+            let x: number, y: number
+            if (it.edge === º.DirLeft) {
+            }
+
+            it.dom.style.display = 'inline-block'
+        },
     }
-    van.add(dom, ...ret.buttons)
-    return ret
+    van.add(it.dom, ...it.buttons)
+    return it
 }
