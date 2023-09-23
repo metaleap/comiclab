@@ -29,10 +29,6 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
         btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to front`, 'style': cssIcon('fold-up'), 'disabled': true, }),
         btn_move_next: html.button({ 'class': 'btn', 'title': `Bring forward`, 'style': cssIcon('chevron-up'), 'data-movehow': 1, 'disabled': true, }),
         btn_move_prev: html.button({ 'class': 'btn', 'title': `Send backward`, 'style': cssIcon('chevron-down'), 'data-movehow': -1, 'disabled': true, }),
-        btn_snap_down: html.button({ 'class': 'btn', 'title': `Snap downwards`, 'style': cssIcon('triangle-down'), 'disabled': true, }),
-        btn_snap_up: html.button({ 'class': 'btn', 'title': `Snap upwards`, 'style': cssIcon('triangle-up'), 'data-movehow': 0, 'disabled': true, }),
-        btn_snap_right: html.button({ 'class': 'btn', 'title': `Snap rightwards`, 'style': cssIcon('triangle-right'), 'data-movehow': 1, 'disabled': true, }),
-        btn_snap_left: html.button({ 'class': 'btn', 'title': `Snap leftwards`, 'style': cssIcon('triangle-left'), 'data-movehow': -1, 'disabled': true, }),
     }
     const it: PanelWidget = {
         canvas: pageCanvas,
@@ -47,7 +43,6 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
             ),
             html.div({ 'class': 'page-editor-top-toolbar-block' },
                 ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev, ˍ.btn_move_first,
-                ˍ.btn_snap_left, ˍ.btn_snap_up, ˍ.btn_snap_right, ˍ.btn_snap_down,
             ),
         ),
         deletePanel: () => {
@@ -94,12 +89,6 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
                 btn.disabled = !it.canvas.panelReorder(it.selPanelIdx!, dir, true)
                 btn.onclick = (evt) =>
                     it.canvas.panelReorder(it.selPanelIdx!, dir)
-            }
-            for (const btn of [ˍ.btn_snap_down, ˍ.btn_snap_up, ˍ.btn_snap_left, ˍ.btn_snap_right]) {
-                const dir: º.MoveDirection = parseInt(btn.getAttribute('data-movehow') ?? '')
-                btn.disabled = !it.canvas.panelSnapTo(it.selPanelIdx!, dir, true)
-                btn.onclick = (evt) =>
-                    it.canvas.panelSnapTo(it.selPanelIdx!, dir)
             }
 
             it.dom.style.display = 'block'
