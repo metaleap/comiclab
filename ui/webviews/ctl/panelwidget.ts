@@ -1,10 +1,12 @@
 import van, { ChildDom } from '../vanjs/van-1.2.1.js'
 import * as utils from '../utils.js'
 import * as º from '../_º.js'
+import * as ctl_pagecanvas from './pagecanvas.js'
 
 const html = van.tags
 
 export type PanelWidget = {
+    canvas: ctl_pagecanvas.PageCanvas,
     dom: HTMLElement,
     page?: º.Page,
     selPanelIdx?: number,
@@ -14,7 +16,7 @@ export type PanelWidget = {
     onUserModifiedInsideWidget: (evt: Event, page: º.Page) => any
 }
 
-export function create(domId: string, onUserModified: (page: º.Page, pIdx?: number) => void, dbg: (...msg: any[]) => void): PanelWidget {
+export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onUserModified: (page: º.Page, pIdx?: number) => void, dbg: (...msg: any[]) => void): PanelWidget {
     const ˍ = {
         label_panel_idx: html.b({}, 'Panel #? / ?'),
         input_width: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1' }),
@@ -27,12 +29,13 @@ export function create(domId: string, onUserModified: (page: º.Page, pIdx?: num
         btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to front`, 'style': cssIcon('fold-up'), 'disabled': true, }),
         btn_move_next: html.button({ 'class': 'btn', 'title': `Bring forward`, 'style': cssIcon('chevron-up'), 'data-movehow': 1, 'disabled': true, }),
         btn_move_prev: html.button({ 'class': 'btn', 'title': `Send backward`, 'style': cssIcon('chevron-down'), 'data-movehow': -1, 'disabled': true, }),
-        btn_snap_down: html.button({ 'class': 'btn', 'title': `Snap downwards`, 'style': cssIcon('triangle-down'), 'data-movehow': 0, 'disabled': true, }),
-        btn_snap_up: html.button({ 'class': 'btn', 'title': `Snap upwards`, 'style': cssIcon('triangle-up'), 'disabled': true, }),
+        btn_snap_down: html.button({ 'class': 'btn', 'title': `Snap downwards`, 'style': cssIcon('triangle-down'), 'disabled': true, }),
+        btn_snap_up: html.button({ 'class': 'btn', 'title': `Snap upwards`, 'style': cssIcon('triangle-up'), 'data-movehow': 0, 'disabled': true, }),
         btn_snap_right: html.button({ 'class': 'btn', 'title': `Snap rightwards`, 'style': cssIcon('triangle-right'), 'data-movehow': 1, 'disabled': true, }),
         btn_snap_left: html.button({ 'class': 'btn', 'title': `Snap leftwards`, 'style': cssIcon('triangle-left'), 'data-movehow': -1, 'disabled': true, }),
     }
     const it: PanelWidget = {
+        canvas: pageCanvas,
         dom: html.div({ 'id': domId, 'class': 'page-editor-top-toolbar', 'style': 'display:none' },
             html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
                 html.button({ 'class': 'btn', 'title': `Delete panel`, 'style': cssIcon('trash'), 'onclick': () => it.toggleDeletePrompt(true) }),
@@ -74,28 +77,30 @@ export function create(domId: string, onUserModified: (page: º.Page, pIdx?: num
                 it.dom.style.display = 'none'
                 return
             }
-            ˍ.label_panel_idx.textContent = `(Panel #${1 + it.selPanelIdx} / ${page.panels.length})`
             const panel = page.panels[it.selPanelIdx]
-            ˍ.input_round.value = panel.round.toFixed(2)
-            ˍ.input_width.value = (panel.w * 0.1).toFixed(1).padStart(4, '0')
-            ˍ.input_height.value = (panel.h * 0.1).toFixed(1).padStart(4, '0')
-            ˍ.input_pos_x.value = (panel.x * 0.1).toFixed(1).padStart(4, '0')
-            ˍ.input_pos_y.value = (panel.y * 0.1).toFixed(1).padStart(4, '0')
-            for (const input of [ˍ.input_height, ˍ.input_pos_x, ˍ.input_pos_y, ˍ.input_width, ˍ.input_round])
-                input.onchange = (evt) =>
-                    it.onUserModifiedInsideWidget(evt, page)
-            for (const btn of [ˍ.btn_move_first, ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev])
-                btn.onclick = (evt) => {
-                    if (º.pageMovePanel(page, it.selPanelIdx!, parseInt(btn.getAttribute('data-movehow') ?? ''))) {
-                        it.selPanelIdx = undefined
-                        it.refresh(it.page!)
+            {
+                ˍ.label_panel_idx.textContent = `(Panel #${1 + it.selPanelIdx} / ${page.panels.length})`
+                ˍ.input_round.value = panel.round.toFixed(2)
+            }
+            for (const inputs of [{ 'x': ˍ.input_pos_x, 'y': ˍ.input_pos_y, 'w': ˍ.input_width, 'h': ˍ.input_height } as { [_: string]: HTMLInputElement }])
+                for (const prop_name in inputs) {
+                    const input = inputs[prop_name] as HTMLInputElement
+                    input.value = (panel[prop_name as 'x' | 'y' | 'w' | 'h'] * 0.1).toFixed(1).padStart(4, '0')
+                    input.onchange = (evt) =>
                         it.onUserModifiedInsideWidget(evt, page)
-                    }
                 }
-            ˍ.btn_move_prev.disabled = (page.panels.length <= 1) || (it.selPanelIdx === 0)
-            ˍ.btn_move_next.disabled = (page.panels.length <= 1) || (it.selPanelIdx === (page.panels.length - 1))
-            ˍ.btn_move_first.disabled = ˍ.btn_move_prev.disabled
-            ˍ.btn_move_last.disabled = ˍ.btn_move_next.disabled
+            for (const btn of [ˍ.btn_move_first, ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev]) {
+                const dir: º.MoveDirection = parseInt(btn.getAttribute('data-movehow') ?? '')
+                btn.disabled = !it.canvas.panelReorder(it.selPanelIdx!, dir, true)
+                btn.onclick = (evt) =>
+                    it.canvas.panelReorder(it.selPanelIdx!, dir)
+            }
+            for (const btn of [ˍ.btn_snap_down, ˍ.btn_snap_up, ˍ.btn_snap_left, ˍ.btn_snap_right]) {
+                const dir: º.MoveDirection = parseInt(btn.getAttribute('data-movehow') ?? '')
+                btn.disabled = !it.canvas.panelSnapTo(it.selPanelIdx!, dir, true)
+                btn.onclick = (evt) =>
+                    it.canvas.panelSnapTo(it.selPanelIdx!, dir)
+            }
 
             it.dom.style.display = 'block'
         },

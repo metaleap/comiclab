@@ -127,8 +127,8 @@ function createGui() {
         html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
             ˍ.top_toolbar_mpos_text = html.span({}, " ")),
     )
-    ˍ.panel_widget = ctl_panelwidget.create('page_editor_panel_toolbar', onUserModifiedPanel, dbg)
     createPageCanvas()
+    ˍ.panel_widget = ctl_panelwidget.create('page_editor_panel_toolbar', ˍ.page_canvas, onUserModifiedPanel, dbg)
     document.onkeydown = (evt: KeyboardEvent) => {
         switch (evt.key) {
             case 'Escape':
