@@ -98,15 +98,15 @@ function createGui() {
     ˍ.menu_panel_grid = html.select({
         'class': 'placeholder',
         'onchange': () => {
-            const [rows_first, num_rows, num_cols] = JSON.parse(ˍ.menu_panel_grid.value) as number[]
-            ˍ.page_canvas.addNewPanelGrid(num_rows, num_cols, (rows_first === 1))
+            ˍ.menu_panel_grid.blur()
+            const [num_rows, num_cols] = JSON.parse(ˍ.menu_panel_grid.value) as number[]
+            ˍ.menu_panel_grid.selectedIndex = 0
+            ˍ.page_canvas.addNewPanelGrid(num_rows, num_cols)
         }
     }, html.option({ 'value': '', 'class': 'placeholder' }, '(Add new page-sized full panel grid...)'),
-        [true, false].flatMap((rowsFirst) => [3, 4, 2, 1, 5].flatMap((numRows) => [2, 3, 1, 4, 5].flatMap((numCols) =>
-            rowsFirst
-                ? html.option({ 'value': `${JSON.stringify([1, numRows, numCols])}` }, `${numRows} row(s), ${numCols} column(s)`)
-                : html.option({ 'value': `${JSON.stringify([0, numRows, numCols])}` }, `${numCols} column/s, ${numRows} row(s)`)
-        ))),
+        [3, 4, 2, 5, 1].flatMap((numRows) => [2, 3, 1, 4, 5].flatMap((numCols) =>
+            html.option({ 'value': `${JSON.stringify([numRows, numCols])}` }, `${numRows} row(s), ${numCols} column(s)`),
+        )),
     )
     ˍ.top_toolbar = html.div({ 'id': 'page_editor_top_toolbar', 'class': 'page-editor-top-toolbar', 'tabindex': -1 },
         html.div({ 'id': 'page_editor_top_toolbar_zoom', 'class': 'page-editor-top-toolbar-block' },

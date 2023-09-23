@@ -10,7 +10,7 @@ export type PageCanvas = {
     xMm?: number,
     yMm?: number,
     addNewPanel: () => void,
-    addNewPanelGrid: (numRows: number, numCols: number, rowsFirst: boolean) => void,
+    addNewPanelGrid: (numRows: number, numCols: number) => void,
     panelSelect: (evt?: Event, panelIdx?: number) => void,
     panelReorder: (panelIdx: number, direction: º.MoveDirection) => void
 }
@@ -39,8 +39,12 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
             page.panels.push({ x: mx, y: my, w: 100, h: 100, round: 0 })
             onUserModified(page, page.panels.length - 1, true)
         },
-        addNewPanelGrid: (numRows: number, numCols: number, rowsFirst: boolean) => {
-
+        addNewPanelGrid: (numRows: number, numCols: number) => {
+            const wcols = page_size.wMm / numCols, hrows = page_size.hMm / numRows
+            for (let r = 0; r < numRows; r++)
+                for (let c = 0; c < numCols; c++)
+                    page.panels.push({ round: 0, w: wcols, h: hrows, x: c * wcols, y: r * hrows })
+            onUserModified(page, undefined, true)
         },
     }
 

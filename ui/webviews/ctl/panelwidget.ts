@@ -27,10 +27,10 @@ export function create(domId: string, onUserModified: (page: º.Page, pIdx?: num
         btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to front`, 'style': cssIcon('fold-up'), 'disabled': true, }),
         btn_move_next: html.button({ 'class': 'btn', 'title': `Bring forward`, 'style': cssIcon('chevron-up'), 'data-movehow': 1, 'disabled': true, }),
         btn_move_prev: html.button({ 'class': 'btn', 'title': `Send backward`, 'style': cssIcon('chevron-down'), 'data-movehow': -1, 'disabled': true, }),
-        btn_snap_down: html.button({ 'class': 'btn', 'title': `Snap down`, 'style': cssIcon('triangle-down'), 'data-movehow': 0, 'disabled': true, }),
-        btn_snap_up: html.button({ 'class': 'btn', 'title': `Snap up`, 'style': cssIcon('triangle-up'), 'disabled': true, }),
-        btn_snap_right: html.button({ 'class': 'btn', 'title': `Snap right`, 'style': cssIcon('triangle-right'), 'data-movehow': 1, 'disabled': true, }),
-        btn_snap_left: html.button({ 'class': 'btn', 'title': `Snap left`, 'style': cssIcon('triangle-left'), 'data-movehow': -1, 'disabled': true, }),
+        btn_snap_down: html.button({ 'class': 'btn', 'title': `Snap downwards`, 'style': cssIcon('triangle-down'), 'data-movehow': 0, 'disabled': true, }),
+        btn_snap_up: html.button({ 'class': 'btn', 'title': `Snap upwards`, 'style': cssIcon('triangle-up'), 'disabled': true, }),
+        btn_snap_right: html.button({ 'class': 'btn', 'title': `Snap rightwards`, 'style': cssIcon('triangle-right'), 'data-movehow': 1, 'disabled': true, }),
+        btn_snap_left: html.button({ 'class': 'btn', 'title': `Snap leftwards`, 'style': cssIcon('triangle-left'), 'data-movehow': -1, 'disabled': true, }),
     }
     const it: PanelWidget = {
         dom: html.div({ 'id': domId, 'class': 'page-editor-top-toolbar', 'style': 'display:none' },
