@@ -97,22 +97,22 @@ function cmdRename(...args: any[]): any {
 function cmdMoveUp(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
     if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
-        treeColls.move(treeItem, º.DirLeft)
+        treeColls.move(treeItem, º.DirPrev)
 }
 function cmdMoveDn(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
     if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
-        treeColls.move(treeItem, º.DirRight)
+        treeColls.move(treeItem, º.DirNext)
 }
 function cmdMoveTop(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
     if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
-        treeColls.move(treeItem, º.DirUp)
+        treeColls.move(treeItem, º.DirStart)
 }
 function cmdMoveEnd(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
     if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
-        treeColls.move(treeItem, º.DirDown)
+        treeColls.move(treeItem, º.DirEnd)
 }
 function cmdMoveTo(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem

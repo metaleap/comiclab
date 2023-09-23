@@ -140,7 +140,7 @@ function createGui() {
                     zoomSet(zoomGet() + (5 * ((evt.key == '+') ? 1 : -1)))
                 } else if (evt.altKey && ˍ.page_canvas.selPanelIdx !== undefined) {
                     evt.preventDefault()
-                    ˍ.page_canvas.panelReorder(ˍ.page_canvas.selPanelIdx, (evt.key == '+') ? º.DirDown : º.DirUp)
+                    ˍ.page_canvas.panelReorder(ˍ.page_canvas.selPanelIdx, (evt.key == '+') ? º.DirEnd : º.DirStart)
                 }
                 break
         }

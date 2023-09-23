@@ -17,13 +17,13 @@ export type PanelEdgeBar = {
     buttons: HTMLButtonElement[],
     page?: º.Page,
     selPanelIdx?: number,
-    edge: º.MoveDirection,
+    edge: º.Direction,
 }
 
-export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, edge: º.MoveDirection): PanelEdgeBar {
+export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, edge: º.Direction): PanelEdgeBar {
     const dom = html.div({ 'title': edge, 'id': domId, 'class': 'page-editor-panel-edgebar' })
     const buttons: Button[] = []
-    if ((edge === º.DirLeft) || (edge === º.DirRight))
+    if ((edge === º.DirPrev) || (edge === º.DirNext))
         buttons.push({ codicon: 'triangle-left', title: 'Snap leftwards', onClick: () => { } }, { codicon: 'triangle-right', title: 'Snap rightwards', onClick: () => { } })
     else
         buttons.push({ codicon: 'triangle-up', title: 'Snap upwards', onClick: () => { } }, { codicon: 'triangle-down', title: 'Snap downwards', onClick: () => { } })

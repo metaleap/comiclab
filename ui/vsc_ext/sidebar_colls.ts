@@ -45,10 +45,10 @@ export class TreeColls extends sidebar.TreeDataProvider {
         } as vs.TreeItem)))
         for (const treeNode of ret) {
             const dict: { [_: string]: boolean } = {
-                'canMoveUp_': this.move(treeNode, º.DirLeft, true),
-                'canMoveDn_': this.move(treeNode, º.DirRight, true),
-                'canMoveTop_': this.move(treeNode, º.DirUp, true),
-                'canMoveEnd_': this.move(treeNode, º.DirDown, true),
+                'canMoveUp_': this.move(treeNode, º.DirPrev, true),
+                'canMoveDn_': this.move(treeNode, º.DirNext, true),
+                'canMoveTop_': this.move(treeNode, º.DirStart, true),
+                'canMoveEnd_': this.move(treeNode, º.DirEnd, true),
                 'canMoveTo_': (this.relocate(treeNode, true).length > 0),
             }
             for (const k in dict)
@@ -191,7 +191,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
         return new_parent_candidates
     }
 
-    move(treeNode: vs.TreeItem, direction: º.MoveDirection, dontDoIt?: boolean): boolean {
+    move(treeNode: vs.TreeItem, direction: º.Direction, dontDoIt?: boolean): boolean {
         let can_move: boolean = false
         const coll = (sidebar.treeNodeCat(treeNode) == 'coll') ? collFromNodeId(treeNode.id as string) : undefined
         const page = (sidebar.treeNodeCat(treeNode) == 'page') ? pageFromNodeId(treeNode.id as string) : undefined

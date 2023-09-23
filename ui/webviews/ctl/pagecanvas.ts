@@ -12,15 +12,15 @@ export type PageCanvas = {
     addNewPanel: () => void,
     addNewPanelGrid: (numRows: number, numCols: number) => void,
     panelSelect: (evt?: Event, panelIdx?: number) => void,
-    panelReorder: (panelIdx: number, direction: º.MoveDirection, dontDoIt?: boolean) => boolean
-    panelSnapTo: (panelIdx: number, direction: º.MoveDirection, dontDoIt?: boolean) => boolean,
+    panelReorder: (panelIdx: number, direction: º.Direction, dontDoIt?: boolean) => boolean
+    panelSnapTo: (panelIdx: number, direction: º.Direction, dontDoIt?: boolean) => boolean,
 }
 
 export function create(domId: string, page: º.Page, onPanelSelection: () => void, selPanelIdx: number | undefined, onUserModified: (page: º.Page, pIdx?: number, reRender?: boolean) => void, dbg: (...msg: any[]) => void): PageCanvas {
     const page_size = º.pageSizeMm(page)
     const it: PageCanvas = {
         selPanelIdx: selPanelIdx,
-        panelReorder: (panelIdx: number, direction: º.MoveDirection, dontDoIt?: boolean) => {
+        panelReorder: (panelIdx: number, direction: º.Direction, dontDoIt?: boolean) => {
             if (º.pageMovePanel(page, panelIdx, direction, dontDoIt)) {
                 if (!dontDoIt)
                     onUserModified(page, undefined, true)
@@ -51,7 +51,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                     page.panels.push({ round: 0, w: wcols, h: hrows, x: c * wcols, y: r * hrows })
             onUserModified(page, undefined, true)
         },
-        panelSnapTo: (panelIdx: number, direction: º.MoveDirection, dontDoIt?: boolean) => {
+        panelSnapTo: (panelIdx: number, direction: º.Direction, dontDoIt?: boolean) => {
             const ydown_page = page_size.hMm, yup_page = 0, xleft_page = 0, xright_page = page_size.wMm
             let ydown = ydown_page, yup = yup_page, xleft = xleft_page, xright = xright_page
             const panel = page.panels[panelIdx]

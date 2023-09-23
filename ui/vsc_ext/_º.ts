@@ -158,13 +158,13 @@ export function pageSizeMm(page: Page): { wMm: number, hMm: number } {
     return { wMm: 0, hMm: 0 }
 }
 
-export type MoveDirection = 0 | 1 | -1 | typeof NaN
-export const DirLeft: MoveDirection = -1
-export const DirRight: MoveDirection = 1
-export const DirUp: MoveDirection = 0
-export const DirDown: MoveDirection = NaN
+export type Direction = 0 | 1 | -1 | typeof NaN
+export const DirPrev: Direction = -1
+export const DirNext: Direction = 1
+export const DirStart: Direction = 0
+export const DirEnd: Direction = NaN
 
-export function pageMovePanel(page: Page, panelIdx: number, direction: MoveDirection, dontDoIt?: boolean): boolean {
+export function pageMovePanel(page: Page, panelIdx: number, direction: Direction, dontDoIt?: boolean): boolean {
     const idx_new = arrayCanMove(page.panels, panelIdx, direction)
     const can_move = (idx_new !== undefined)
     if (can_move && !dontDoIt)
@@ -176,13 +176,13 @@ export function strPaperFormat(_: PaperFormat): string {
     return _ ? (_.widthMm + "×" + _.heightMm + " mm") : ''
 }
 
-export function arrayCanMove<T>(arr: T[], idxOld: number, direction: MoveDirection): number | undefined {
+export function arrayCanMove<T>(arr: T[], idxOld: number, direction: Direction): number | undefined {
     if (arr.length < 2)
         return undefined
     const idx_new =
-        (direction == DirLeft) ? (idxOld + 1)
-            : ((direction == DirRight) ? (idxOld - 1)
-                : ((direction == DirUp) ? 0
+        (direction == DirPrev) ? (idxOld - 1)
+            : ((direction == DirNext) ? (idxOld + 1)
+                : ((direction == DirStart) ? 0
                     : (arr.length - 1)))
     const can_move = (idx_new != idxOld) && (idx_new >= 0) && (idx_new < arr.length)
     return can_move ? idx_new : undefined

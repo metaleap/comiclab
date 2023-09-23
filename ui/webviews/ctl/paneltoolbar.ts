@@ -25,10 +25,10 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
         input_pos_y: html.input({ 'type': 'number', 'step': '0.1' }),
         input_round: html.input({ 'type': 'number', 'step': 0.01, min: 0, max: 1 }),
         label_delete_prompt: html.span({ 'style': 'display:none' }, 'Sure to ', html.a({ 'onclick': () => it.deletePanel() }, ' delete '), ' this panel?'),
-        btn_move_first: html.button({ 'class': 'btn', 'title': `Send to back`, 'style': utils.codiconCss('fold-down'), 'data-movehow': º.DirUp, 'disabled': true, }),
-        btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to front`, 'style': utils.codiconCss('fold-up'), 'data-movehow': º.DirDown, 'disabled': true, }),
-        btn_move_next: html.button({ 'class': 'btn', 'title': `Bring forward`, 'style': utils.codiconCss('chevron-up'), 'data-movehow': º.DirRight, 'disabled': true, }),
-        btn_move_prev: html.button({ 'class': 'btn', 'title': `Send backward`, 'style': utils.codiconCss('chevron-down'), 'data-movehow': º.DirLeft, 'disabled': true, }),
+        btn_move_first: html.button({ 'class': 'btn', 'title': `Send to back`, 'style': utils.codiconCss('fold-down'), 'data-movehow': º.DirStart, 'disabled': true, }),
+        btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to front`, 'style': utils.codiconCss('fold-up'), 'data-movehow': º.DirEnd, 'disabled': true, }),
+        btn_move_next: html.button({ 'class': 'btn', 'title': `Bring forward`, 'style': utils.codiconCss('chevron-up'), 'data-movehow': º.DirNext, 'disabled': true, }),
+        btn_move_prev: html.button({ 'class': 'btn', 'title': `Send backward`, 'style': utils.codiconCss('chevron-down'), 'data-movehow': º.DirPrev, 'disabled': true, }),
     }
     const it: PanelToolbar = {
         canvas: pageCanvas,
@@ -85,7 +85,7 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
                         it.onUserModifiedSizeOrPosViaInputs(evt, page)
                 }
             for (const btn of [ˍ.btn_move_first, ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev]) {
-                const dir: º.MoveDirection = parseInt(btn.getAttribute('data-movehow') ?? '')
+                const dir: º.Direction = parseInt(btn.getAttribute('data-movehow') ?? '')
                 btn.disabled = !it.canvas.panelReorder(it.selPanelIdx!, dir, true)
                 btn.onclick = (evt) =>
                     it.canvas.panelReorder(it.selPanelIdx!, dir)
