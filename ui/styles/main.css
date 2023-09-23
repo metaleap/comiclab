@@ -13,6 +13,14 @@ a,
     visibility: hidden;
 }
 
+.placeholder {
+    color: var(--vscode-input-placeholderForeground);
+}
+
+select option:not([value='']) {
+    color: var(--vscode-inputOption-activeForeground) !important;
+}
+
 button.btn {
     display: inline-block;
     outline: none;

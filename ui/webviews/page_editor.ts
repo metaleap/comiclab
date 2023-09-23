@@ -105,6 +105,21 @@ function createGui() {
             html.button({ 'class': 'btn', 'title': `View size (${((page_size.wMm / 1.5) / 10).toFixed(1)} × ${((page_size.hMm / 1.5) / 10).toFixed(1)} cm)`, 'style': cssIcon('preview'), 'onclick': () => zoomSet(orig_size_zoom_percent / 1.5) }),
             html.button({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('screen-normal'), 'onclick': () => zoomSet() }),
         ),
+        html.div({ 'class': 'page-editor-top-toolbar-block', },
+            html.select({
+                'class': 'placeholder',
+                'onchange': () => {
+                    utils.alert('this.value')
+                }
+            },
+                html.option({ 'value': '', 'class': 'placeholder' }, '(Add new panel grid...)'),
+                [true, false].flatMap((rowsFirst) => [3, 4, 2, 1, 0, 5].flatMap((numRows) => [2, 3, 0, 1, 4, 5].flatMap((numCols) =>
+                    rowsFirst
+                        ? html.option({ 'value': `R${numRows}C${numCols}` }, `${numRows} row(s), ${numCols} column(s)`)
+                        : html.option({ 'value': `C${numCols}R${numRows}` }, `${numCols} column/s, ${numRows} row(s)`)
+                ))),
+            ),
+        ),
         html.div({ 'id': 'page_editor_top_toolbar_dbg', 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
             ˍ.top_toolbar_dbg = html.span({}, "...")),
         html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
@@ -112,7 +127,6 @@ function createGui() {
     )
     ˍ.panel_widget = ctl_panelwidget.create('page_editor_panel_toolbar', onUserModifiedPanel, dbg)
     createPageCanvas()
-
     document.onkeydown = (evt: KeyboardEvent) => {
         switch (evt.key) {
             case 'Escape':
