@@ -17,6 +17,7 @@ a.btn {
     display: inline-block;
     text-decoration: none !important;
     margin: 0;
+    margin-top: 0.11em;
     padding: 0;
     margin-left: 0.44em;
     margin-right: 0.44em;
@@ -166,40 +167,45 @@ body>div#page_editor_main>svg#page_editor_canvas:not(:has(rect.panel-selected))>
     opacity: 1.0;
 }
 
-body>.page-editor-top-toolbar {
+body>div.page-editor-top-toolbar {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     box-shadow: 0 0 0.44em 0 #000;
-    padding: 0.22em 0.44em;
+    padding: 0 0.44em;
+    white-space: nowrap;
     overflow: hidden;
 }
 
-body>.page-editor-top-toolbar a {
+body>div.page-editor-top-toolbar a {
     text-decoration: underline;
 }
 
-body>#page_editor_top_toolbar {
+body>div#page_editor_top_toolbar {
     top: 0;
     background-color: var(--vscode-tab-activeBackground);
-    height: 1.88em;
-    max-height: 1.88em;
+    height: 2em;
 }
 
-body>#page_editor_top_toolbar>div.page-editor-top-toolbar-block {
+body>div.page-editor-top-toolbar>div.page-editor-top-toolbar-block {
     display: inline-block;
     white-space: nowrap;
-    border-right: 1px solid var(--vscode-tab-inactiveForeground);
+    overflow: hidden;
+    vertical-align: middle;
     padding-left: 0.22em;
     padding-right: 0.22em;
+    margin-top: 0.22em;
 }
 
-body>#page_editor_top_toolbar>div.page-editor-top-toolbar-block>* {
+body>div.page-editor-top-toolbar>div.page-editor-top-toolbar-block>* {
+    display: inline-block;
     vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
-body>#page_editor_top_toolbar>div.page-editor-top-toolbar-block-right {
+body>div.page-editor-top-toolbar>div.page-editor-top-toolbar-block-right {
     float: right;
 }
 
@@ -208,16 +214,19 @@ body>#page_editor_top_toolbar>#page_editor_top_toolbar_dbg {
 }
 
 body>div#page_editor_panel_toolbar {
-    padding-top: 2.44em;
+    padding-top: 2.55em;
     padding-bottom: 0.44em;
     background-color: var(--vscode-sideBar-background);
+    height: 4.44em;
+    font-size: 0.88em;
 }
 
-body>div#page_editor_panel_toolbar>span {
-    display: inline-block;
+body>div#page_editor_panel_toolbar>div.page-editor-top-toolbar-block,
+body>div#page_editor_panel_toolbar>div.page-editor-top-toolbar-block>* {
+    vertical-align: bottom;
 }
 
-body>div#page_editor_panel_toolbar>span>input {
+body>div#page_editor_panel_toolbar>div.page-editor-top-toolbar-block>input {
     text-align: right;
     width: 3.11em;
     margin: 0;

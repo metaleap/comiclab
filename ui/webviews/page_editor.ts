@@ -88,8 +88,6 @@ function createGui() {
     const orig_size_zoom_percent: number = (utils.vscCfg && utils.vscCfg['pageEditorDefaultZoom']) ? (utils.vscCfg['pageEditorDefaultZoom'] as number) : 122.5
     const page_size = º.pageSizeMm(page)
     ˍ.top_toolbar = html.div({ 'id': 'page_editor_top_toolbar', 'class': 'page-editor-top-toolbar', 'tabindex': -1 },
-        html.div({ 'id': 'page_editor_top_toolbar_dbg', 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' }, ˍ.top_toolbar_dbg = html.span({}, "Debug info here")),
-        html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' }, ˍ.top_toolbar_mpos_text = html.span({}, " ")),
         html.div({ 'id': 'page_editor_top_toolbar_zoom', 'class': 'page-editor-top-toolbar-block' },
             ˍ.top_toolbar_zoom_input = html.input({
                 'type': 'range', 'min': zoomMin, 'max': zoomMax, 'step': '0.5', 'value': orig_size_zoom_percent, 'onchange': (evt) =>
@@ -100,6 +98,10 @@ function createGui() {
             html.a({ 'class': 'btn', 'title': `View size (${((page_size.wMm / 1.5) / 10).toFixed(1)} × ${((page_size.hMm / 1.5) / 10).toFixed(1)} cm)`, 'style': cssIcon('preview'), 'onclick': () => zoomSet(orig_size_zoom_percent / 1.5) }),
             html.a({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('screen-normal'), 'onclick': () => zoomSet() }),
         ),
+        html.div({ 'id': 'page_editor_top_toolbar_dbg', 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
+            ˍ.top_toolbar_dbg = html.span({}, "...")),
+        html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
+            ˍ.top_toolbar_mpos_text = html.span({}, " ")),
     )
     ˍ.panel_widget = ctl_panelwidget.create('page_editor_panel_toolbar', onUserModifiedPanel, dbg)
     createPageCanvas()
@@ -117,7 +119,18 @@ function createGui() {
         }
     }
     ˍ.main = html.div({
-        'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`, 'onclick': (evt) => {
+        'id': 'page_editor_main', 'style': `zoom: ${orig_size_zoom_percent}%;`,
+        'onmousedown': (evt: MouseEvent) => {
+            if (evt.button === 1) {
+                evt.preventDefault()
+                ˍ.page_canvas.dom?.focus()
+                ˍ.page_canvas.panelSelect(evt)
+            }
+        },
+        'onauxclick': (evt: MouseEvent) => {
+            dbg("OA", evt.button, new Date().getTime(), evt.buttons, evt.detail)
+        },
+        'onclick': (evt: MouseEvent) => {
             ˍ.page_canvas.panelSelect(evt)
         },
         'onwheel': (evt: WheelEvent) => {
@@ -129,11 +142,14 @@ function createGui() {
                 posX(posX() + (evt.deltaX * -0.1))
             }
         },
+        'onmouseout': (evt: Event) => {
+            ˍ.top_toolbar_mpos_text.innerHTML = 'Add panel: <i>mid-click</i>. — Add balloon: <i>shift+mid-click</i>.'
+        },
         'onmousemove': (evt: MouseEvent) => {
             const zoom = zoomGet()
             const xptr = ((100 / zoom) * evt.clientX) - posX(), yptr = ((100 / zoom) * evt.clientY) - posY()
             const xfac = xptr / ˍ.page_canvas.dom!.clientWidth, yfac = yptr / ˍ.page_canvas.dom!.clientHeight
-            ˍ.top_toolbar_mpos_text.innerText = `X:${(page_size.wMm * xfac * 0.1).toFixed(1)}cm , Y:${(page_size.hMm * yfac * 0.1).toFixed(1)}cm`
+            ˍ.top_toolbar_mpos_text.innerText = `X: ${(page_size.wMm * xfac * 0.1).toFixed(1)} , Y:${(page_size.hMm * yfac * 0.1).toFixed(1)}`
         },
         // 'ondragstart': (evt: DragEvent) => {
         //     console.log(evt)

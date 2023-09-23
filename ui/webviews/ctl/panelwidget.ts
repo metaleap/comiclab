@@ -16,7 +16,7 @@ export type PanelWidget = {
 
 export function create(domId: string, onUserModified: (page: º.Page, pIdx?: number) => void, dbg: (...msg: any[]) => void): PanelWidget {
     const ˍ = {
-        label_panel_idx: html.span({ 'style': 'font-weight: bold' }, 'Panel #? / ?'),
+        label_panel_idx: html.b({}, 'Panel #? / ?'),
         input_width: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1' }),
         input_height: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1' }),
         input_pos_x: html.input({ 'type': 'number', 'step': '0.1' }),
@@ -26,12 +26,11 @@ export function create(domId: string, onUserModified: (page: º.Page, pIdx?: num
     }
     const it: PanelWidget = {
         dom: html.div({ 'id': domId, 'class': 'page-editor-top-toolbar', 'style': 'display:none' },
-            ˍ.label_panel_idx,
-            html.span({},
-                ' — X=', ˍ.input_pos_x, 'cm — Y=', ˍ.input_pos_y, 'cm — W=', ˍ.input_width, 'cm — H=', ˍ.input_height, 'cm',
-                ' — roundness=', ˍ.input_round,
+            html.div({ 'class': 'page-editor-top-toolbar-block' }, ˍ.label_panel_idx),
+            html.div({ 'class': 'page-editor-top-toolbar-block' },
+                ' — X,Y=', ˍ.input_pos_x, ',', ˍ.input_pos_y, ' — W,H=', ˍ.input_width, ',', ˍ.input_height, ' — roundness=', ˍ.input_round,
             ),
-            html.span({ 'style': 'float: right' },
+            html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
                 html.a({ 'class': 'btn', 'title': `Delete panel`, 'style': cssIcon('trash'), 'onclick': () => it.toggleDeletePrompt(true) }),
                 ˍ.label_delete_prompt,
             )
