@@ -23,16 +23,26 @@ export function create(domId: string, onUserModified: (page: º.Page, pIdx?: num
         input_pos_y: html.input({ 'type': 'number', 'step': '0.1' }),
         input_round: html.input({ 'type': 'number', 'step': 0.01, min: 0, max: 1 }),
         label_delete_prompt: html.span({ 'style': 'display:none' }, 'Sure to ', html.a({ 'onclick': () => it.deletePanel() }, ' delete '), ' this panel?'),
+        btn_move_first: html.button({ 'class': 'btn', 'title': `Send to Back`, 'style': cssIcon('fold-up'), 'data-movehow': 0, 'disabled': true, }),
+        btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to Front`, 'style': cssIcon('fold-down'), 'disabled': true, }),
+        btn_move_next: html.button({ 'class': 'btn', 'title': `Bring Forward`, 'style': cssIcon('chevron-down'), 'data-movehow': 1, 'disabled': true, }),
+        btn_move_prev: html.button({ 'class': 'btn', 'title': `Send Backward`, 'style': cssIcon('chevron-up'), 'data-movehow': -1, 'disabled': true, }),
     }
     const it: PanelWidget = {
         dom: html.div({ 'id': domId, 'class': 'page-editor-top-toolbar', 'style': 'display:none' },
             html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
-                html.a({ 'class': 'btn', 'title': `Delete panel`, 'style': cssIcon('trash'), 'onclick': () => it.toggleDeletePrompt(true) }),
+                html.button({ 'class': 'btn', 'title': `Delete panel`, 'style': cssIcon('trash'), 'onclick': () => it.toggleDeletePrompt(true) }),
                 ˍ.label_delete_prompt,
             ),
             html.div({ 'class': 'page-editor-top-toolbar-block' },
                 ˍ.label_panel_idx,
                 ' — X,Y=', ˍ.input_pos_x, ',', ˍ.input_pos_y, ' — W,H=', ˍ.input_width, ',', ˍ.input_height, ' — roundness=', ˍ.input_round,
+            ),
+            html.div({ 'class': 'page-editor-top-toolbar-block' },
+                ˍ.btn_move_last,
+                ˍ.btn_move_next,
+                ˍ.btn_move_prev,
+                ˍ.btn_move_first,
             ),
         ),
         deletePanel: () => {
@@ -64,11 +74,21 @@ export function create(domId: string, onUserModified: (page: º.Page, pIdx?: num
             const panel = page.panels[it.selPanelIdx]
             ˍ.input_round.value = panel.round.toFixed(2)
             ˍ.input_width.value = (panel.w * 0.1).toFixed(1).padStart(4, '0')
-            { ˍ.input_height.value = (panel.h * 0.1).toFixed(1).padStart(4, '0') }
+            ˍ.input_height.value = (panel.h * 0.1).toFixed(1).padStart(4, '0')
             ˍ.input_pos_x.value = (panel.x * 0.1).toFixed(1).padStart(4, '0')
             ˍ.input_pos_y.value = (panel.y * 0.1).toFixed(1).padStart(4, '0')
             for (const input of [ˍ.input_height, ˍ.input_pos_x, ˍ.input_pos_y, ˍ.input_width, ˍ.input_round])
-                input.onchange = (evt) => it.onUserModifiedInsideWidget(evt, page)
+                input.onchange = (evt) =>
+                    it.onUserModifiedInsideWidget(evt, page)
+            for (const btn of [ˍ.btn_move_first, ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev])
+                btn.onclick = (evt) => {
+                    º.pageMovePanel(page, it.selPanelIdx!, parseInt(btn.getAttribute('data-movehow') ?? ''))
+                    it.onUserModifiedInsideWidget(evt, page)
+                }
+            ˍ.btn_move_prev.disabled = (page.panels.length <= 1) || (it.selPanelIdx === 0)
+            ˍ.btn_move_next.disabled = (page.panels.length <= 1) || (it.selPanelIdx === (page.panels.length - 1))
+            ˍ.btn_move_first.disabled = ˍ.btn_move_prev.disabled
+            ˍ.btn_move_last.disabled = ˍ.btn_move_next.disabled
 
             it.dom.style.display = 'block'
         },

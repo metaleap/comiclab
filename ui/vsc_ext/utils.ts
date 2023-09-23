@@ -31,13 +31,6 @@ export function alert(msg: any, detail?: string) {
     vs.window.showWarningMessage(msg ? msg.toString() : JSON.stringify(msg), { detail: detail, modal: true })
 }
 
-export function arrayMoveItem<T>(arr: T[], idxOld: number, idxNew: number): T[] {
-    const item = arr[idxOld]
-    arr.splice(idxOld, 1)
-    arr.splice(idxNew, 0, item)
-    return arr
-}
-
 export function extPath(...pathSegments: string[]) {
     return vs.Uri.joinPath(extUri, ...pathSegments)
 }

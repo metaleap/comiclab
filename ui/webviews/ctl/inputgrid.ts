@@ -62,8 +62,8 @@ export function create(domId: string, fields: Field[], onDataUserModified: RecsF
         add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, htmlInput(true, domId, '', field, () => { }, undefined, htmlInputDefaultPlaceholder(field, true))))
     }
     ths_and_lists.push(html.th({ 'class': 'inputgrid-header' }, ' '))
-    add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, html.a(
-        { 'onclick': recAdd, 'class': 'btn btn-plus inputgrid-cell', alt: "Add", title: "Add", href: '' })))
+    add_rec_tds.push(html.td({ 'class': 'inputgrid-cell' }, html.button(
+        { 'onclick': recAdd, 'class': 'btn btn-plus inputgrid-cell', alt: "Add", title: "Add" })))
 
     const table = html.table({ 'class': 'inputgrid', 'id': domId },
         html.tr({ 'class': 'inputgrid-header' }, ...ths_and_lists),
@@ -87,8 +87,8 @@ export function create(domId: string, fields: Field[], onDataUserModified: RecsF
                     const cell_tds: ChildDom[] = []
                     for (const field of fields)
                         cell_tds.push(html.td({ 'class': 'inputgrid-cell' }, htmlInput(false, domId, rec.id, field, () => { recInput(rec.id, field) }, undefined, htmlInputDefaultPlaceholder(field, false))))
-                    cell_tds.push(html.td({ 'class': 'inputgrid-cell' }, html.a(
-                        { 'onclick': () => recDel(rec.id), 'class': 'btn btn-minus inputgrid-cell', 'data-rec-id': rec.id, alt: "Delete", title: "Delete", href: '' })))
+                    cell_tds.push(html.td({ 'class': 'inputgrid-cell' }, html.button(
+                        { 'onclick': () => recDel(rec.id), 'class': 'btn btn-minus inputgrid-c-minusell', 'data-rec-id': rec.id, alt: "Delete", title: "Delete" })))
                     van.add(rec_tr, ...cell_tds)
                     new_rec_trs.push(rec_tr)
                 }

@@ -13,8 +13,9 @@ a,
     visibility: hidden;
 }
 
-a.btn {
+button.btn {
     display: inline-block;
+    outline: none;
     text-decoration: none !important;
     margin: 0;
     margin-top: 0.11em;
@@ -23,18 +24,24 @@ a.btn {
     margin-right: 0.44em;
     width: 1.23em;
     height: 1.23em;
+    background: none;
     background-repeat: no-repeat;
     background-position: center center;
     background-size: contain;
     vertical-align: middle;
 }
 
-a.btn-plus {
-    background-image: url('../../node_modules/@vscode/codicons/src/icons/diff-added.svg')
+button.btn:disabled {
+    cursor: default;
+    opacity: 0.44;
 }
 
-a.btn-minus {
-    background-image: url('../../node_modules/@vscode/codicons/src/icons/diff-removed.svg')
+button.btn-plus {
+    background-image: url('../../node_modules/@vscode/codicons/src/icons/diff-added.svg');
+}
+
+button.btn-minus {
+    background-image: url('../../node_modules/@vscode/codicons/src/icons/diff-removed.svg');
 }
 
 div.tab-container {

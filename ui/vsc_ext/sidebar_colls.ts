@@ -191,7 +191,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
         return new_parent_candidates
     }
 
-    move(treeNode: vs.TreeItem, direction: number, dontDoIt?: boolean): boolean {
+    move(treeNode: vs.TreeItem, direction: º.MoveHow, dontDoIt?: boolean): boolean {
         let can_move: boolean = false
         const coll = (sidebar.treeNodeCat(treeNode) == 'coll') ? collFromNodeId(treeNode.id as string) : undefined
         const page = (sidebar.treeNodeCat(treeNode) == 'page') ? pageFromNodeId(treeNode.id as string) : undefined
@@ -209,9 +209,9 @@ export class TreeColls extends sidebar.TreeDataProvider {
             can_move = (idx_new != idx_cur) && (idx_new >= 0) && (idx_new < arr.length)
             if (can_move && !dontDoIt) {
                 if (coll && coll_parent && coll_parent.collections)
-                    coll_parent.collections = utils.arrayMoveItem(coll_parent.collections, idx_cur, idx_new)
+                    coll_parent.collections = º.arrayMoveItemTo(coll_parent.collections, idx_cur, idx_new)
                 else if (page && page_parent && page_parent.pages)
-                    page_parent.pages = utils.arrayMoveItem(page_parent.pages, idx_cur, idx_new)
+                    page_parent.pages = º.arrayMoveItemTo(page_parent.pages, idx_cur, idx_new)
                 app.events.modifiedProj.now(º.appState.proj)
             }
         }
