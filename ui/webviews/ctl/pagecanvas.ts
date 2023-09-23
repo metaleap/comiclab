@@ -10,17 +10,22 @@ export type PageCanvas = {
     xMm?: number,
     yMm?: number,
     addNewPanel: () => void,
-    panelSelect: (evt?: Event, pIdx?: number) => void,
+    panelSelect: (evt?: Event, panelIdx?: number) => void,
+    panelReorder: (panelIdx: number, direction: º.MoveDirection) => void
 }
 
 export function create(domId: string, page: º.Page, onPanelSelection: () => void, selPanelIdx: number | undefined, onUserModified: (page: º.Page, pIdx?: number, reRender?: boolean) => void, dbg: (...msg: any[]) => void): PageCanvas {
     const page_size = º.pageSizeMm(page)
     const it: PageCanvas = {
         selPanelIdx: selPanelIdx,
-        panelSelect(evt: Event, pIdx?: number) {
+        panelReorder: (panelIdx: number, direction: º.MoveDirection) => {
+            if (º.pageMovePanel(page, panelIdx, direction))
+                onUserModified(page, undefined, true)
+        },
+        panelSelect(evt: Event, panelIdx?: number) {
             if (it.selPanelIdx !== undefined)
                 document.getElementById('panel_' + it.selPanelIdx)?.classList.remove('panel-selected')
-            it.selPanelIdx = pIdx
+            it.selPanelIdx = panelIdx
             if (it.selPanelIdx !== undefined) {
                 const dom = document.getElementById('panel_' + it.selPanelIdx)
                 dom?.classList.add('panel-selected')

@@ -60,7 +60,7 @@ function onMessage(evt: MessageEvent) {
                 º.appState.proj = msg.payload.proj
 
             const proj_page = º.pageFromPath(pagePath) as º.Page
-            const changed = (!page) || !º.deepEq(page, proj_page)
+            const changed = (!page) || !º.deepEq(page, proj_page, true)
             page = proj_page
             if (!ˍ.main)
                 createGui()
@@ -115,8 +115,14 @@ function createGui() {
                 break
             case '+':
             case '-':
-                evt.preventDefault()
-                zoomSet(zoomGet() + (5 * ((evt.key == '+') ? 1 : -1)))
+                console.log(ˍ.page_canvas.selPanelIdx, evt.shiftKey, evt.ctrlKey, evt.altKey, evt.metaKey)
+                if (!(evt.shiftKey || evt.ctrlKey || evt.altKey || evt.metaKey)) {
+                    evt.preventDefault()
+                    zoomSet(zoomGet() + (5 * ((evt.key == '+') ? 1 : -1)))
+                } else if (evt.altKey && ˍ.page_canvas.selPanelIdx !== undefined) {
+                    evt.preventDefault()
+                    ˍ.page_canvas.panelReorder(ˍ.page_canvas.selPanelIdx, (evt.key == '+') ? NaN : 0)
+                }
                 break
         }
     }

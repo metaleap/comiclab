@@ -84,10 +84,11 @@ export function create(domId: string, onUserModified: (page: º.Page, pIdx?: num
                     it.onUserModifiedInsideWidget(evt, page)
             for (const btn of [ˍ.btn_move_first, ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev])
                 btn.onclick = (evt) => {
-                    º.pageMovePanel(page, it.selPanelIdx!, parseInt(btn.getAttribute('data-movehow') ?? ''))
-                    it.selPanelIdx = undefined
-                    it.refresh(it.page!)
-                    it.onUserModifiedInsideWidget(evt, page)
+                    if (º.pageMovePanel(page, it.selPanelIdx!, parseInt(btn.getAttribute('data-movehow') ?? ''))) {
+                        it.selPanelIdx = undefined
+                        it.refresh(it.page!)
+                        it.onUserModifiedInsideWidget(evt, page)
+                    }
                 }
             ˍ.btn_move_prev.disabled = (page.panels.length <= 1) || (it.selPanelIdx === 0)
             ˍ.btn_move_next.disabled = (page.panels.length <= 1) || (it.selPanelIdx === (page.panels.length - 1))

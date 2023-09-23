@@ -160,10 +160,12 @@ export function pageSizeMm(page: Page): { wMm: number, hMm: number } {
 
 export type MoveDirection = 0 | 1 | -1 | typeof NaN
 
-export function pageMovePanel(page: Page, panelIdx: number, direction: MoveDirection) {
+export function pageMovePanel(page: Page, panelIdx: number, direction: MoveDirection): boolean {
     const idx_new = arrayCanMove(page.panels, panelIdx, direction)
-    if (idx_new !== undefined)
+    const can_move = (idx_new !== undefined)
+    if (can_move)
         page.panels = arrayMoveItem(page.panels, panelIdx, idx_new)
+    return can_move
 }
 
 export function strPaperFormat(_: PaperFormat): string {
