@@ -37,13 +37,16 @@ export abstract class WebviewPanel {
         if ((evt.cfg && this.targetsCfg) || (evt.proj && this.targetsProj))
             this.refreshTitle()
     }
-    onRefreshed(evt: app.StateEvent) {
+    onRefreshed(evt: app.StateEvent, isStartup?: boolean) {
         this.refreshTitle()
         if (this.webviewPanel && ((evt.cfg && this.targetsCfg) || (evt.proj && this.targetsProj))) {
             const msg = this.onRefreshedEventMessage(evt)
             if (msg)
-                this.webviewPanel.webview.postMessage(msg).then(() => { }, utils.alert)
-        }
+                this.webviewPanel.webview.postMessage(msg).then(() => { }, (fail) => utils.alert(fail))
+            else if (isStartup)
+                utils.alert("NEW BUG: no onRefreshedEventMessage() on base_editor init")
+        } else if (isStartup)
+            utils.alert("NEW BUG: no onRefreshedEventMessage() conditions on base_editor init")
     }
     abstract onRefreshedEventMessage(evt: app.StateEvent): any;
 
@@ -98,9 +101,7 @@ export abstract class WebviewPanel {
             }
             this.onDisposed()
         }))
-        setTimeout(() => {
-            on_refreshed({ proj: true, cfg: true, from: { reload: true } })
-        }, 345) // below 3xx was sometimes to soon..
+        this.onRefreshed({ proj: true, cfg: true, from: { reload: true } }, true)
     }
 
     close() {
