@@ -5,7 +5,7 @@ import * as ctl_pagecanvas from './pagecanvas.js'
 
 const html = van.tags
 
-export type PanelWidget = {
+export type PanelToolbar = {
     canvas: ctl_pagecanvas.PageCanvas,
     dom: HTMLElement,
     page?: º.Page,
@@ -13,10 +13,10 @@ export type PanelWidget = {
     toggleDeletePrompt: (visible: boolean) => void,
     deletePanel: () => void,
     refresh: (page: º.Page, panelIdx?: number) => void,
-    onUserModifiedInsideWidget: (evt: Event, page: º.Page) => any
+    onUserModifiedSizeOrPosViaInputs: (evt: Event, page: º.Page) => any
 }
 
-export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onUserModified: (page: º.Page, pIdx?: number) => void, dbg: (...msg: any[]) => void): PanelWidget {
+export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onUserModified: (page: º.Page, pIdx?: number) => void, dbg: (...msg: any[]) => void): PanelToolbar {
     const ˍ = {
         label_panel_idx: html.b({}, 'Panel #? / ?'),
         input_width: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1' }),
@@ -25,16 +25,16 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
         input_pos_y: html.input({ 'type': 'number', 'step': '0.1' }),
         input_round: html.input({ 'type': 'number', 'step': 0.01, min: 0, max: 1 }),
         label_delete_prompt: html.span({ 'style': 'display:none' }, 'Sure to ', html.a({ 'onclick': () => it.deletePanel() }, ' delete '), ' this panel?'),
-        btn_move_first: html.button({ 'class': 'btn', 'title': `Send to back`, 'style': cssIcon('fold-down'), 'data-movehow': 0, 'disabled': true, }),
-        btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to front`, 'style': cssIcon('fold-up'), 'disabled': true, }),
-        btn_move_next: html.button({ 'class': 'btn', 'title': `Bring forward`, 'style': cssIcon('chevron-up'), 'data-movehow': 1, 'disabled': true, }),
-        btn_move_prev: html.button({ 'class': 'btn', 'title': `Send backward`, 'style': cssIcon('chevron-down'), 'data-movehow': -1, 'disabled': true, }),
+        btn_move_first: html.button({ 'class': 'btn', 'title': `Send to back`, 'style': utils.codiconCss('fold-down'), 'data-movehow': º.DirUp, 'disabled': true, }),
+        btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to front`, 'style': utils.codiconCss('fold-up'), 'data-movehow': º.DirDown, 'disabled': true, }),
+        btn_move_next: html.button({ 'class': 'btn', 'title': `Bring forward`, 'style': utils.codiconCss('chevron-up'), 'data-movehow': º.DirRight, 'disabled': true, }),
+        btn_move_prev: html.button({ 'class': 'btn', 'title': `Send backward`, 'style': utils.codiconCss('chevron-down'), 'data-movehow': º.DirLeft, 'disabled': true, }),
     }
-    const it: PanelWidget = {
+    const it: PanelToolbar = {
         canvas: pageCanvas,
         dom: html.div({ 'id': domId, 'class': 'page-editor-top-toolbar', 'style': 'display:none' },
             html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
-                html.button({ 'class': 'btn', 'title': `Delete panel`, 'style': cssIcon('trash'), 'onclick': () => it.toggleDeletePrompt(true) }),
+                html.button({ 'class': 'btn', 'title': `Delete panel`, 'style': utils.codiconCss('trash'), 'onclick': () => it.toggleDeletePrompt(true) }),
                 ˍ.label_delete_prompt,
             ),
             html.div({ 'class': 'page-editor-top-toolbar-block' },
@@ -53,7 +53,7 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
         toggleDeletePrompt(visible: boolean) {
             ˍ.label_delete_prompt.style.display = visible ? 'inline-block' : 'none'
         },
-        onUserModifiedInsideWidget(evt: Event, page: º.Page) {
+        onUserModifiedSizeOrPosViaInputs(evt: Event, page: º.Page) {
             it.toggleDeletePrompt(false)
             if (it.selPanelIdx !== undefined) { // accounts for the move-to-front/send-to-back/etc `page.panels` array reorderings
                 const panel = page.panels[it.selPanelIdx]
@@ -82,7 +82,7 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
                     const input = inputs[prop_name] as HTMLInputElement
                     input.value = (panel[prop_name as 'x' | 'y' | 'w' | 'h'] * 0.1).toFixed(1).padStart(4, '0')
                     input.onchange = (evt) =>
-                        it.onUserModifiedInsideWidget(evt, page)
+                        it.onUserModifiedSizeOrPosViaInputs(evt, page)
                 }
             for (const btn of [ˍ.btn_move_first, ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev]) {
                 const dir: º.MoveDirection = parseInt(btn.getAttribute('data-movehow') ?? '')
@@ -95,8 +95,4 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
         },
     }
     return it
-}
-
-function cssIcon(name: string) {
-    return `background-image: url('${utils.codiconPath(name)}')`
 }

@@ -45,10 +45,10 @@ export class TreeColls extends sidebar.TreeDataProvider {
         } as vs.TreeItem)))
         for (const treeNode of ret) {
             const dict: { [_: string]: boolean } = {
-                'canMoveUp_': this.move(treeNode, -1, true),
-                'canMoveDn_': this.move(treeNode, 1, true),
-                'canMoveTop_': this.move(treeNode, 0, true),
-                'canMoveEnd_': this.move(treeNode, NaN, true),
+                'canMoveUp_': this.move(treeNode, º.DirLeft, true),
+                'canMoveDn_': this.move(treeNode, º.DirRight, true),
+                'canMoveTop_': this.move(treeNode, º.DirUp, true),
+                'canMoveEnd_': this.move(treeNode, º.DirDown, true),
                 'canMoveTo_': (this.relocate(treeNode, true).length > 0),
             }
             for (const k in dict)

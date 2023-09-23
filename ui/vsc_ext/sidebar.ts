@@ -1,5 +1,6 @@
 import * as vs from 'vscode'
 import * as utils from './utils'
+import * as º from './_º'
 import * as app from './app'
 
 
@@ -96,22 +97,22 @@ function cmdRename(...args: any[]): any {
 function cmdMoveUp(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
     if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
-        treeColls.move(treeItem, -1)
+        treeColls.move(treeItem, º.DirLeft)
 }
 function cmdMoveDn(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
     if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
-        treeColls.move(treeItem, 1)
+        treeColls.move(treeItem, º.DirRight)
 }
 function cmdMoveTop(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
     if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
-        treeColls.move(treeItem, 0)
+        treeColls.move(treeItem, º.DirUp)
 }
 function cmdMoveEnd(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem
     if (treeNodeCat(treeItem) == 'page' || treeNodeCat(treeItem) == 'coll')
-        treeColls.move(treeItem, NaN)
+        treeColls.move(treeItem, º.DirDown)
 }
 function cmdMoveTo(...args: any[]): any {
     const treeItem = args[0] as vs.TreeItem

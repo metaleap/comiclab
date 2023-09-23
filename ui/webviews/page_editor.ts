@@ -2,7 +2,7 @@ import van from './vanjs/van-1.2.1.js'
 import * as º from './_º.js'
 import * as utils from './utils.js'
 import * as ctl_pagecanvas from './ctl/pagecanvas.js'
-import * as ctl_panelwidget from './ctl/panelwidget.js'
+import * as ctl_paneltoolbar from './ctl/paneltoolbar.js'
 
 
 const html = van.tags
@@ -17,13 +17,12 @@ let vscCfg: object
 let ˍ: {
     main: HTMLDivElement,
     page_canvas: ctl_pagecanvas.PageCanvas,
-    panel_widget: ctl_panelwidget.PanelWidget,
-    top_toolbar: HTMLDivElement,
-    top_toolbar_dbg: HTMLSpanElement,
-    top_toolbar_mpos_text: HTMLSpanElement,
-    top_toolbar_zoom_input: HTMLInputElement,
+    top_toolbar: HTMLDivElement, top_toolbar_dbg_text: HTMLSpanElement, top_toolbar_mpos_text: HTMLSpanElement,
     top_toolbar_zoom_text: HTMLSpanElement,
-    menu_panel_grid: HTMLSelectElement,
+    top_toolbar_zoom_input: HTMLInputElement,
+    top_toolbar_menu_addpanelgrid: HTMLSelectElement,
+    panel_toolbar: ctl_paneltoolbar.PanelToolbar,
+    panelbar_left: HTMLDivElement,
 } = {} as any
 
 export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfgSettings: object, appState: º.AppState) {
@@ -38,7 +37,7 @@ function onUserModifiedPage(userModifiedPage: º.Page, panelIdx?: number, reRend
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
     if (reRender)
         reRenderPageCanvas(panelIdx)
-    ˍ.panel_widget.refresh(page, panelIdx)
+    ˍ.panel_toolbar.refresh(page, panelIdx)
     return page
 }
 function onUserModifiedPanel(userModifiedPage: º.Page, panelIdx?: number): º.Page {
@@ -49,7 +48,7 @@ function onUserModifiedPanel(userModifiedPage: º.Page, panelIdx?: number): º.P
 }
 
 function onPanelSelection() {
-    ˍ.panel_widget.refresh(page, ˍ.page_canvas.selPanelIdx)
+    ˍ.panel_toolbar.refresh(page, ˍ.page_canvas.selPanelIdx)
 }
 
 function onAppStateRefreshed(newAppState: º.AppState) {
@@ -64,7 +63,7 @@ function onAppStateRefreshed(newAppState: º.AppState) {
     if (!ˍ.main)
         createGui()
     else if (changed)
-        ˍ.panel_widget.refresh(page, reRenderPageCanvas(ˍ.page_canvas.selPanelIdx))
+        ˍ.panel_toolbar.refresh(page, reRenderPageCanvas(ˍ.page_canvas.selPanelIdx))
 }
 
 function onMessage(evt: MessageEvent) {
@@ -95,12 +94,12 @@ function createPageCanvas(panelIdx?: number) {
 function createGui() {
     const orig_size_zoom_percent: number = (utils.vscCfg && utils.vscCfg['pageEditorDefaultZoom']) ? (utils.vscCfg['pageEditorDefaultZoom'] as number) : 122.5
     const page_size = º.pageSizeMm(page)
-    ˍ.menu_panel_grid = html.select({
+    ˍ.top_toolbar_menu_addpanelgrid = html.select({
         'class': 'placeholder',
         'onchange': () => {
-            ˍ.menu_panel_grid.blur()
-            const [num_rows, num_cols] = JSON.parse(ˍ.menu_panel_grid.value) as number[]
-            ˍ.menu_panel_grid.selectedIndex = 0
+            ˍ.top_toolbar_menu_addpanelgrid.blur()
+            const [num_rows, num_cols] = JSON.parse(ˍ.top_toolbar_menu_addpanelgrid.value) as number[]
+            ˍ.top_toolbar_menu_addpanelgrid.selectedIndex = 0
             ˍ.page_canvas.addNewPanelGrid(num_rows, num_cols)
         }
     }, html.option({ 'value': '', 'class': 'placeholder' }, '(Add new page-sized full panel grid...)'),
@@ -115,24 +114,24 @@ function createGui() {
                     zoomSet(parseFloat(ˍ.top_toolbar_zoom_input.value))
             }),
             ˍ.top_toolbar_zoom_text = html.span({}, orig_size_zoom_percent + '%'),
-            html.button({ 'class': 'btn', 'title': `Original size (${page_size.wMm / 10} × ${page_size.hMm / 10} cm)`, 'style': cssIcon('screen-full'), 'onclick': () => zoomSet(orig_size_zoom_percent) }),
-            html.button({ 'class': 'btn', 'title': `View size (${((page_size.wMm / 1.5) / 10).toFixed(1)} × ${((page_size.hMm / 1.5) / 10).toFixed(1)} cm)`, 'style': cssIcon('preview'), 'onclick': () => zoomSet(orig_size_zoom_percent / 1.5) }),
-            html.button({ 'class': 'btn', 'title': 'Fit into canvas', 'style': cssIcon('screen-normal'), 'onclick': () => zoomSet() }),
+            html.button({ 'class': 'btn', 'title': `Original size (${page_size.wMm / 10} × ${page_size.hMm / 10} cm)`, 'style': utils.codiconCss('screen-full'), 'onclick': () => zoomSet(orig_size_zoom_percent) }),
+            html.button({ 'class': 'btn', 'title': `View size (${((page_size.wMm / 1.5) / 10).toFixed(1)} × ${((page_size.hMm / 1.5) / 10).toFixed(1)} cm)`, 'style': utils.codiconCss('preview'), 'onclick': () => zoomSet(orig_size_zoom_percent / 1.5) }),
+            html.button({ 'class': 'btn', 'title': 'Fit into canvas', 'style': utils.codiconCss('screen-normal'), 'onclick': () => zoomSet() }),
         ),
         html.div({ 'class': 'page-editor-top-toolbar-block', },
-            ˍ.menu_panel_grid,
+            ˍ.top_toolbar_menu_addpanelgrid,
         ),
         html.div({ 'id': 'page_editor_top_toolbar_dbg', 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
-            ˍ.top_toolbar_dbg = html.span({}, "...")),
+            ˍ.top_toolbar_dbg_text = html.span({}, "...")),
         html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
             ˍ.top_toolbar_mpos_text = html.span({}, " ")),
     )
     createPageCanvas()
-    ˍ.panel_widget = ctl_panelwidget.create('page_editor_panel_toolbar', ˍ.page_canvas, onUserModifiedPanel, dbg)
+    ˍ.panel_toolbar = ctl_paneltoolbar.create('page_editor_panel_toolbar', ˍ.page_canvas, onUserModifiedPanel, dbg)
     document.onkeydown = (evt: KeyboardEvent) => {
         switch (evt.key) {
             case 'Escape':
-                ˍ.panel_widget.toggleDeletePrompt(false)
+                ˍ.panel_toolbar.toggleDeletePrompt(false)
                 break
             case '+':
             case '-':
@@ -141,7 +140,7 @@ function createGui() {
                     zoomSet(zoomGet() + (5 * ((evt.key == '+') ? 1 : -1)))
                 } else if (evt.altKey && ˍ.page_canvas.selPanelIdx !== undefined) {
                     evt.preventDefault()
-                    ˍ.page_canvas.panelReorder(ˍ.page_canvas.selPanelIdx, (evt.key == '+') ? NaN : 0)
+                    ˍ.page_canvas.panelReorder(ˍ.page_canvas.selPanelIdx, (evt.key == '+') ? º.DirDown : º.DirUp)
                 }
                 break
         }
@@ -183,7 +182,7 @@ function createGui() {
             ˍ.top_toolbar_mpos_text.innerText = `X: ${(ˍ.page_canvas.xMm * 0.1).toFixed(1)} , Y:${(ˍ.page_canvas.yMm * 0.1).toFixed(1)}`
         },
     }, ˍ.page_canvas.dom)
-    van.add(document.body, ˍ.main, ˍ.panel_widget.dom, ˍ.top_toolbar)
+    van.add(document.body, ˍ.main, ˍ.panel_toolbar.dom, ˍ.top_toolbar)
     zoomSet()
 }
 
@@ -230,13 +229,9 @@ function zoomSet(newZoom?: number, mouse?: { x: number, y: number }) {
 }
 
 function dbg(...msg: any[]) {
-    ˍ.top_toolbar_dbg.innerText = msg.join("\u00A0\u00A0\u00A0\u00A0")
+    ˍ.top_toolbar_dbg_text.innerText = msg.join("\u00A0\u00A0\u00A0\u00A0")
 }
 
 function dom(id: string): HTMLElement {
     return document.getElementById(id) as HTMLElement
-}
-
-function cssIcon(name: string) {
-    return `background-image: url('${utils.codiconPath(name)}')`
 }

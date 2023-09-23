@@ -253,19 +253,32 @@ body>div#page_editor_panel_toolbar>div.page-editor-top-toolbar-block>input {
     padding: 0;
 }
 
-body>div.page-editor-panel-bar {
+body>div.page-editor-panel-edgebar {
     background-color: gold;
     display: inline-block;
     min-width: 1em;
     min-height: 1em;
+    vertical-align: middle;
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
-body>div#page_editor_panel_bar_left,
-body>div#page_editor_panel_bar_right {
-    width: 1em;
+body>div.page-editor-panel-edgebar>button.btn {
+    padding: 0;
+    margin: 0.1em;
+    width: 0.8em;
+    height: 0.8em;
+    border: 1px solid var(--vscode-tab-inactiveForeground);
+    background-color: lightblue;
 }
 
-body>div#page_editor_panel_bar_top,
-body>div#page_editor_panel_bar_bottom {
-    height: 1em;
+body>div#page_editor_panel_edgebar_left,
+body>div#page_editor_panel_edgebar_right {
+    max-width: 1em;
+}
+
+body>div#page_editor_panel_edgebar_top,
+body>div#page_editor_panel_edgebar_bottom {
+    max-height: 1em;
 }

@@ -16,6 +16,10 @@ export function onInit(vscode: { postMessage: (_: any) => any }, baseUri: string
     }
 }
 
+export function codiconCss(name: string) {
+    return `background-image: url('${codiconPath(name)}')`
+}
+
 export function codiconPath(name: string) {
     return extUri + '/node_modules/@vscode/codicons/src/icons/' + name + '.svg'
 }
