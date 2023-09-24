@@ -1,6 +1,6 @@
 
 export const appState: AppState = {
-    proj: { collections: [] },
+    proj: { collections: [], defaults: { content: {}, pages: {} } },
     config: { contentAuthoring: {} },
 }
 
@@ -14,7 +14,7 @@ export type Config = {
         authors?: { [id: string]: string },
         paperFormats?: { [id: string]: PaperFormat },
         languages?: { [id: string]: string },
-        contentFields?: { [id: string]: boolean },
+        customFields?: { [id: string]: boolean },
     },
 }
 
@@ -25,23 +25,34 @@ export type PaperFormat = {
 
 export type Proj = {
     collections: Collection[]
+    defaults: CollProps
 }
 
 export type Collection = {
     name: string,
     collections: Collection[],
     pages: Page[],
-    props: {
+    props: CollProps,
+}
+
+export type CollProps = {
+    content: {
         authorId?: string,
-        pageFormatId?: string,
-        contentFields?: { [id: string]: { [lang_id: string]: string } },
+        customFields?: { [id: string]: { [lang_id: string]: string } },
+    },
+    pages: {
+        paperFormatId?: string,
+        borderWidthMm?: number,
     },
 }
 
 export type Page = {
     name: string,
     panels: Panel[],
-    props: {},
+    props: PageProps,
+}
+
+export type PageProps = {
 }
 
 export type Panel = {
@@ -142,9 +153,11 @@ export function collFromPath(path: string): Collection | undefined {
 
 export function collPageFormat(coll: Collection): PaperFormat | undefined {
     const path = [coll].concat(collParents(coll))
-    for (const coll of path)
-        if (coll.props.pageFormatId && coll.props.pageFormatId.length > 0)
-            return appState.config.contentAuthoring.paperFormats ? appState.config.contentAuthoring.paperFormats[coll.props.pageFormatId] : undefined
+    for (const coll of path) {
+        console.log(collToPath(coll))
+        if (coll.props.pages.paperFormatId && coll.props.pages.paperFormatId.length > 0)
+            return appState.config.contentAuthoring.paperFormats ? appState.config.contentAuthoring.paperFormats[coll.props.pages.paperFormatId] : undefined
+    }
     return undefined
 }
 

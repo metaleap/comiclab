@@ -26,18 +26,18 @@ const main_form = ctl_inputform.create('coll_editor_form', [authorField, pageFor
     (userModifiedRec) => {
         setDisabled(true)
         const coll = º.collFromPath(collPath) as º.Collection
-        coll.props.authorId = userModifiedRec['authorId']
-        coll.props.pageFormatId = userModifiedRec['pageFormatId']
-        coll.props.contentFields = {}
-        if (º.appState.config.contentAuthoring.contentFields)
-            for (const dyn_field_id in º.appState.config.contentAuthoring.contentFields) {
-                coll.props.contentFields[dyn_field_id] = {}
-                coll.props.contentFields[dyn_field_id][''] = userModifiedRec[dyn_field_id + contentDynFieldsLangSep]
-                if (º.appState.config.contentAuthoring.contentFields[dyn_field_id]) // if custom field localizable
+        coll.props.content.authorId = userModifiedRec['authorId']
+        coll.props.pages.paperFormatId = userModifiedRec['pageFormatId']
+        coll.props.content.customFields = {}
+        if (º.appState.config.contentAuthoring.customFields)
+            for (const dyn_field_id in º.appState.config.contentAuthoring.customFields) {
+                coll.props.content.customFields[dyn_field_id] = {}
+                coll.props.content.customFields[dyn_field_id][''] = userModifiedRec[dyn_field_id + contentDynFieldsLangSep]
+                if (º.appState.config.contentAuthoring.customFields[dyn_field_id]) // if custom field localizable
                     for (const lang_id in º.appState.config.contentAuthoring.languages) {
                         const loc_val = userModifiedRec[dyn_field_id + contentDynFieldsLangSep + lang_id]
                         if (loc_val && loc_val.length > 0)
-                            coll.props.contentFields[dyn_field_id][lang_id] = loc_val
+                            coll.props.content.customFields[dyn_field_id][lang_id] = loc_val
                     }
             }
         utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
@@ -70,7 +70,7 @@ function onAppStateRefreshed(newAppState: º.AppState) {
 
     authorFieldLookup.val = º.appState.config.contentAuthoring.authors ?? {}
     pageFormatFieldLookup.val = º.appState.config.contentAuthoring.paperFormats ? utils.dictMap(º.strPaperFormat, º.appState.config.contentAuthoring.paperFormats) : {}
-    contentDynFields.val = utils.dictToArr(º.appState.config.contentAuthoring.contentFields, (k, v) => ({ 'id': k, 'localizable': v }))
+    contentDynFields.val = utils.dictToArr(º.appState.config.contentAuthoring.customFields, (k, v) => ({ 'id': k, 'localizable': v }))
         .sort((a, b) => (a.id == 'title') ? -123456789 : (a.id.localeCompare(b.id)))
         .map((_) => {
             const ret = [{ 'id': _.id + contentDynFieldsLangSep, 'title': _.id, validators: [] } as ctl_inputform.Field]
@@ -87,13 +87,13 @@ function onAppStateRefreshed(newAppState: º.AppState) {
         if (coll) {
             const parents = º.collParents(coll)
             for (const parent of parents) if (parent.props) {
-                if (author_field_placeholder == '' && parent.props.authorId && parent.props.authorId.length > 0) {
-                    const display_text = º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[parent.props.authorId] ?? '') : ''
-                    author_field_placeholder = (display_text.length > 0) ? display_text : parent.props.authorId
+                if (author_field_placeholder == '' && parent.props.content.authorId && parent.props.content.authorId.length > 0) {
+                    const display_text = º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[parent.props.content.authorId] ?? '') : ''
+                    author_field_placeholder = (display_text.length > 0) ? display_text : parent.props.content.authorId
                 }
-                if (pageformat_field_placeholder == '' && parent.props.pageFormatId && parent.props.pageFormatId.length > 0) {
-                    const display_text = º.appState.config.contentAuthoring.paperFormats ? º.strPaperFormat(º.appState.config.contentAuthoring.paperFormats[parent.props.pageFormatId]) : ''
-                    pageformat_field_placeholder = (display_text.length > 0) ? display_text : parent.props.pageFormatId
+                if (pageformat_field_placeholder == '' && parent.props.pages.paperFormatId && parent.props.pages.paperFormatId.length > 0) {
+                    const display_text = º.appState.config.contentAuthoring.paperFormats ? º.strPaperFormat(º.appState.config.contentAuthoring.paperFormats[parent.props.pages.paperFormatId]) : ''
+                    pageformat_field_placeholder = (display_text.length > 0) ? display_text : parent.props.pages.paperFormatId
                 }
             }
         }
@@ -117,11 +117,11 @@ function onMessage(evt: MessageEvent) {
 }
 
 function curProps(coll: º.Collection) {
-    const ret: ctl_inputform.Rec = { 'authorId': coll.props.authorId ?? '', 'pageFormatId': coll.props.pageFormatId ?? '' }
-    if (coll.props.contentFields)
-        for (const dyn_field_id in coll.props.contentFields)
-            if (coll.props.contentFields[dyn_field_id])
-                for (const lang_id in coll.props.contentFields[dyn_field_id])
-                    ret[dyn_field_id + contentDynFieldsLangSep + lang_id] = coll.props.contentFields[dyn_field_id][lang_id]
+    const ret: ctl_inputform.Rec = { 'authorId': coll.props.content.authorId ?? '', 'pageFormatId': coll.props.pages.paperFormatId ?? '' }
+    if (coll.props.content.customFields)
+        for (const dyn_field_id in coll.props.content.customFields)
+            if (coll.props.content.customFields[dyn_field_id])
+                for (const lang_id in coll.props.content.customFields[dyn_field_id])
+                    ret[dyn_field_id + contentDynFieldsLangSep + lang_id] = coll.props.content.customFields[dyn_field_id][lang_id]
     return ret
 }

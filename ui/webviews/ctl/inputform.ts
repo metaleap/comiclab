@@ -107,7 +107,7 @@ export function validate(rec: Rec, newValue: string | undefined, ...fields: Fiel
             for (const validator of field.validators) {
                 const err = validator(rec, field, (newValue === undefined) ? rec[field.id] : newValue)
                 if (err) {
-                    utils.alert((err.name ? (err.name + ': ') : '') + err.message)
+                    utils.alert((err.name ? (err.name + ' — ') : '') + err.message)
                     return false
                 }
             }

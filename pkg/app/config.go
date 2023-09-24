@@ -8,10 +8,10 @@ const configFileName = "comiclab.json"
 
 type Config struct {
 	ContentAuthoring struct {
-		Authors       map[string]string       `json:"authors"`
-		PaperFormats  map[string]*PaperFormat `json:"paperFormats"`
-		Languages     map[string]string       `json:"languages"`
-		ContentFields map[string]bool         `json:"contentFields"`
+		Authors      map[string]string       `json:"authors"`
+		PaperFormats map[string]*PaperFormat `json:"paperFormats"`
+		Languages    map[string]string       `json:"languages"`
+		CustomFields map[string]bool         `json:"customFields"`
 	} `json:"contentAuthoring"`
 }
 

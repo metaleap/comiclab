@@ -87,7 +87,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
                 if (addNewPage && coll)
                     coll.pages = (coll.pages ?? []).concat([{ name: name, props: {}, panels: [] }])
                 else {
-                    const new_coll: º.Collection = { name: name, collections: [], pages: [], props: {} }
+                    const new_coll: º.Collection = { name: name, collections: [], pages: [], props: { content: {}, pages: {} } }
                     if (coll)
                         coll.collections = (coll.collections ?? []).concat([new_coll])
                     else

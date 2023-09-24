@@ -19,6 +19,7 @@ func init() {
 
 type Proj struct {
 	Collections []*Collection `json:"collections"`
+	Defaults    CollProps     `json:"defaults"`
 }
 
 func (me *Proj) FilePath() string { return filepath.Join(projDirPath, projFileName) }

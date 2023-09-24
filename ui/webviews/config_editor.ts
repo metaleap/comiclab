@@ -12,12 +12,12 @@ const html = van.tags
 
 let grid_authors = newGridForStringMap('config_authors', 'Author', 'author_full_name', 'Full Name', curAuthors, (_ => { º.appState.config.contentAuthoring.authors = _ }))
 let grid_languages = newGridForStringMap('config_languages', 'Language', 'lang_name', 'Name', curLanguages, (dict) => { º.appState.config.contentAuthoring.languages = dict })
-let grid_contentfields = ctl_inputgrid.create('config_contentfields', [
+let grid_customfields = ctl_inputgrid.create('config_customfields', [
     { id: 'id', title: "Content Field ID", validators: [] },
     { id: 'localizable', title: "Multi-Language", validators: [ctl_inputform.validatorLookup], lookUp: ctl_inputform.lookupBool },
 ], (userModifiedRecs) => {
     setDisabled(true)
-    º.appState.config.contentAuthoring.contentFields = utils.dictFromArr(userModifiedRecs, (rec) => [rec.id, rec['localizable'] == 'true'])
+    º.appState.config.contentAuthoring.customFields = utils.dictFromArr(userModifiedRecs, (rec) => [rec.id, rec['localizable'] == 'true'])
     utils.vs.postMessage({ ident: 'onAppStateCfgModified', payload: º.appState.config })
 })
 let grid_paperformats = ctl_inputgrid.create('config_paperformats', [
@@ -34,7 +34,7 @@ let main_tabs = ctl_tabs.create('config_editor_main', {
     "Collections": ctl_multipanel.create('config_collections', {
         "Authors": grid_authors.dom,
         "Languages": grid_languages.dom,
-        "Custom Content Fields": grid_contentfields.dom,
+        "Custom Content Fields": grid_customfields.dom,
     }),
     "Page Design": ctl_multipanel.create('config_pagedesign', {
         "Foo": html.div("Bar"),
@@ -60,7 +60,7 @@ function onAppStateCfgRefreshed(newConfig: º.Config) {
     grid_authors.onDataChangedAtSource(curAuthors())
     grid_paperformats.onDataChangedAtSource(curPaperFormats())
     grid_languages.onDataChangedAtSource(curLanguages())
-    grid_contentfields.onDataChangedAtSource(curContentFields())
+    grid_customfields.onDataChangedAtSource(curCustomFields())
     setDisabled(false)
 }
 
@@ -93,8 +93,8 @@ function curAuthors() {
     } as ctl_inputform.Rec))
 }
 
-function curContentFields() {
-    return utils.dictToArr(º.appState.config.contentAuthoring.contentFields, (key, value) => ({
+function curCustomFields() {
+    return utils.dictToArr(º.appState.config.contentAuthoring.customFields, (key, value) => ({
         'id': key, 'localizable': (value ? 'true' : 'false'),
     } as ctl_inputform.Rec))
 }
