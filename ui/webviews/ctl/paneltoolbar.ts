@@ -15,7 +15,7 @@ export type PanelToolbar = {
     onUserModifiedSizeOrPosViaInputs: (evt: Event, page: º.Page) => any
 }
 
-export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onUserModified: (page: º.Page, pIdx?: number) => void): PanelToolbar {
+export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onUserModified: (page: º.Page) => void): PanelToolbar {
     const ˍ = {
         label_panel_idx: html.b({}, 'Panel #? / ?'),
         input_width: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1' }),
@@ -46,13 +46,14 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
         ),
         deletePanel: () => {
             it.page!.panels = it.page!.panels.filter((_: º.Panel, idx: number) => (idx !== it.canvas.selPanelIdx))
+            it.canvas.panelSelect(undefined, true)
             it.refresh(it.page!)
             onUserModified(it.page!)
         },
-        toggleDeletePrompt(visible: boolean) {
+        toggleDeletePrompt: (visible: boolean) => {
             ˍ.label_delete_prompt.style.display = visible ? 'inline-block' : 'none'
         },
-        onUserModifiedSizeOrPosViaInputs(evt: Event, page: º.Page) {
+        onUserModifiedSizeOrPosViaInputs: (evt: Event, page: º.Page) => {
             it.toggleDeletePrompt(false)
             if (it.canvas.selPanelIdx !== undefined) { // accounts for the move-to-front/send-to-back/etc `page.panels` array reorderings
                 const panel = page.panels[it.canvas.selPanelIdx]
@@ -62,9 +63,9 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
                 panel.y = parseInt((parseFloat(ˍ.input_pos_y.value) * 10).toFixed(0))
                 panel.round = parseFloat(ˍ.input_round.value)
             }
-            onUserModified(page, it.canvas.selPanelIdx)
+            onUserModified(page)
         },
-        refresh(page: º.Page) {
+        refresh: (page: º.Page) => {
             it.toggleDeletePrompt(false)
             it.page = page
             if (it.canvas.selPanelIdx === undefined) {

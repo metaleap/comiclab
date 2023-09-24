@@ -38,12 +38,15 @@ export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMess
 function onUserModifiedPage(userModifiedPage: º.Page, reRender?: boolean): º.Page {
     º.pageUpdate(pagePath, page = userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
-    if (reRender)
+    if (!reRender)
+        refreshPanelBars()
+    else
         reRenderPageCanvas()
-    refreshPanelBars()
+    if (ˍ.page_canvas.selPanelIdx !== undefined)
+        document.getElementById('panel_' + ˍ.page_canvas.selPanelIdx)?.focus()
     return page
 }
-function onUserModifiedPanel(userModifiedPage: º.Page, panelIdx?: number): º.Page {
+function onUserModifiedPanel(userModifiedPage: º.Page): º.Page {
     º.pageUpdate(pagePath, page = userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
     reRenderPageCanvas()

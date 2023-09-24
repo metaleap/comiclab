@@ -41,7 +41,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
         },
         addNewPanel: () => {
             const mx = parseInt((it.xMm ?? 0).toFixed(0)), my = parseInt((it.yMm ?? 0).toFixed(0))
-            page.panels.push({ x: mx, y: my, w: 100, h: 100, round: 0 })
+            page.panels.push({ x: parseInt((parseInt((mx / 10).toFixed(0)) * 10).toFixed(0)), y: parseInt((parseInt((my / 10).toFixed(0)) * 10).toFixed(0)), w: 100, h: 100, round: 0 })
             it.notifyModified(page, page.panels.length - 1, true)
         },
         addNewPanelGrid: (numRows: number, numCols: number) => {
