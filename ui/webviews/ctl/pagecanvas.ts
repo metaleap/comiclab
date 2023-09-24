@@ -55,6 +55,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
             return false
         },
         panelSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean, panelIdx?: number) => {
+            console.log(edge, snapDir)
             if (panelIdx === undefined)
                 if ((panelIdx = it.selPanelIdx) === undefined)
                     return false
