@@ -38,15 +38,12 @@ export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMess
 function onUserModifiedPage(userModifiedPage: º.Page, reRender?: boolean): º.Page {
     º.pageUpdate(pagePath, page = userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
-    console.log(ˍ.panelbar_left.canvas === ˍ.page_canvas)
     if (!reRender)
         refreshPanelBars()
     else
         reRenderPageCanvas()
-    console.log("PREFOC", ˍ.page_canvas.selPanelIdx, document.getElementById('panel_' + ˍ.page_canvas.selPanelIdx))
     if (ˍ.page_canvas.selPanelIdx !== undefined)
         document.getElementById('panel_' + ˍ.page_canvas.selPanelIdx)?.focus()
-    console.log("POSTFOC", ˍ.page_canvas.selPanelIdx, document.getElementById('panel_' + ˍ.page_canvas.selPanelIdx))
     return page
 }
 function onUserModifiedPanel(): º.Page {
@@ -192,7 +189,8 @@ function createGui() {
             }
         },
         'onclick': (evt: MouseEvent) => {
-            ˍ.page_canvas.panelSelect()
+            if (evt.target, evt.currentTarget, evt.target === evt.currentTarget)
+                ˍ.page_canvas.panelSelect()
         },
         'onauxclick': (evt: MouseEvent) => {
             ˍ.page_canvas.addNewPanel()
