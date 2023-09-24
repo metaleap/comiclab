@@ -9,20 +9,21 @@ export type PageCanvas = {
     selPanelIdx?: number,
     xMm?: number,
     yMm?: number,
+    notifyModified: (page: º.Page, pIdx?: number, reRender?: boolean) => void,
     addNewPanel: () => void,
     addNewPanelGrid: (numRows: number, numCols: number) => void,
-    panelSelect: (evt?: Event, panelIdx?: number) => void,
+    panelSelect: (panelIdx?: number, dontRaiseEvent?: boolean) => void,
     panelReorder: (direction: º.Direction, dontDoIt?: boolean) => boolean
     panelSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean) => boolean,
 }
 
-export function create(domId: string, page: º.Page, onPanelSelection: () => void, selPanelIdx: number | undefined, onUserModified: (page: º.Page, pIdx?: number, reRender?: boolean) => void, dbg: (...msg: any[]) => void): PageCanvas {
+export function create(domId: string, page: º.Page, onPanelSelection: () => void, selPanelIdx: number | undefined, onUserModified: (page: º.Page, reRender?: boolean) => void): PageCanvas {
     const page_size = º.pageSizeMm(page)
     const it: PageCanvas = {
         selPanelIdx: selPanelIdx,
-        panelSelect(evt: Event, panelIdx?: number) {
-            if (it.selPanelIdx !== panelIdx)
-                console.log("SEL from", it.selPanelIdx, "TO", panelIdx)
+        panelSelect: (panelIdx?: number, dontRaiseEvent?: boolean) => {
+            if (it.selPanelIdx === panelIdx)
+                return
             if (it.selPanelIdx !== undefined)
                 document.getElementById('panel_' + it.selPanelIdx)?.classList.remove('panel-selected')
             it.selPanelIdx = panelIdx
@@ -31,24 +32,29 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                 dom?.classList.add('panel-selected')
                 dom?.focus()
             }
-            onPanelSelection()
+            if (!dontRaiseEvent)
+                onPanelSelection()
+        },
+        notifyModified: (page: º.Page, panelIdx?: number, reRender?: boolean) => {
+            it.panelSelect(panelIdx, true)
+            onUserModified(page, reRender)
         },
         addNewPanel: () => {
             const mx = parseInt((it.xMm ?? 0).toFixed(0)), my = parseInt((it.yMm ?? 0).toFixed(0))
             page.panels.push({ x: mx, y: my, w: 100, h: 100, round: 0 })
-            onUserModified(page, page.panels.length - 1, true)
+            it.notifyModified(page, page.panels.length - 1, true)
         },
         addNewPanelGrid: (numRows: number, numCols: number) => {
             const wcols = page_size.wMm / numCols, hrows = page_size.hMm / numRows
             for (let r = 0; r < numRows; r++)
                 for (let c = 0; c < numCols; c++)
                     page.panels.push({ round: 0, w: wcols, h: hrows, x: c * wcols, y: r * hrows })
-            onUserModified(page, undefined, true)
+            it.notifyModified(page, undefined, true)
         },
         panelReorder: (direction: º.Direction, dontDoIt?: boolean) => {
             if (º.pageMovePanel(page, it.selPanelIdx!, direction, dontDoIt)) {
                 if (!dontDoIt)
-                    onUserModified(page, undefined, true)
+                    it.notifyModified(page, undefined, true)
                 return true
             }
             return false
@@ -58,7 +64,6 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
             const edge_lr = (edge === º.DirLeft) || (edge === º.DirRight)
             let newx = panel.x, newy = panel.y, neww = panel.w, newh = panel.h
             const panels = page.panels.filter((pnl) => (pnl != panel) && ((edge_lr ? º.panelsOverlapV : º.panelsOverlapH)(pnl, panel)))
-            console.log(it.selPanelIdx, panels.length)
             if (edge === º.DirLeft) {
                 if (snapDir === º.DirLeft)
                     newx = findSnap(panel.x, 0, true, panels.map((_) => _.x + _.w))
@@ -71,10 +76,9 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
             else if (newy != panel.y)
                 newh += (panel.y - newy)
             const can_snap = ((newx != panel.x) || (newy != panel.y) || (neww != panel.w) || (newh != panel.h)) && (neww >= 10) && (newh >= 10)
-            console.log(can_snap, panel, [newx, newy, neww, newh])
             if (can_snap && !dontDoIt) {
                 [panel.x, panel.y, panel.w, panel.h] = [newx, newy, neww, newh]
-                onUserModified(page, undefined, true)
+                it.notifyModified(page, it.selPanelIdx, true)
             }
             return can_snap
         },
@@ -93,11 +97,11 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
         const rect = svg.rect({
             'class': 'panel' + ((pidx === selPanelIdx) ? ' panel-selected' : ''), 'id': 'panel_' + pidx, 'data-pidx': pidx, 'tabindex': 2,
             'x': `${panel.x}mm`, 'y': `${panel.y}mm`, 'width': `${panel.w}mm`, 'height': `${panel.h}mm`, 'rx': rx + 'mm', 'ry': ry + 'mm',
-            'onfocus': (evt: Event) => it.panelSelect(evt, pidx), 'onclick': (evt: Event) => evt.stopPropagation(),
+            'onfocus': (evt: Event) => it.panelSelect(pidx), 'onclick': (evt: Event) => evt.stopPropagation(),
             'onkeydown': (evt: KeyboardEvent) => {
                 switch (evt.key) {
                     case 'Escape':
-                        it.panelSelect(evt)
+                        it.panelSelect()
                         it.dom?.focus()
                         break
                     case 'ArrowLeft':
@@ -114,7 +118,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                         if ((min === undefined) || new_val >= min) {
                             (panel as any)[prop_name[0]] = new_val
                             rect.setAttribute(prop_name, (panel as any)[prop_name[0]] + 'mm')
-                            onUserModified(page, pidx)
+                            it.notifyModified(page, pidx)
                         }
                         break
                 }
@@ -127,7 +131,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
     it.dom = svg.svg({
         'id': domId, 'tabindex': 1, 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`,
         'style': utils.dictToArr(dom_style, (k, v) => k + ':' + v).join(';'),
-        'onfocus': (evt) => it.panelSelect(evt),
+        'onfocus': (evt) => it.panelSelect(),
     }, ...panels) as any
     return it
 }

@@ -11,7 +11,7 @@ export type PanelEdgeBar = {
     buttons: HTMLButtonElement[],
     page?: º.Page,
     edge: º.Direction,
-    refresh: (page: º.Page, panelIdx?: number) => void,
+    refresh: (page: º.Page) => void,
 }
 
 export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, edge: º.Direction): PanelEdgeBar {

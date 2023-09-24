@@ -15,7 +15,7 @@ export type PanelToolbar = {
     onUserModifiedSizeOrPosViaInputs: (evt: Event, page: º.Page) => any
 }
 
-export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onUserModified: (page: º.Page, pIdx?: number) => void, dbg: (...msg: any[]) => void): PanelToolbar {
+export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onUserModified: (page: º.Page, pIdx?: number) => void): PanelToolbar {
     const ˍ = {
         label_panel_idx: html.b({}, 'Panel #? / ?'),
         input_width: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1' }),
@@ -65,7 +65,6 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
             onUserModified(page, it.canvas.selPanelIdx)
         },
         refresh(page: º.Page) {
-            console.log("paneltoolbar.refresh", it.canvas.selPanelIdx)
             it.toggleDeletePrompt(false)
             it.page = page
             if (it.canvas.selPanelIdx === undefined) {

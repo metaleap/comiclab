@@ -35,33 +35,33 @@ export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMess
     window.addEventListener('message', onMessage)
 }
 
-function onUserModifiedPage(userModifiedPage: º.Page, panelIdx?: number, reRender?: boolean): º.Page {
+function onUserModifiedPage(userModifiedPage: º.Page, reRender?: boolean): º.Page {
     º.pageUpdate(pagePath, page = userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
     if (reRender)
-        reRenderPageCanvas(panelIdx ?? ˍ.page_canvas.selPanelIdx)
-    refreshPanelBars(panelIdx ?? ˍ.page_canvas.selPanelIdx)
+        reRenderPageCanvas()
+    refreshPanelBars()
     return page
 }
 function onUserModifiedPanel(userModifiedPage: º.Page, panelIdx?: number): º.Page {
     º.pageUpdate(pagePath, page = userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
-    reRenderPageCanvas(panelIdx)
+    reRenderPageCanvas()
+    refreshPanelBars(true)
     return page
 }
 
 function onPanelSelection() {
-    refreshPanelBars(ˍ.page_canvas.selPanelIdx)
+    refreshPanelBars()
 }
 
-function refreshPanelBars(selPanelIdx?: number, edgeBarsOnly?: boolean) {
-    console.log("page_editor.refreshPanelBars", selPanelIdx, "VS", ˍ.page_canvas.selPanelIdx, edgeBarsOnly)
+function refreshPanelBars(edgeBarsOnly?: boolean) {
     if (!edgeBarsOnly)
         ˍ.panel_toolbar.refresh(page)
     for (const panel_bar of [ˍ.panelbar_left, ˍ.panelbar_right, ˍ.panelbar_upper, ˍ.panelbar_lower])
-        panel_bar.refresh(page, selPanelIdx) // do this before the below, so we'll have a non-0 clientWidth
-    if (selPanelIdx !== undefined) { // positioning the panel bar right on its assigned panel edge
-        const panel = page.panels[selPanelIdx]
+        panel_bar.refresh(page) // do this before the below, so we'll have a non-0 clientWidth
+    if (ˍ.page_canvas.selPanelIdx !== undefined) { // positioning the panel bar right on its assigned panel edge
+        const panel = page.panels[ˍ.page_canvas.selPanelIdx]
         const page_size = º.pageSizeMm(page)
         const panel_px_pos = mmToPx(panel.x, panel.y, true, page_size)
         const panel_px_size = mmToPx(panel.w, panel.h, false, page_size)
@@ -90,7 +90,7 @@ function onAppStateRefreshed(newAppState: º.AppState) {
     if (!ˍ.main)
         createGui()
     else if (changed)
-        refreshPanelBars(reRenderPageCanvas(ˍ.page_canvas.selPanelIdx))
+        reRenderPageCanvas()
 }
 
 function onMessage(evt: MessageEvent) {
@@ -105,17 +105,20 @@ function onMessage(evt: MessageEvent) {
     }
 }
 
-function reRenderPageCanvas(selPanelIdx?: number) {
+function reRenderPageCanvas() {
     const x = posX(), y = posY(), old_dom = ˍ.page_canvas.dom
-    createPageCanvas(selPanelIdx)
+    createPageCanvas(ˍ.page_canvas.selPanelIdx)
     posX(x)
     posY(y)
     old_dom!.replaceWith(ˍ.page_canvas.dom!)
-    return selPanelIdx
+    refreshPanelBars()
 }
 
 function createPageCanvas(panelIdx?: number) {
-    ˍ.page_canvas = ctl_pagecanvas.create('page_editor_canvas', page, onPanelSelection, panelIdx, onUserModifiedPage, dbg)
+    ˍ.page_canvas = ctl_pagecanvas.create('page_editor_canvas', page, onPanelSelection, panelIdx, onUserModifiedPage)
+    for (const panelbar of [ˍ.panel_toolbar, ˍ.panelbar_left, ˍ.panelbar_right, ˍ.panelbar_upper, ˍ.panelbar_lower])
+        if (panelbar)
+            panelbar.canvas = ˍ.page_canvas
 }
 
 function createGui() {
@@ -154,7 +157,7 @@ function createGui() {
             ˍ.top_toolbar_mpos_text = html.span({}, " ")),
     )
     createPageCanvas()
-    ˍ.panel_toolbar = ctl_paneltoolbar.create('page_editor_panel_toolbar', ˍ.page_canvas, onUserModifiedPanel, dbg)
+    ˍ.panel_toolbar = ctl_paneltoolbar.create('page_editor_panel_toolbar', ˍ.page_canvas, onUserModifiedPanel)
     ˍ.panelbar_left = ctl_paneledgebar.create('page_editor_panel_edgebar_left', ˍ.page_canvas, º.DirLeft)
     ˍ.panelbar_right = ctl_paneledgebar.create('page_editor_panel_edgebar_right', ˍ.page_canvas, º.DirRight)
     ˍ.panelbar_upper = ctl_paneledgebar.create('page_editor_panel_edgebar_upper', ˍ.page_canvas, º.DirUp)
@@ -179,14 +182,14 @@ function createGui() {
             if (evt.button === 1) {
                 evt.preventDefault()
                 ˍ.page_canvas.dom?.focus()
-                ˍ.page_canvas.panelSelect(evt)
+                ˍ.page_canvas.panelSelect()
             }
+        },
+        'onclick': (evt: MouseEvent) => {
+            ˍ.page_canvas.panelSelect()
         },
         'onauxclick': (evt: MouseEvent) => {
             ˍ.page_canvas.addNewPanel()
-        },
-        'onclick': (evt: MouseEvent) => {
-            ˍ.page_canvas.panelSelect(evt)
         },
         'onwheel': (evt: WheelEvent) => {
             if (evt.shiftKey)
@@ -233,14 +236,14 @@ function mmToPx(mmX: number, mmY: number, isPos: boolean, pageSize?: º.PageSize
 function posX(newX?: number): number {
     if (newX !== undefined) {
         ˍ.page_canvas.dom!.style.left = newX.toString() + 'px'
-        refreshPanelBars(ˍ.page_canvas.selPanelIdx, true)
+        refreshPanelBars(true)
     }
     return parseInt(ˍ.page_canvas.dom!.style.left)
 }
 function posY(newY?: number): number {
     if (newY !== undefined) {
         ˍ.page_canvas.dom!.style.top = newY.toString() + 'px'
-        refreshPanelBars(ˍ.page_canvas.selPanelIdx, true)
+        refreshPanelBars(true)
     }
     return parseInt(ˍ.page_canvas.dom!.style.top)
 }
@@ -274,9 +277,5 @@ function zoomSet(newZoom?: number, mouse?: { x: number, y: number }) {
     }
     ˍ.top_toolbar_zoom_input.value = newZoom.toString()
     ˍ.top_toolbar_zoom_text.innerText = newZoom.toFixed(1) + "%"
-    refreshPanelBars(ˍ.page_canvas.selPanelIdx, true)
-}
-
-function dbg(...msg: any[]) {
-    ˍ.top_toolbar_dbg_text.innerText = msg.join("\u00A0\u00A0\u00A0\u00A0")
+    refreshPanelBars(true)
 }
