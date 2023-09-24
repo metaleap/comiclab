@@ -57,11 +57,14 @@ function onPanelSelection() {
 function refreshPanelBars(selPanelIdx?: number, edgeBarsOnly?: boolean) {
     if (!edgeBarsOnly)
         ˍ.panel_toolbar.refresh(page, selPanelIdx)
-    if (selPanelIdx !== undefined) {
+    for (const panel_bar of [ˍ.panelbar_left, ˍ.panelbar_right, ˍ.panelbar_upper, ˍ.panelbar_lower])
+        panel_bar.refresh(page, selPanelIdx) // do this before the below, so we'll have a non-0 clientWidth
+    if (selPanelIdx !== undefined) { // positioning the panel bar right on its assigned panel edge
         const panel = page.panels[selPanelIdx]
         const page_size = º.pageSizeMm(page)
         const panel_px_pos = mmToPx(panel.x, panel.y, true, page_size)
         const panel_px_size = mmToPx(panel.w, panel.h, false, page_size)
+
         ˍ.panelbar_upper.dom.style.left = ((panel_px_pos.xPx + (panel_px_size.xPx / 2)) - (ˍ.panelbar_upper.dom.clientWidth / 2)).toFixed(0) + 'px'
         ˍ.panelbar_lower.dom.style.left = ˍ.panelbar_upper.dom.style.left
         ˍ.panelbar_upper.dom.style.top = (panel_px_pos.xPy - 12).toFixed(0) + 'px'
@@ -72,8 +75,6 @@ function refreshPanelBars(selPanelIdx?: number, edgeBarsOnly?: boolean) {
         ˍ.panelbar_left.dom.style.left = (panel_px_pos.xPx - 12).toFixed(0) + 'px'
         ˍ.panelbar_right.dom.style.left = (panel_px_pos.xPx + panel_px_size.xPx).toFixed(0) + 'px'
     }
-    for (const panel_bar of [ˍ.panelbar_left, ˍ.panelbar_right, ˍ.panelbar_upper, ˍ.panelbar_lower])
-        panel_bar.refresh(page, selPanelIdx)
 }
 
 function onAppStateRefreshed(newAppState: º.AppState) {
