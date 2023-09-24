@@ -210,7 +210,7 @@ function createGui() {
             ˍ.page_canvas.yMm = mm.yPx
             ˍ.top_toolbar_mpos_text.innerText = `X: ${(ˍ.page_canvas.xMm * 0.1).toFixed(1)} , Y:${(ˍ.page_canvas.yMm * 0.1).toFixed(1)}`
         },
-    }, ˍ.page_canvas.dom, /*ˍ.panelbar_left.dom, ˍ.panelbar_right.dom, ˍ.panelbar_upper.dom, ˍ.panelbar_lower.dom*/)
+    }, ˍ.page_canvas.dom, ˍ.panelbar_left.dom, ˍ.panelbar_right.dom, ˍ.panelbar_upper.dom, ˍ.panelbar_lower.dom)
     van.add(document.body, ˍ.main, ˍ.panel_toolbar.dom, ˍ.top_toolbar)
     zoomSet()
 }

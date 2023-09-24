@@ -63,19 +63,40 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
             const panel = page.panels[it.selPanelIdx!]
             const edge_lr = (edge === º.DirLeft) || (edge === º.DirRight)
             let newx = panel.x, newy = panel.y, neww = panel.w, newh = panel.h
-            const panels = page.panels.filter((pnl) => (pnl != panel) && ((edge_lr ? º.panelsOverlapV : º.panelsOverlapH)(pnl, panel)))
-            if (edge === º.DirLeft) {
-                if (snapDir === º.DirLeft)
-                    newx = findSnap(panel.x, 0, true, panels.map((_) => _.x + _.w))
-                else if (snapDir === º.DirRight)
-                    neww = findSnap(panel.x, page_size.wMm, false, panels.map((_) => _.x)) - panel.x
+            const panels = page.panels.filter((pnl, pIdx) => (pIdx !== it.selPanelIdx) && ((edge_lr ? º.panelsOverlapV : º.panelsOverlapH)(pnl, panel)))
+            if (edge_lr) {
+                const others = panels.map((_) => _.x + _.w).concat(panels.map((_) => _.x))
+                if (edge === º.DirLeft) {
+                    if (snapDir === º.DirLeft)
+                        newx = findSnap(panel.x, 0, true, others)
+                    else
+                        newx = findSnap(panel.x, page_size.wMm, false, others)
+                } else {
+                    if (snapDir === º.DirLeft)
+                        neww = findSnap(panel.x + panel.w, 0, true, others) - panel.x
+                    else
+                        neww = findSnap(panel.x + panel.w, page_size.wMm, false, others) - panel.x
+                }
+            } else {
+                const others = panels.map((_) => _.y + _.h).concat(panels.map((_) => _.y))
+                if (edge === º.DirUp) {
+                    if (snapDir === º.DirUp)
+                        newy = findSnap(panel.y, 0, true, others)
+                    else
+                        newy = findSnap(panel.y, page_size.hMm, false, others)
+                } else {
+                    if (snapDir === º.DirUp)
+                        newh = findSnap(panel.y + panel.h, 0, true, others) - panel.y
+                    else
+                        newh = findSnap(panel.y + panel.h, page_size.hMm, false, others) - panel.y
+                }
             }
 
-            if (newx != panel.x)
+            if (newx !== panel.x)
                 neww += (panel.x - newx)
-            else if (newy != panel.y)
+            else if (newy !== panel.y)
                 newh += (panel.y - newy)
-            const can_snap = ((newx != panel.x) || (newy != panel.y) || (neww != panel.w) || (newh != panel.h)) && (neww >= 10) && (newh >= 10)
+            const can_snap = ((newx !== panel.x) || (newy !== panel.y) || (neww !== panel.w) || (newh !== panel.h)) && (neww >= 10) && (newh >= 10)
             if (can_snap && !dontDoIt) {
                 [panel.x, panel.y, panel.w, panel.h] = [newx, newy, neww, newh]
                 it.notifyModified(page, it.selPanelIdx, true)
@@ -138,10 +159,11 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
 
 
 function findSnap(pos: number, initial: number, prev: boolean, maybes: number[]) {
-    for (const other of maybes)
+    for (const other of maybes) {
         if (prev && (other < pos) && (other > initial))
             initial = other
         else if ((!prev) && (other > pos) && (other < initial))
             initial = other
+    }
     return initial
 }
