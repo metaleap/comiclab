@@ -12,22 +12,14 @@ export type PageCanvas = {
     addNewPanel: () => void,
     addNewPanelGrid: (numRows: number, numCols: number) => void,
     panelSelect: (evt?: Event, panelIdx?: number) => void,
-    panelReorder: (panelIdx: number, direction: º.Direction, dontDoIt?: boolean) => boolean
-    panelSnapTo: (panelIdx: number, direction: º.Direction, dontDoIt?: boolean) => boolean,
+    panelReorder: (direction: º.Direction, dontDoIt?: boolean, panelIdx?: number) => boolean
+    panelSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean, panelIdx?: number) => boolean,
 }
 
 export function create(domId: string, page: º.Page, onPanelSelection: () => void, selPanelIdx: number | undefined, onUserModified: (page: º.Page, pIdx?: number, reRender?: boolean) => void, dbg: (...msg: any[]) => void): PageCanvas {
     const page_size = º.pageSizeMm(page)
     const it: PageCanvas = {
         selPanelIdx: selPanelIdx,
-        panelReorder: (panelIdx: number, direction: º.Direction, dontDoIt?: boolean) => {
-            if (º.pageMovePanel(page, panelIdx, direction, dontDoIt)) {
-                if (!dontDoIt)
-                    onUserModified(page, undefined, true)
-                return true
-            }
-            return false
-        },
         panelSelect(evt: Event, panelIdx?: number) {
             if (it.selPanelIdx !== undefined)
                 document.getElementById('panel_' + it.selPanelIdx)?.classList.remove('panel-selected')
@@ -51,35 +43,31 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                     page.panels.push({ round: 0, w: wcols, h: hrows, x: c * wcols, y: r * hrows })
             onUserModified(page, undefined, true)
         },
-        panelSnapTo: (panelIdx: number, direction: º.Direction, dontDoIt?: boolean) => {
-            const ydown_page = page_size.hMm, yup_page = 0, xleft_page = 0, xright_page = page_size.wMm
-            let ydown = ydown_page, yup = yup_page, xleft = xleft_page, xright = xright_page
+        panelReorder: (direction: º.Direction, dontDoIt?: boolean, panelIdx?: number) => {
+            if (panelIdx === undefined)
+                if ((panelIdx = it.selPanelIdx) === undefined)
+                    return false
+            if (º.pageMovePanel(page, panelIdx, direction, dontDoIt)) {
+                if (!dontDoIt)
+                    onUserModified(page, undefined, true)
+                return true
+            }
+            return false
+        },
+        panelSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean, panelIdx?: number) => {
+            if (panelIdx === undefined)
+                if ((panelIdx = it.selPanelIdx) === undefined)
+                    return false
             const panel = page.panels[panelIdx]
             const pxw = panel.x + panel.w, pyh = panel.y + panel.h
+
             for (let pidx = 0; pidx < page.panels.length; pidx++) if (pidx !== panelIdx) {
                 const pnl = page.panels[pidx]
-                const canh = ((pnl.y > panel.y || (pnl.y + pnl.h) < (panel.y + panel.h)))
                 const xw = pnl.x + pnl.w, yh = pnl.y + pnl.h
-                if (canh && (xw < panel.x)) // can snap left?
-                    xleft = Math.max(xleft, xw)
-                if (canh && (pnl.x > pxw)) // can snap right?
-                    xright = Math.min(xright, pnl.x)
             }
-            console.log("L", xleft, "R", xright, "U", yup, "D", ydown)
-            const can_snap = ((direction === -1) && ((xleft < panel.x) || ((xleft === xleft_page) && (panel.x !== xleft))))
-                || ((direction === 1) && ((xright > pxw) || ((xright === xright_page) && (pxw !== xright))))
+            const can_snap = false
             if (can_snap && !dontDoIt) {
-                if (direction === -1) {
-                    panel.w += (panel.x - xleft)
-                    panel.x = xleft
-                } else if (direction === 1) {
-                    panel.w = (xright - panel.x)
-                } else if (direction === 0) {
-                    panel.y = yup
-                } else {
-                    panel.y = ydown
-                }
-                onUserModified(page, undefined, true)
+                // onUserModified(page, undefined, true)
             }
             return can_snap
         },
