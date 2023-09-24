@@ -11,7 +11,7 @@ export type PanelToolbar = {
     page?: º.Page,
     toggleDeletePrompt: (visible: boolean) => void,
     deletePanel: () => void,
-    refresh: (page: º.Page, panelIdx?: number) => void,
+    refresh: (page: º.Page) => void,
     onUserModifiedSizeOrPosViaInputs: (evt: Event, page: º.Page) => any
 }
 
@@ -65,6 +65,7 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
             onUserModified(page, it.canvas.selPanelIdx)
         },
         refresh(page: º.Page) {
+            console.log("paneltoolbar.refresh", it.canvas.selPanelIdx)
             it.toggleDeletePrompt(false)
             it.page = page
             if (it.canvas.selPanelIdx === undefined) {

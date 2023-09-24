@@ -39,8 +39,8 @@ function onUserModifiedPage(userModifiedPage: º.Page, panelIdx?: number, reRend
     º.pageUpdate(pagePath, page = userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
     if (reRender)
-        reRenderPageCanvas(panelIdx)
-    refreshPanelBars(panelIdx)
+        reRenderPageCanvas(panelIdx ?? ˍ.page_canvas.selPanelIdx)
+    refreshPanelBars(panelIdx ?? ˍ.page_canvas.selPanelIdx)
     return page
 }
 function onUserModifiedPanel(userModifiedPage: º.Page, panelIdx?: number): º.Page {
@@ -55,8 +55,9 @@ function onPanelSelection() {
 }
 
 function refreshPanelBars(selPanelIdx?: number, edgeBarsOnly?: boolean) {
+    console.log("page_editor.refreshPanelBars", selPanelIdx, "VS", ˍ.page_canvas.selPanelIdx, edgeBarsOnly)
     if (!edgeBarsOnly)
-        ˍ.panel_toolbar.refresh(page, selPanelIdx)
+        ˍ.panel_toolbar.refresh(page)
     for (const panel_bar of [ˍ.panelbar_left, ˍ.panelbar_right, ˍ.panelbar_upper, ˍ.panelbar_lower])
         panel_bar.refresh(page, selPanelIdx) // do this before the below, so we'll have a non-0 clientWidth
     if (selPanelIdx !== undefined) { // positioning the panel bar right on its assigned panel edge
@@ -168,9 +169,6 @@ function createGui() {
                 if (!(evt.shiftKey || evt.ctrlKey || evt.altKey || evt.metaKey)) {
                     evt.preventDefault()
                     zoomSet(zoomGet() + (5 * ((evt.key == '+') ? 1 : -1)))
-                } else if (evt.altKey && ˍ.page_canvas.selPanelIdx !== undefined) {
-                    evt.preventDefault()
-                    ˍ.page_canvas.panelReorder((evt.key == '+') ? º.DirEnd : º.DirStart)
                 }
                 break
         }
@@ -209,7 +207,7 @@ function createGui() {
             ˍ.page_canvas.yMm = mm.yPx
             ˍ.top_toolbar_mpos_text.innerText = `X: ${(ˍ.page_canvas.xMm * 0.1).toFixed(1)} , Y:${(ˍ.page_canvas.yMm * 0.1).toFixed(1)}`
         },
-    }, ˍ.page_canvas.dom, ˍ.panelbar_left.dom, ˍ.panelbar_right.dom, ˍ.panelbar_upper.dom, ˍ.panelbar_lower.dom)
+    }, ˍ.page_canvas.dom, /*ˍ.panelbar_left.dom, ˍ.panelbar_right.dom, ˍ.panelbar_upper.dom, ˍ.panelbar_lower.dom*/)
     van.add(document.body, ˍ.main, ˍ.panel_toolbar.dom, ˍ.top_toolbar)
     zoomSet()
 }

@@ -12,8 +12,8 @@ export type PageCanvas = {
     addNewPanel: () => void,
     addNewPanelGrid: (numRows: number, numCols: number) => void,
     panelSelect: (evt?: Event, panelIdx?: number) => void,
-    panelReorder: (direction: º.Direction, dontDoIt?: boolean, panelIdx?: number) => boolean
-    panelSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean, panelIdx?: number) => boolean,
+    panelReorder: (direction: º.Direction, dontDoIt?: boolean) => boolean
+    panelSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean) => boolean,
 }
 
 export function create(domId: string, page: º.Page, onPanelSelection: () => void, selPanelIdx: number | undefined, onUserModified: (page: º.Page, pIdx?: number, reRender?: boolean) => void, dbg: (...msg: any[]) => void): PageCanvas {
@@ -45,11 +45,8 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                     page.panels.push({ round: 0, w: wcols, h: hrows, x: c * wcols, y: r * hrows })
             onUserModified(page, undefined, true)
         },
-        panelReorder: (direction: º.Direction, dontDoIt?: boolean, panelIdx?: number) => {
-            if (panelIdx === undefined)
-                if ((panelIdx = it.selPanelIdx) === undefined)
-                    return false
-            if (º.pageMovePanel(page, panelIdx, direction, dontDoIt)) {
+        panelReorder: (direction: º.Direction, dontDoIt?: boolean) => {
+            if (º.pageMovePanel(page, it.selPanelIdx!, direction, dontDoIt)) {
                 if (!dontDoIt)
                     onUserModified(page, undefined, true)
                 return true
