@@ -271,7 +271,7 @@ body>div#page_editor_main>div.page-editor-panel-edgebar>button.btn {
     width: 0.8em;
     height: 0.8em;
     border: 1px solid var(--vscode-tab-inactiveForeground);
-    background-color: lightblue;
+    background-color: var(--vscode-sideBar-background);
 }
 
 body>div#page_editor_main>div#page_editor_panel_edgebar_left,

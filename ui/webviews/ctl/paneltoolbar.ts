@@ -8,14 +8,14 @@ const html = van.tags
 export type PanelToolbar = {
     canvas: ctl_pagecanvas.PageCanvas,
     dom: HTMLElement,
-    page?: º.Page,
+    curPage: () => º.Page
     toggleDeletePrompt: (visible: boolean) => void,
     deletePanel: () => void,
-    refresh: (page: º.Page) => void,
-    onUserModifiedSizeOrPosViaInputs: (evt: Event, page: º.Page) => any
+    refresh: () => void,
+    onUserModifiedSizeOrPosViaInputs: () => any
 }
 
-export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onUserModified: (page: º.Page) => void): PanelToolbar {
+export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, curPage: () => º.Page, onUserModified: () => void): PanelToolbar {
     const ˍ = {
         label_panel_idx: html.b({}, 'Panel #? / ?'),
         input_width: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1' }),
@@ -30,6 +30,7 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
         btn_move_prev: html.button({ 'class': 'btn', 'title': `Send backward`, 'style': utils.codiconCss('chevron-down'), 'data-movehow': º.DirPrev, 'disabled': true, }),
     }
     const it: PanelToolbar = {
+        curPage: curPage,
         canvas: pageCanvas,
         dom: html.div({ 'id': domId, 'class': 'page-editor-top-toolbar', 'style': 'display:none' },
             html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
@@ -45,16 +46,18 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
             ),
         ),
         deletePanel: () => {
-            it.page!.panels = it.page!.panels.filter((_: º.Panel, idx: number) => (idx !== it.canvas.selPanelIdx))
+            const page = curPage()
+            page!.panels = page!.panels.filter((_: º.Panel, idx: number) => (idx !== it.canvas.selPanelIdx))
             it.canvas.panelSelect(undefined, true)
-            it.refresh(it.page!)
-            onUserModified(it.page!)
+            it.refresh()
+            onUserModified()
         },
         toggleDeletePrompt: (visible: boolean) => {
             ˍ.label_delete_prompt.style.display = visible ? 'inline-block' : 'none'
         },
-        onUserModifiedSizeOrPosViaInputs: (evt: Event, page: º.Page) => {
+        onUserModifiedSizeOrPosViaInputs: () => {
             it.toggleDeletePrompt(false)
+            const page = curPage()
             if (it.canvas.selPanelIdx !== undefined) { // accounts for the move-to-front/send-to-back/etc `page.panels` array reorderings
                 const panel = page.panels[it.canvas.selPanelIdx]
                 panel.w = parseInt((parseFloat(ˍ.input_width.value) * 10).toFixed(0))
@@ -63,15 +66,15 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
                 panel.y = parseInt((parseFloat(ˍ.input_pos_y.value) * 10).toFixed(0))
                 panel.round = parseFloat(ˍ.input_round.value)
             }
-            onUserModified(page)
+            onUserModified()
         },
-        refresh: (page: º.Page) => {
+        refresh: () => {
             it.toggleDeletePrompt(false)
-            it.page = page
             if (it.canvas.selPanelIdx === undefined) {
                 it.dom.style.display = 'none'
                 return
             }
+            const page = curPage()
             const panel = page.panels[it.canvas.selPanelIdx]
             {
                 ˍ.label_panel_idx.textContent = `(Panel #${1 + it.canvas.selPanelIdx} / ${page.panels.length})`
@@ -82,7 +85,7 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
                     const input = inputs[prop_name] as HTMLInputElement
                     input.value = (panel[prop_name as 'x' | 'y' | 'w' | 'h'] * 0.1).toFixed(1).padStart(4, '0')
                     input.onchange = (evt) =>
-                        it.onUserModifiedSizeOrPosViaInputs(evt, page)
+                        it.onUserModifiedSizeOrPosViaInputs()
                 }
             for (const btn of [ˍ.btn_move_first, ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev]) {
                 const dir: º.Direction = parseInt(btn.getAttribute('data-movehow') ?? '')

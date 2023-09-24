@@ -9,9 +9,8 @@ export type PanelEdgeBar = {
     canvas: ctl_pagecanvas.PageCanvas,
     dom: HTMLElement,
     buttons: HTMLButtonElement[],
-    page?: º.Page,
     edge: º.Direction,
-    refresh: (page: º.Page) => void,
+    refresh: () => void,
 }
 
 export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, edge: º.Direction): PanelEdgeBar {
@@ -26,12 +25,16 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, edg
         dom: dom,
         edge: edge,
         buttons: buttons,
-        refresh(page: º.Page) {
-            it.page = page
+        refresh() {
+            console.log("edgeRefr", it.canvas.selPanelIdx)
             if (it.canvas.selPanelIdx === undefined) {
                 it.dom.style.display = 'none'
                 return
             }
+            btn_snap_left.disabled = !it.canvas.panelSnapTo(it.edge, º.DirLeft, true)
+            btn_snap_right.disabled = !it.canvas.panelSnapTo(it.edge, º.DirRight, true)
+            btn_snap_up.disabled = !it.canvas.panelSnapTo(it.edge, º.DirUp, true)
+            btn_snap_down.disabled = !it.canvas.panelSnapTo(it.edge, º.DirDown, true)
 
             it.dom.style.display = 'inline-block'
         },

@@ -38,16 +38,19 @@ export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMess
 function onUserModifiedPage(userModifiedPage: º.Page, reRender?: boolean): º.Page {
     º.pageUpdate(pagePath, page = userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
+    console.log(ˍ.panelbar_left.canvas === ˍ.page_canvas)
     if (!reRender)
         refreshPanelBars()
     else
         reRenderPageCanvas()
+    console.log("PREFOC", ˍ.page_canvas.selPanelIdx, document.getElementById('panel_' + ˍ.page_canvas.selPanelIdx))
     if (ˍ.page_canvas.selPanelIdx !== undefined)
         document.getElementById('panel_' + ˍ.page_canvas.selPanelIdx)?.focus()
+    console.log("POSTFOC", ˍ.page_canvas.selPanelIdx, document.getElementById('panel_' + ˍ.page_canvas.selPanelIdx))
     return page
 }
-function onUserModifiedPanel(userModifiedPage: º.Page): º.Page {
-    º.pageUpdate(pagePath, page = userModifiedPage)
+function onUserModifiedPanel(): º.Page {
+    º.pageUpdate(pagePath, page)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
     reRenderPageCanvas()
     refreshPanelBars(true)
@@ -60,9 +63,9 @@ function onPanelSelection() {
 
 function refreshPanelBars(edgeBarsOnly?: boolean) {
     if (!edgeBarsOnly)
-        ˍ.panel_toolbar.refresh(page)
+        ˍ.panel_toolbar.refresh()
     for (const panel_bar of [ˍ.panelbar_left, ˍ.panelbar_right, ˍ.panelbar_upper, ˍ.panelbar_lower])
-        panel_bar.refresh(page) // do this before the below, so we'll have a non-0 clientWidth
+        panel_bar.refresh() // do this before the below, so we'll have a non-0 clientWidth
     if (ˍ.page_canvas.selPanelIdx !== undefined) { // positioning the panel bar right on its assigned panel edge
         const panel = page.panels[ˍ.page_canvas.selPanelIdx]
         const page_size = º.pageSizeMm(page)
@@ -111,10 +114,10 @@ function onMessage(evt: MessageEvent) {
 function reRenderPageCanvas() {
     const x = posX(), y = posY(), old_dom = ˍ.page_canvas.dom
     createPageCanvas(ˍ.page_canvas.selPanelIdx)
-    posX(x)
-    posY(y)
     old_dom!.replaceWith(ˍ.page_canvas.dom!)
     refreshPanelBars()
+    posX(x)
+    posY(y)
 }
 
 function createPageCanvas(panelIdx?: number) {
@@ -160,7 +163,7 @@ function createGui() {
             ˍ.top_toolbar_mpos_text = html.span({}, " ")),
     )
     createPageCanvas()
-    ˍ.panel_toolbar = ctl_paneltoolbar.create('page_editor_panel_toolbar', ˍ.page_canvas, onUserModifiedPanel)
+    ˍ.panel_toolbar = ctl_paneltoolbar.create('page_editor_panel_toolbar', ˍ.page_canvas, (() => page), onUserModifiedPanel)
     ˍ.panelbar_left = ctl_paneledgebar.create('page_editor_panel_edgebar_left', ˍ.page_canvas, º.DirLeft)
     ˍ.panelbar_right = ctl_paneledgebar.create('page_editor_panel_edgebar_right', ˍ.page_canvas, º.DirRight)
     ˍ.panelbar_upper = ctl_paneledgebar.create('page_editor_panel_edgebar_upper', ˍ.page_canvas, º.DirUp)
