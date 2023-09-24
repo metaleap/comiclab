@@ -21,6 +21,8 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
     const it: PageCanvas = {
         selPanelIdx: selPanelIdx,
         panelSelect(evt: Event, panelIdx?: number) {
+            if (it.selPanelIdx !== panelIdx)
+                console.log("SEL from", it.selPanelIdx, "TO", panelIdx)
             if (it.selPanelIdx !== undefined)
                 document.getElementById('panel_' + it.selPanelIdx)?.classList.remove('panel-selected')
             it.selPanelIdx = panelIdx
@@ -54,21 +56,28 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
             }
             return false
         },
-        panelSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean, panelIdx?: number) => {
-            console.log(edge, snapDir)
-            if (panelIdx === undefined)
-                if ((panelIdx = it.selPanelIdx) === undefined)
-                    return false
-            const panel = page.panels[panelIdx]
-            const pxw = panel.x + panel.w, pyh = panel.y + panel.h
-
-            for (let pidx = 0; pidx < page.panels.length; pidx++) if (pidx !== panelIdx) {
-                const pnl = page.panels[pidx]
-                const xw = pnl.x + pnl.w, yh = pnl.y + pnl.h
+        panelSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean) => {
+            const panel = page.panels[it.selPanelIdx!]
+            const edge_lr = (edge === º.DirLeft) || (edge === º.DirRight)
+            let newx = panel.x, newy = panel.y, neww = panel.w, newh = panel.h
+            const panels = page.panels.filter((pnl) => (pnl != panel) && ((edge_lr ? º.panelsOverlapV : º.panelsOverlapH)(pnl, panel)))
+            console.log(it.selPanelIdx, panels.length)
+            if (edge === º.DirLeft) {
+                if (snapDir === º.DirLeft)
+                    newx = findSnap(panel.x, 0, true, panels.map((_) => _.x + _.w))
+                else if (snapDir === º.DirRight)
+                    neww = findSnap(panel.x, page_size.wMm, false, panels.map((_) => _.x)) - panel.x
             }
-            const can_snap = false
+
+            if (newx != panel.x)
+                neww += (panel.x - newx)
+            else if (newy != panel.y)
+                newh += (panel.y - newy)
+            const can_snap = ((newx != panel.x) || (newy != panel.y) || (neww != panel.w) || (newh != panel.h)) && (neww >= 10) && (newh >= 10)
+            console.log(can_snap, panel, [newx, newy, neww, newh])
             if (can_snap && !dontDoIt) {
-                // onUserModified(page, undefined, true)
+                [panel.x, panel.y, panel.w, panel.h] = [newx, newy, neww, newh]
+                onUserModified(page, undefined, true)
             }
             return can_snap
         },
@@ -124,4 +133,14 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
         'onfocus': (evt) => it.panelSelect(evt),
     }, ...panels) as any
     return it
+}
+
+
+function findSnap(pos: number, initial: number, prev: boolean, maybes: number[]) {
+    for (const other of maybes)
+        if (prev && (other < pos) && (other > initial))
+            initial = other
+        else if ((!prev) && (other > pos) && (other < initial))
+            initial = other
+    return initial
 }

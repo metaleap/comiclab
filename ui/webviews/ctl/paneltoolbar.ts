@@ -9,7 +9,6 @@ export type PanelToolbar = {
     canvas: ctl_pagecanvas.PageCanvas,
     dom: HTMLElement,
     page?: º.Page,
-    selPanelIdx?: number,
     toggleDeletePrompt: (visible: boolean) => void,
     deletePanel: () => void,
     refresh: (page: º.Page, panelIdx?: number) => void,
@@ -46,7 +45,7 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
             ),
         ),
         deletePanel: () => {
-            it.page!.panels = it.page!.panels.filter((_: º.Panel, idx: number) => (idx !== it.selPanelIdx))
+            it.page!.panels = it.page!.panels.filter((_: º.Panel, idx: number) => (idx !== it.canvas.selPanelIdx))
             it.refresh(it.page!)
             onUserModified(it.page!)
         },
@@ -55,26 +54,26 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, onU
         },
         onUserModifiedSizeOrPosViaInputs(evt: Event, page: º.Page) {
             it.toggleDeletePrompt(false)
-            if (it.selPanelIdx !== undefined) { // accounts for the move-to-front/send-to-back/etc `page.panels` array reorderings
-                const panel = page.panels[it.selPanelIdx]
+            if (it.canvas.selPanelIdx !== undefined) { // accounts for the move-to-front/send-to-back/etc `page.panels` array reorderings
+                const panel = page.panels[it.canvas.selPanelIdx]
                 panel.w = parseInt((parseFloat(ˍ.input_width.value) * 10).toFixed(0))
                 panel.h = parseInt((parseFloat(ˍ.input_height.value) * 10).toFixed(0))
                 panel.x = parseInt((parseFloat(ˍ.input_pos_x.value) * 10).toFixed(0))
                 panel.y = parseInt((parseFloat(ˍ.input_pos_y.value) * 10).toFixed(0))
                 panel.round = parseFloat(ˍ.input_round.value)
             }
-            onUserModified(page, it.selPanelIdx)
+            onUserModified(page, it.canvas.selPanelIdx)
         },
-        refresh(page: º.Page, panelIdx?: number) {
+        refresh(page: º.Page) {
             it.toggleDeletePrompt(false)
             it.page = page
-            if ((it.selPanelIdx = panelIdx) === undefined) {
+            if (it.canvas.selPanelIdx === undefined) {
                 it.dom.style.display = 'none'
                 return
             }
-            const panel = page.panels[it.selPanelIdx]
+            const panel = page.panels[it.canvas.selPanelIdx]
             {
-                ˍ.label_panel_idx.textContent = `(Panel #${1 + it.selPanelIdx} / ${page.panels.length})`
+                ˍ.label_panel_idx.textContent = `(Panel #${1 + it.canvas.selPanelIdx} / ${page.panels.length})`
                 ˍ.input_round.value = panel.round.toFixed(2)
             }
             for (const inputs of [{ 'x': ˍ.input_pos_x, 'y': ˍ.input_pos_y, 'w': ˍ.input_width, 'h': ˍ.input_height } as { [_: string]: HTMLInputElement }])

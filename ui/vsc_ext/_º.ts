@@ -177,6 +177,14 @@ export function pageMovePanel(page: Page, panelIdx: number, direction: Direction
     return can_move
 }
 
+export function panelsOverlapV(p1: Panel, p2: Panel): boolean {
+    return ((p1.y + p1.h) > p2.y) && (p1.y < (p2.y + p2.h))
+}
+
+export function panelsOverlapH(p1: Panel, p2: Panel): boolean {
+    return ((p1.x + p1.w) > p2.x) && (p1.x < (p2.x + p2.w))
+}
+
 export function strPaperFormat(_: PaperFormat): string {
     return _ ? (_.widthMm + "×" + _.heightMm + " mm") : ''
 }
