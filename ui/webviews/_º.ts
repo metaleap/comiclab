@@ -1,4 +1,3 @@
-
 export const appState: AppState = {
     proj: { collections: [], collProps: {}, pageProps: {}, panelProps: {} },
     config: { contentAuthoring: {} },
@@ -55,12 +54,13 @@ export type Panel = {
     panelProps: PanelProps
 }
 
-export type ProjOrColl = {
-    name?: string
-    collections: Collection[]
-    collProps: CollProps
+export type ProjOrColl = (Proj | Collection) & { name?: string }
+
+export type ProjOrCollOrPage = {
+    collProps?: CollProps
     pageProps: PageProps
     panelProps: PanelProps
+    panels?: Panel[]
 }
 
 export type CollProps = {
@@ -169,7 +169,10 @@ export function collPageFormat(coll: Collection): PaperFormat | undefined {
     return undefined
 }
 
-export function collProp<T>(it: ProjOrColl, propsPath: string[], defaultValue: T): T {
+export function collProp<T>(it: ProjOrCollOrPage, propsPath: string[], defaultValue: T): T {
+    const is_page = (it.panels !== undefined)
+    if (is_page)
+        return collProp<T>(pageParent(it as Page), propsPath, defaultValue)
     let prop: any = it.collProps
     for (const path_part of propsPath)
         prop = prop[path_part]
@@ -177,8 +180,8 @@ export function collProp<T>(it: ProjOrColl, propsPath: string[], defaultValue: T
         : ((it === appState.proj) ? defaultValue
             : collProp<T>(collParent(it as Collection), propsPath, defaultValue))
 }
-export function pageProp<T>(it: ProjOrColl | Page, propsPath: string[], defaultValue: T): T {
-    const is_page = ((it as any)['panels'] !== undefined)
+export function pageProp<T>(it: ProjOrCollOrPage, propsPath: string[], defaultValue: T): T {
+    const is_page = (it.panels !== undefined)
     let prop: any = it.pageProps
     for (const path_part of propsPath)
         prop = prop[path_part]
@@ -187,8 +190,8 @@ export function pageProp<T>(it: ProjOrColl | Page, propsPath: string[], defaultV
             : pageProp<T>(is_page ? pageParent(it as Page)
                 : collParent(it as Collection), propsPath, defaultValue))
 }
-export function panelProp<T>(it: ProjOrColl | Page, propsPath: string[], defaultValue: T, panelIdx?: number): T {
-    const is_page = ((it as any)['panels'] !== undefined)
+export function panelProp<T>(it: ProjOrCollOrPage, propsPath: string[], defaultValue: T, panelIdx?: number): T {
+    const is_page = (it.panels !== undefined)
     let prop: any = it.panelProps
     if (is_page && (panelIdx !== undefined))
         prop = (it as Page).panels[panelIdx].panelProps
@@ -198,6 +201,40 @@ export function panelProp<T>(it: ProjOrColl | Page, propsPath: string[], default
         : ((it === appState.proj) ? defaultValue
             : panelProp<T>(is_page ? ((panelIdx !== undefined) ? it : pageParent(it as Page))
                 : collParent(it as Collection), propsPath, defaultValue))
+}
+
+export function collProps(it: ProjOrCollOrPage): CollProps {
+    return props<CollProps>(it, 'collProps')
+}
+export function pageProps(it: ProjOrCollOrPage): PageProps {
+    return props<PageProps>(it, 'pageProps')
+}
+export function panelProps(it: ProjOrCollOrPage, panelIdx?: number): PanelProps {
+    const ret = props<PanelProps>(it, 'panelProps')
+    const is_page = (it.panels !== undefined)
+    if (is_page && panelIdx !== undefined) {
+        const props = (it as Page).panels[panelIdx].panelProps
+        for (const k in props)
+            if ((props as any)[k] !== undefined)
+                (ret as any)[k] = (props as any)[k]
+    }
+    return ret
+}
+export function props<T>(it: ProjOrCollOrPage, propsName: string): T {
+    const is_page = (it.panels !== undefined)
+    const ret = (appState.proj as any)[propsName] as T
+    if (propsName === 'panelProps')
+        console.log("/", jsonUnJson(ret), appState.proj)
+    const colls = (it == appState.proj) ? [] : (is_page ? pageParents(it as Page) : [it as Collection].concat(collParents(it as Collection)))
+    for (let i = colls.length - 1; i >= 0; i--) {
+        const coll = colls[i]
+        for (const k in (coll as any)[propsName] as T)
+            if ((((coll as any)[propsName] as T as any)[k] !== undefined) && ((ret as any)[k] === undefined))
+                (ret as any)[k] = ((coll as any)[propsName] as T as any)[k]
+        if (propsName === 'panelProps')
+            console.log(coll.name, jsonUnJson(ret))
+    }
+    return ret
 }
 
 export type PageSize = { wMm: number, hMm: number }
@@ -258,7 +295,8 @@ export function arrayMoveItem<T>(arr: T[], idxOld: number, idxNew: number): T[] 
     return arr
 }
 
-export function deepEq(val1: any, val2: any, mustSameArrayOrder?: boolean): boolean {
+export function deepEq(val1: any, val2: any, ignoreArrayOrder?: boolean): boolean {
+    // deepEq only covers the JSON subset of the JS/TS type-scape
     if (val1 === val2 || (val1 === null && val2 === undefined) || (val1 === undefined && val2 === null))
         return true
     if ((typeof val1 == 'object') && (typeof val2 == 'object')) {
@@ -272,13 +310,13 @@ export function deepEq(val1: any, val2: any, mustSameArrayOrder?: boolean): bool
             for (const k in val2)
                 len2++
             for (const k in val1)
-                if (((++len1) > len2) || !deepEq(val1[k], val2[k], mustSameArrayOrder))
+                if (((++len1) > len2) || !deepEq(val1[k], val2[k], ignoreArrayOrder))
                     return false
             return (len1 == len2)
 
-        } else if (mustSameArrayOrder) { // 2 arrays, in order
+        } else if (!ignoreArrayOrder) { // 2 arrays, in order
             for (let i = 0; i < val1.length; i++)
-                if (!deepEq(val1[i], val2[i], mustSameArrayOrder))
+                if (!deepEq(val1[i], val2[i], ignoreArrayOrder))
                     return false
             return true
 
@@ -286,7 +324,7 @@ export function deepEq(val1: any, val2: any, mustSameArrayOrder?: boolean): bool
             for (const item1 of val1) {
                 let found = false
                 for (const item2 of val2)
-                    if (found = deepEq(item1, item2, mustSameArrayOrder))
+                    if (found = deepEq(item1, item2, ignoreArrayOrder))
                         break
                 if (!found)
                     return false
@@ -295,4 +333,8 @@ export function deepEq(val1: any, val2: any, mustSameArrayOrder?: boolean): bool
         }
     }
     return false
+}
+
+export function jsonUnJson(v: any): any {
+    return JSON.parse(JSON.stringify(v))
 }

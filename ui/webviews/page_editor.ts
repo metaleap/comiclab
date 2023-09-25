@@ -29,8 +29,9 @@ let ˍ: {
 } = {} as any
 
 export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfg: object, appState: º.AppState) {
-    pagePath = editorReuseKeyDerivedPagePath
     utils.onInit(vscode, extUri, vscCfg, appState)
+    pagePath = editorReuseKeyDerivedPagePath
+    page = º.pageFromPath(pagePath)!
     onAppStateRefreshed(appState)
     window.addEventListener('message', onMessage)
 }
@@ -82,17 +83,24 @@ function refreshPanelBars(edgeBarsOnly?: boolean) {
 }
 
 function onAppStateRefreshed(newAppState: º.AppState) {
+    const old_pageprops = º.pageProps(page)
+    const old_panelprops = º.panelProps(page)
+    // console.log("OLD", º.jsonUnJson(old_pageprops), º.jsonUnJson(old_panelprops))
+
     if (newAppState.config)
         º.appState.config = newAppState.config
     if (newAppState.proj)
         º.appState.proj = newAppState.proj
 
-    const proj_page = º.pageFromPath(pagePath) as º.Page
-    const changed = (!page) || !º.deepEq(page, proj_page, true)
-    page = proj_page
+    const new_page = º.pageFromPath(pagePath) as º.Page
+    const new_panelprops = º.panelProps(new_page)
+    const new_pageprops = º.pageProps(new_page)
+    // console.log("NEW", º.jsonUnJson(new_pageprops), º.deepEq(old_pageprops, new_pageprops), º.jsonUnJson(new_panelprops), º.deepEq(old_panelprops, new_panelprops))
+    const page_changed = !º.deepEq(page, new_page)
+    page = new_page
     if (!ˍ.main)
         createGui()
-    else if (changed)
+    else if (page_changed || (!º.deepEq(old_pageprops, new_pageprops)) || (!º.deepEq(old_panelprops, new_panelprops)))
         reRenderPageCanvas()
 }
 

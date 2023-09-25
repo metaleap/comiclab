@@ -61,8 +61,8 @@ let main_tabs = ctl_tabs.create('coll_editor_main', {
 })
 
 export function onInit(editorReuseKeyDerivedCollPath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfgSettings: object, appState: º.AppState) {
-    collPath = editorReuseKeyDerivedCollPath
     utils.onInit(vscode, extUri, vscCfgSettings, appState)
+    collPath = editorReuseKeyDerivedCollPath
     onAppStateRefreshed(appState)
     van.add(document.body, main_tabs)
     window.addEventListener('message', onMessage)
