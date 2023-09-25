@@ -1,4 +1,4 @@
-import van, { State } from './vanjs/van-1.2.1.js'
+import van, { State } from './vanjs/van-1.2.1.debug.js'
 import * as º from './_º.js'
 import * as utils from './utils.js'
 
@@ -84,16 +84,26 @@ export function onInit(editorReuseKeyDerivedCollPath: string, vscode: { postMess
 }
 
 export function initAndCreateForPageOrPanel(domId: string, page: º.Page, panelIdx?: number) {
+    paperFormatFieldPlaceholder.val = 'onInit'
+    setInterval(() => {
+        paperFormatFieldPlaceholder.val = new Date().getTime().toString()
+    }, 1234)
     const coll = º.pageParent(page)
     collPath = º.collToPath(coll)
     altTargetPage = page
     altTargetPanelIdx = panelIdx
-    onAppStateRefreshed()
-    window.addEventListener('message', onMessage)
-    return ctl_multipanel.create(domId, (panelIdx === undefined)
-        ? { "Page Properties": pageprops_form.dom, "Panel Defaults": panelprops_form.dom }
-        : { "Panel Properties": panelprops_form.dom },
-    )
+    return {
+        dom: ctl_multipanel.create(domId, (panelIdx === undefined)
+            ? { "Page Properties": pageprops_form.dom, "Panel Defaults": panelprops_form.dom }
+            : { "Panel Properties": panelprops_form.dom },
+        ),
+        onAddedToPage: () => {
+            onAppStateRefreshed()
+            window.addEventListener('message', onMessage)
+        },
+        onRemovedFromPage: () =>
+            window.removeEventListener('message', onMessage)
+    }
 }
 
 function setDisabled(disabled: boolean) {

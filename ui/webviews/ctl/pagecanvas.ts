@@ -1,4 +1,4 @@
-import van, { ChildDom } from '../vanjs/van-1.2.1.js'
+import van, { ChildDom } from '../vanjs/van-1.2.1.debug.js'
 import * as utils from '../utils.js'
 import * as º from '../_º.js'
 

@@ -1,4 +1,4 @@
-import van, { ChildDom, Props, State } from '../vanjs/van-1.2.1.js'
+import van, { ChildDom, Props, State } from '../vanjs/van-1.2.1.debug.js'
 import * as utils from '../utils.js'
 
 const html = van.tags
@@ -28,6 +28,8 @@ export function create(domId: string, fields: Field[], dynFields: State<Field[]>
     let latest_rec = van.state({} as Rec)
 
     let fieldRow = (field: Field, isDyn: boolean): ChildDom => {
+        if (field.placeholder)
+            setInterval(() => { field.placeholder!.val = new Date().getTime().toString() }, 1234)
         return html.div({ 'class': 'inputform-field' },
             html.div({ 'class': 'inputform-field-label' }, (isDyn ? html.em : html.strong)(field.title + ":")),
             html.div({ 'class': 'inputform-field-input' },

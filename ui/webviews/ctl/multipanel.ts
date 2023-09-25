@@ -1,4 +1,4 @@
-import van, { ChildDom } from '../vanjs/van-1.2.1.js'
+import van, { ChildDom } from '../vanjs/van-1.2.1.debug.js'
 
 const html = van.tags
 
