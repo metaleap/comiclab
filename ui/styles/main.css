@@ -173,7 +173,6 @@ body>div#page_editor_main>svg#page_editor_canvas {
 body>div#page_editor_main>svg#page_editor_canvas>rect.panel {
     fill: #ffffff;
     stroke: #000000;
-    stroke-width: 0.77mm;
     opacity: 0.22;
 }
 

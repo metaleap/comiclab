@@ -4,7 +4,7 @@ type Collection struct {
 	Name        string        `json:"name"`
 	Collections []*Collection `json:"collections"`
 	Pages       []*PageLayout `json:"pages"`
-	Props       CollProps     `json:"props"`
+	CollProps   CollProps     `json:"collProps"`
 }
 
 type CollProps struct {
@@ -21,9 +21,9 @@ type CollProps struct {
 }
 
 type PageLayout struct {
-	Name   string    `json:"name"`
-	Panels []*Panel  `json:"panels"`
-	Props  PageProps `json:"props"`
+	Name      string    `json:"name"`
+	Panels    []*Panel  `json:"panels"`
+	PageProps PageProps `json:"pageProps"`
 }
 
 type PageProps struct {

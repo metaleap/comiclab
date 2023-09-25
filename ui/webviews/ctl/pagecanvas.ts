@@ -41,14 +41,14 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
         },
         addNewPanel: () => {
             const mx = parseInt((it.xMm ?? 0).toFixed(0)), my = parseInt((it.yMm ?? 0).toFixed(0))
-            page.panels.push({ x: parseInt((parseInt((mx / 10).toFixed(0)) * 10).toFixed(0)), y: parseInt((parseInt((my / 10).toFixed(0)) * 10).toFixed(0)), w: 100, h: 100, round: 0 })
+            page.panels.push({ props: {}, x: parseInt((parseInt((mx / 10).toFixed(0)) * 10).toFixed(0)), y: parseInt((parseInt((my / 10).toFixed(0)) * 10).toFixed(0)), w: 100, h: 100, round: 0 })
             it.notifyModified(page, page.panels.length - 1, true)
         },
         addNewPanelGrid: (numRows: number, numCols: number) => {
             const wcols = page_size.wMm / numCols, hrows = page_size.hMm / numRows
             for (let r = 0; r < numRows; r++)
                 for (let c = 0; c < numCols; c++)
-                    page.panels.push({ round: 0, w: wcols, h: hrows, x: c * wcols, y: r * hrows })
+                    page.panels.push({ props: {}, round: 0, w: wcols, h: hrows, x: c * wcols, y: r * hrows })
             it.notifyModified(page, undefined, true)
         },
         panelReorder: (direction: º.Direction, dontDoIt?: boolean) => {
@@ -106,6 +106,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
     }
 
     const panels: Element[] = []
+    const panelBorderWidthMm = º.collProp(º.pageParent(page), ['pages', 'panels', 'borderWidthMm'], 0)
     for (let pidx = 0; pidx < page.panels.length; pidx++) {
         const panel = page.panels[pidx]
         let rx = 0, ry = 0
@@ -116,7 +117,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                 [rx, ry] = [rx * panel.round, ry * panel.round]
         }
         const rect = svg.rect({
-            'class': 'panel' + ((pidx === selPanelIdx) ? ' panel-selected' : ''), 'id': 'panel_' + pidx, 'data-pidx': pidx, 'tabindex': 2,
+            'id': 'panel_' + pidx, 'class': 'panel' + ((pidx === selPanelIdx) ? ' panel-selected' : ''), 'stroke-width': `${panelBorderWidthMm}mm`, 'tabindex': 2,
             'x': `${panel.x}mm`, 'y': `${panel.y}mm`, 'width': `${panel.w}mm`, 'height': `${panel.h}mm`, 'rx': rx + 'mm', 'ry': ry + 'mm',
             'onfocus': (evt: Event) => it.panelSelect(pidx), 'onclick': (evt: Event) => evt.stopPropagation(),
             'onkeydown': (evt: KeyboardEvent) => {

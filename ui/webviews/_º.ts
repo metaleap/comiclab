@@ -1,6 +1,6 @@
 
 export const appState: AppState = {
-    proj: { collections: [], defaults: { content: {}, pages: { panels: {} } } },
+    proj: { collections: [], collProps: { content: {}, pages: { panels: {} } } },
     config: { contentAuthoring: {} },
 }
 
@@ -25,14 +25,14 @@ export type PaperFormat = {
 
 export type Proj = {
     collections: Collection[]
-    defaults: CollProps
+    collProps: CollProps
 }
 
 export type Collection = {
     name: string,
     collections: Collection[],
     pages: Page[],
-    props: CollProps,
+    collProps: CollProps,
 }
 
 export type CollProps = {
@@ -51,7 +51,7 @@ export type CollProps = {
 export type Page = {
     name: string,
     panels: Panel[],
-    props: PageProps,
+    pageProps: PageProps,
 }
 
 export type PageProps = {
@@ -63,9 +63,13 @@ export type Panel = {
     w: number,
     h: number,
     round: number,
+    props: PanelProps,
 }
 
-type CollOrProj = { name?: string, collections: Collection[] }
+export type PanelProps = {
+}
+
+type ProjOrColl = { name?: string, collections: Collection[], collProps: CollProps }
 
 export function walkCollections<T>(perColl: (_: Collection[]) => any, parents?: Collection[]) {
     const colls = (parents && parents.length) ? parents[0].collections : appState.proj.collections
@@ -79,22 +83,21 @@ export function walkCollections<T>(perColl: (_: Collection[]) => any, parents?: 
     return undefined
 }
 
-export function collParent(coll: Collection): CollOrProj {
+export function collParent(coll: Collection): ProjOrColl {
     const parents_path = collParents(coll)
     return (parents_path.length > 0) ? parents_path[0] : appState.proj
 }
 
 export function collParents(coll: Collection): Collection[] {
-    return walkCollections((path: Collection[]) => {
+    return (!coll) ? [] : (walkCollections((path: Collection[]) => {
         if (path[0] == coll)
             return path.slice(1)
         return undefined
-    }) ?? []
+    }) ?? [])
 }
 
-export function pageParent(page: Page): Collection | undefined {
-    const parents_path = pageParents(page)
-    return (parents_path && parents_path.length) ? parents_path[0] : undefined
+export function pageParent(page: Page): Collection {
+    return pageParents(page)[0]
 }
 
 export function pageParents(page: Page): Collection[] {
@@ -132,7 +135,7 @@ export function collChildPage(coll: Collection, id: string, ...ignore: Page[]): 
     return coll.pages.find(_ => (_.name == id) && !ignore.includes(_))
 }
 
-export function collChildColl(coll: CollOrProj, id: string, ...ignore: Collection[]): Collection | undefined {
+export function collChildColl(coll: ProjOrColl, id: string, ...ignore: Collection[]): Collection | undefined {
     return coll.collections.find(_ => (_.name == id) && !ignore.includes(_))
 }
 
@@ -155,22 +158,26 @@ export function collFromPath(path: string): Collection | undefined {
 
 export function collPageFormat(coll: Collection): PaperFormat | undefined {
     const path = [coll].concat(collParents(coll))
-    for (const coll of path) {
-        console.log(collToPath(coll))
-        if (coll.props.pages.paperFormatId && coll.props.pages.paperFormatId.length > 0)
-            return appState.config.contentAuthoring.paperFormats ? appState.config.contentAuthoring.paperFormats[coll.props.pages.paperFormatId] : undefined
-    }
+    for (const coll of path)
+        if (coll.collProps.pages.paperFormatId && coll.collProps.pages.paperFormatId.length > 0)
+            return appState.config.contentAuthoring.paperFormats ? appState.config.contentAuthoring.paperFormats[coll.collProps.pages.paperFormatId] : undefined
     return undefined
+}
+
+export function collProp<T>(it: ProjOrColl, propsPath: string[], defaultValue: T): T {
+    let prop: any = it.collProps
+    for (const path_part of propsPath)
+        prop = prop[path_part]
+    return (prop && ((typeof prop) === (typeof defaultValue))) ? prop :
+        ((it === appState.proj) ? defaultValue : collProp<T>(collParent(it as Collection), propsPath, defaultValue))
 }
 
 export type PageSize = { wMm: number, hMm: number }
 export function pageSizeMm(page: Page): PageSize {
     const coll = pageParent(page)
-    if (coll) {
-        const page_format = collPageFormat(coll)
-        if (page_format)
-            return { wMm: page_format.widthMm, hMm: page_format.heightMm }
-    }
+    const page_format = collPageFormat(coll)
+    if (page_format)
+        return { wMm: page_format.widthMm, hMm: page_format.heightMm }
     return { wMm: 0, hMm: 0 }
 }
 

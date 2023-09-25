@@ -136,7 +136,6 @@ export let validatorLookup: ValidateFunc = (_: Rec, field: Field, newFieldValue:
 export function validatorNumeric(numOptions?: Num): ValidateFunc {
     return (_: Rec, field: Field, newFieldValue: string) => {
         const num = numOptions ?? field.num
-        console.log(num)
         if ((num === undefined) || (newFieldValue.length === 0))
             return undefined
         let n: number

@@ -34,7 +34,7 @@ class CollEditor extends base_editor.WebviewPanel {
             return utils.alert("NEW BUG: coll " + this.collPath + " not found?!")
         switch (msg.ident) {
             case 'onCollModified':
-                coll.props = msg.payload.props
+                coll.collProps = msg.payload.collProps
                 app.events.modifiedProj.now(º.appState.proj)
                 break
             default:
