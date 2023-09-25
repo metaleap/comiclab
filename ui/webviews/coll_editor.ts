@@ -6,7 +6,6 @@ import * as ctl_tabs from './ctl/tabs.js'
 import * as ctl_inputform from './ctl/inputform.js'
 import * as ctl_multipanel from './ctl/multipanel.js'
 
-
 const html = van.tags
 
 

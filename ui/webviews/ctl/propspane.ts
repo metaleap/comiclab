@@ -10,7 +10,7 @@ export function show(domId: string, page: º.Page, targetDom: HTMLElement) {
     const panel_idx = parseInt(targetDom.getAttribute('data-panelIdx') ?? '')
     const forms = coll_editor.initAndCreateForPageOrPanel(domId, page, isNaN(panel_idx) ? undefined : panel_idx)
     const dialog = html.dialog({ 'class': 'page-editor-props-dialog' }, forms.dom)
-    dialog.onclose = (evt) => {
+    dialog.onclose = () => {
         dialog.remove()
         forms.onRemovedFromPage()
     }
