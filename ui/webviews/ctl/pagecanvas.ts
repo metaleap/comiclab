@@ -43,14 +43,14 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
         },
         addNewPanel: () => {
             const mx = parseInt((it.xMm ?? 0).toFixed(0)), my = parseInt((it.yMm ?? 0).toFixed(0))
-            page.panels.push({ panelProps: {}, x: parseInt((parseInt((mx / 10).toFixed(0)) * 10).toFixed(0)), y: parseInt((parseInt((my / 10).toFixed(0)) * 10).toFixed(0)), w: 100, h: 100, round: 0 })
+            page.panels.push({ panelProps: {}, x: parseInt((parseInt((mx / 10).toFixed(0)) * 10).toFixed(0)), y: parseInt((parseInt((my / 10).toFixed(0)) * 10).toFixed(0)), w: 100, h: 100 })
             it.notifyModified(page, page.panels.length - 1, true)
         },
         addNewPanelGrid: (numRows: number, numCols: number) => {
             const wcols = page_size.wMm / numCols, hrows = page_size.hMm / numRows
             for (let r = 0; r < numRows; r++)
                 for (let c = 0; c < numCols; c++)
-                    page.panels.push({ panelProps: {}, round: 0, w: wcols, h: hrows, x: c * wcols, y: r * hrows })
+                    page.panels.push({ panelProps: {}, w: wcols, h: hrows, x: c * wcols, y: r * hrows })
             it.notifyModified(page, undefined, true)
         },
         panelReorder: (direction: º.Direction, dontDoIt?: boolean) => {
@@ -110,14 +110,15 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
     const panels: Element[] = []
     for (let pidx = 0; pidx < page.panels.length; pidx++) {
         const panel = page.panels[pidx]
+        const props = º.panelProps(page, pidx)
         let rx = 0, ry = 0
-        if (panel.round >= 0.01) {
+        if ((props.roundness !== undefined) && (props.roundness >= 0.01)) {
             rx = 0.5 * Math.max(panel.w, panel.h)
             ry = rx
-            if (panel.round <= 0.99)
-                [rx, ry] = [rx * panel.round, ry * panel.round]
+            if (props.roundness <= 0.99)
+                [rx, ry] = [rx * props.roundness, ry * props.roundness]
         }
-        const panelBorderWidthMm = º.panelProp(page, ['borderWidthMm'], 0, pidx)
+        const panelBorderWidthMm = props.borderWidthMm ?? 0
         const rect = svg.rect({
             'id': 'panel_' + pidx, 'class': 'panel' + ((pidx === selPanelIdx) ? ' panel-selected' : ''), 'stroke-width': `${panelBorderWidthMm}mm`, 'tabindex': 2,
             'x': `${panel.x}mm`, 'y': `${panel.y}mm`, 'width': `${panel.w}mm`, 'height': `${panel.h}mm`, 'rx': rx + 'mm', 'ry': ry + 'mm',

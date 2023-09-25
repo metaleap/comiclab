@@ -16,20 +16,30 @@ const authorFieldLookup = van.state({} as ctl_inputform.Lookup)
 const paperFormatFieldPlaceholder = van.state('')
 const paperFormatFieldLookup = van.state({} as ctl_inputform.Lookup)
 const panelBorderWidthPlaceholder = van.state('')
+const panelRoundnessPlaceholder = van.state('')
 const contentDynFields = van.state([] as ctl_inputform.Field[])
 const contentDynFieldsLangSep = ':'
 
-const authorField: ctl_inputform.Field = { id: 'authorId', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: authorFieldLookup, placeholder: authorFieldPlaceholder }
-const paperFormatField: ctl_inputform.Field = { id: 'paperFormatId', title: 'Page Format', validators: [ctl_inputform.validatorLookup], lookUp: paperFormatFieldLookup, placeholder: paperFormatFieldPlaceholder }
-const panelBorderWidthField: ctl_inputform.Field = { id: 'panelBorderWidth', title: 'Panel Border Width (mm)', validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: panelBorderWidthPlaceholder }
+const authorField: ctl_inputform.Field = { id: 'authorId', title: "Author", validators: [ctl_inputform.validatorLookup], lookUp: authorFieldLookup, placeholder: authorFieldPlaceholder }
+const paperFormatField: ctl_inputform.Field = { id: 'paperFormatId', title: "Page Format", validators: [ctl_inputform.validatorLookup], lookUp: paperFormatFieldLookup, placeholder: paperFormatFieldPlaceholder }
+const panelBorderWidthField: ctl_inputform.Field = { id: 'panelBorderWidth', title: "Panel Border Width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: panelBorderWidthPlaceholder }
+const panelRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: panelRoundnessPlaceholder }
 
-const pageprops_form = ctl_inputform.create('pageprops_form', [paperFormatField, panelBorderWidthField], undefined,
+const pageprops_form = ctl_inputform.create('pageprops_form', [paperFormatField], undefined,
     (userModifiedRec: ctl_inputform.Rec) => {
         setDisabled(true)
         const coll = º.collFromPath(collPath) as º.Collection
         coll.pageProps.paperFormatId = userModifiedRec['paperFormatId']
+        utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
+    })
+const panelprops_form = ctl_inputform.create('panelprops_form', [panelBorderWidthField, panelRoundnessField], undefined,
+    (userModifiedRec: ctl_inputform.Rec) => {
+        setDisabled(true)
+        const coll = º.collFromPath(collPath) as º.Collection
         if (isNaN(coll.panelProps.borderWidthMm = parseFloat(userModifiedRec['panelBorderWidth'])))
-            coll.panelProps.borderWidthMm = undefined
+            delete coll.panelProps.borderWidthMm
+        if (isNaN(coll.panelProps.roundness = parseFloat(userModifiedRec['roundness'])))
+            delete coll.panelProps.roundness
         utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
     })
 const contentprops_form = ctl_inputform.create('contentprops_form', [authorField], contentDynFields,
@@ -56,6 +66,7 @@ let main_tabs = ctl_tabs.create('coll_editor_main', {
     "Collection Settings": ctl_multipanel.create('coll_editor_props', {
         "Content Properties": contentprops_form.dom,
         "Page Defaults": pageprops_form.dom,
+        "Panel Defaults": panelprops_form.dom,
     }),
     "Preview": html.div('(TODO)'),
 })
@@ -93,6 +104,7 @@ function onAppStateRefreshed(newAppState: º.AppState) {
     if (coll) {
         refreshPlaceholders(coll, [
             { fill: panelBorderWidthPlaceholder, from: (_) => _.panelProps.borderWidthMm?.toFixed(1) ?? '', },
+            { fill: panelRoundnessPlaceholder, from: (_) => _.panelProps.roundness?.toFixed(2) ?? '', },
             {
                 fill: authorFieldPlaceholder, from: (_) => _.collProps.authorId ?? '', display: (_) =>
                     º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[_] ?? '') : ''
@@ -102,8 +114,9 @@ function onAppStateRefreshed(newAppState: º.AppState) {
                     º.appState.config.contentAuthoring.paperFormats ? º.strPaperFormat(º.appState.config.contentAuthoring.paperFormats[_]) : ''
             },
         ])
-        contentprops_form.onDataChangedAtSource(curContentProps(coll))
-        pageprops_form.onDataChangedAtSource(curPageProps(coll))
+        contentprops_form.onDataChangedAtSource(curContentPropsRec(coll))
+        pageprops_form.onDataChangedAtSource(curPagePropsRec(coll))
+        panelprops_form.onDataChangedAtSource(curPanelPropsRec(coll))
     }
     setDisabled(false)
 }
@@ -134,7 +147,7 @@ function onMessage(evt: MessageEvent) {
     }
 }
 
-function curContentProps(coll: º.Collection) {
+function curContentPropsRec(coll: º.Collection): ctl_inputform.Rec {
     const ret: ctl_inputform.Rec = { 'authorId': coll.collProps.authorId ?? '' }
     if (coll.collProps.customFields)
         for (const dyn_field_id in coll.collProps.customFields)
@@ -144,7 +157,13 @@ function curContentProps(coll: º.Collection) {
     return ret
 }
 
-function curPageProps(coll: º.Collection) {
-    const ret: ctl_inputform.Rec = { 'paperFormatId': coll.pageProps.paperFormatId ?? '', 'panelBorderWidth': coll.panelProps.borderWidthMm?.toFixed(1) ?? '' }
-    return ret
+function curPagePropsRec(coll: º.Collection): ctl_inputform.Rec {
+    return { 'paperFormatId': coll.pageProps.paperFormatId ?? '' }
+}
+
+function curPanelPropsRec(coll: º.Collection): ctl_inputform.Rec {
+    return {
+        'panelBorderWidth': coll.panelProps.borderWidthMm?.toFixed(1) ?? '',
+        'roundness': coll.panelProps.roundness?.toFixed(2) ?? '',
+    }
 }

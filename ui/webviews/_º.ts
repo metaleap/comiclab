@@ -50,7 +50,6 @@ export type Panel = {
     y: number
     w: number
     h: number
-    round: number
     panelProps: PanelProps
 }
 
@@ -74,6 +73,7 @@ export type PageProps = {
 
 export type PanelProps = {
     borderWidthMm?: number
+    roundness?: number
 }
 
 export function walkCollections<T>(perColl: (_: Collection[]) => any, parents?: Collection[]) {

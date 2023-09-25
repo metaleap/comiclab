@@ -21,7 +21,6 @@ type Panel struct {
 	Y          int        `json:"y"`
 	W          int        `json:"w"`
 	H          int        `json:"h"`
-	Round      float64    `json:"round"`
 	PanelProps PanelProps `json:"panelProps"`
 }
 
@@ -35,5 +34,6 @@ type PageProps struct {
 }
 
 type PanelProps struct {
-	BorderWidthMm float64 `json:"borderWidthMm,omitempty"`
+	Roundness     *float64 `json:"roundness,omitempty"`
+	BorderWidthMm *float64 `json:"borderWidthMm,omitempty"`
 }

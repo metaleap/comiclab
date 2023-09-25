@@ -218,7 +218,7 @@ function createGui() {
             const mm = mmFromPx(evt.clientX, evt.clientY, true, page_size)
             ˍ.page_canvas.xMm = mm.xPx
             ˍ.page_canvas.yMm = mm.yPx
-            ˍ.top_toolbar_mpos_text.innerText = `X: ${(ˍ.page_canvas.xMm * 0.1).toFixed(1)} , Y:${(ˍ.page_canvas.yMm * 0.1).toFixed(1)}`
+            ˍ.top_toolbar_mpos_text.innerText = `X: ${(ˍ.page_canvas.xMm * 0.1).toFixed(1)}cm , Y:${(ˍ.page_canvas.yMm * 0.1).toFixed(1)}cm`
         },
     }, ˍ.page_canvas.dom, ˍ.panelbar_left.dom, ˍ.panelbar_right.dom, ˍ.panelbar_upper.dom, ˍ.panelbar_lower.dom)
     van.add(document.body, ˍ.main, ˍ.panel_toolbar.dom, ˍ.top_toolbar)

@@ -10,8 +10,8 @@ import * as ctl_multipanel from './ctl/multipanel.js'
 
 const html = van.tags
 
-let grid_authors = newGridForStringMap('config_authors', 'Author', 'author_full_name', 'Full Name', curAuthors, (_ => { º.appState.config.contentAuthoring.authors = _ }))
-let grid_languages = newGridForStringMap('config_languages', 'Language', 'lang_name', 'Name', curLanguages, (dict) => { º.appState.config.contentAuthoring.languages = dict })
+let grid_authors = newGridForStringMap('config_authors', 'Author', 'author_full_name', 'Full Name', curAuthorRecs, (_ => { º.appState.config.contentAuthoring.authors = _ }))
+let grid_languages = newGridForStringMap('config_languages', 'Language', 'lang_name', 'Name', curLanguagesRecs, (dict) => { º.appState.config.contentAuthoring.languages = dict })
 let grid_customfields = ctl_inputgrid.create('config_customfields', [
     { id: 'id', title: "Content Field ID", validators: [] },
     { id: 'localizable', title: "Multi-Language", validators: [ctl_inputform.validatorLookup], lookUp: ctl_inputform.lookupBool },
@@ -57,10 +57,10 @@ function setDisabled(disabled: boolean) {
 
 function onAppStateCfgRefreshed(newConfig: º.Config) {
     º.appState.config = newConfig as º.Config
-    grid_authors.onDataChangedAtSource(curAuthors())
-    grid_paperformats.onDataChangedAtSource(curPaperFormats())
-    grid_languages.onDataChangedAtSource(curLanguages())
-    grid_customfields.onDataChangedAtSource(curCustomFields())
+    grid_authors.onDataChangedAtSource(curAuthorRecs())
+    grid_paperformats.onDataChangedAtSource(curPaperFormatRecs())
+    grid_languages.onDataChangedAtSource(curLanguagesRecs())
+    grid_customfields.onDataChangedAtSource(curCustomFieldRecs())
     setDisabled(false)
 }
 
@@ -87,25 +87,25 @@ function newGridForStringMap(id: string, title: string, valueName: string, value
     })
 }
 
-function curAuthors() {
+function curAuthorRecs() {
     return utils.dictToArr(º.appState.config.contentAuthoring.authors, (key, value) => ({
         'id': key, 'author_full_name': value,
     } as ctl_inputform.Rec))
 }
 
-function curCustomFields() {
+function curCustomFieldRecs() {
     return utils.dictToArr(º.appState.config.contentAuthoring.customFields, (key, value) => ({
         'id': key, 'localizable': (value ? 'true' : 'false'),
     } as ctl_inputform.Rec))
 }
 
-function curLanguages() {
+function curLanguagesRecs() {
     return utils.dictToArr(º.appState.config.contentAuthoring.languages, (key, value) => ({
         'id': key, 'lang_name': value,
     } as ctl_inputform.Rec))
 }
 
-function curPaperFormats() {
+function curPaperFormatRecs() {
     return utils.dictToArr(º.appState.config.contentAuthoring.paperFormats, (key, value) => ({
         'id': key, 'widthMm': value.widthMm.toString(), 'heightMm': value.heightMm.toString(),
     } as ctl_inputform.Rec))

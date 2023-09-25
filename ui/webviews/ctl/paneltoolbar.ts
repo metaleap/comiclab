@@ -18,11 +18,11 @@ export type PanelToolbar = {
 export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, curPage: () => º.Page, onUserModified: () => void): PanelToolbar {
     const ˍ = {
         label_panel_idx: html.b({}, 'Panel #? / ?'),
-        input_width: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1' }),
-        input_height: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1' }),
-        input_pos_x: html.input({ 'type': 'number', 'step': '0.1' }),
-        input_pos_y: html.input({ 'type': 'number', 'step': '0.1' }),
-        input_round: html.input({ 'type': 'number', 'step': 0.01, min: 0, max: 1 }),
+        input_width: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
+        input_height: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
+        input_pos_x: html.input({ 'type': 'number', 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
+        input_pos_y: html.input({ 'type': 'number', 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
+        input_round: html.input({ 'type': 'number', 'step': 0.01, 'min': 0, 'max': 1, 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
         label_delete_prompt: html.span({ 'style': 'display:none' }, 'Sure to ', html.a({ 'onclick': () => it.deletePanel() }, ' delete '), ' this panel?'),
         btn_move_first: html.button({ 'class': 'btn', 'title': `Send to back`, 'style': utils.codiconCss('fold-down'), 'data-movehow': º.DirStart, 'disabled': true, }),
         btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to front`, 'style': utils.codiconCss('fold-up'), 'data-movehow': º.DirEnd, 'disabled': true, }),
@@ -41,7 +41,7 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
                 ˍ.label_panel_idx,
                 ' — X,Y=', ˍ.input_pos_x, ',', ˍ.input_pos_y, ' — W,H=', ˍ.input_width, ',', ˍ.input_height, ' — roundness=', ˍ.input_round,
             ),
-            html.div({ 'class': 'page-editor-top-toolbar-block' },
+            html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
                 ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev, ˍ.btn_move_first,
             ),
         ),
@@ -64,7 +64,8 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
                 panel.h = parseInt((parseFloat(ˍ.input_height.value) * 10).toFixed(0))
                 panel.x = parseInt((parseFloat(ˍ.input_pos_x.value) * 10).toFixed(0))
                 panel.y = parseInt((parseFloat(ˍ.input_pos_y.value) * 10).toFixed(0))
-                panel.round = parseFloat(ˍ.input_round.value)
+                if (isNaN(panel.panelProps.roundness = parseFloat(ˍ.input_round.value)))
+                    panel.panelProps.roundness = undefined
             }
             onUserModified()
         },
@@ -78,18 +79,16 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
             const panel = page.panels[it.canvas.selPanelIdx]
 
             ˍ.label_panel_idx.textContent = `(Panel #${1 + it.canvas.selPanelIdx} / ${page.panels.length})`
-            ˍ.input_round.value = panel.round.toFixed(2)
+            ˍ.input_round.value = (panel.panelProps.roundness ?? 0).toFixed(2)
             for (const inputs of [{ 'x': ˍ.input_pos_x, 'y': ˍ.input_pos_y, 'w': ˍ.input_width, 'h': ˍ.input_height } as { [_: string]: HTMLInputElement }])
                 for (const prop_name in inputs) {
                     const input = inputs[prop_name] as HTMLInputElement
                     input.value = (panel[prop_name as 'x' | 'y' | 'w' | 'h'] * 0.1).toFixed(1).padStart(4, '0')
-                    input.onchange = (evt) =>
-                        it.onUserModifiedSizeOrPosViaInputs()
                 }
             for (const btn of [ˍ.btn_move_first, ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev]) {
                 const dir: º.Direction = parseInt(btn.getAttribute('data-movehow') ?? '')
                 btn.disabled = !it.canvas.panelReorder(dir, true)
-                btn.onclick = (evt) =>
+                btn.onclick = () =>
                     it.canvas.panelReorder(dir)
             }
 
