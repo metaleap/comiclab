@@ -287,3 +287,14 @@ body>div#page_editor_main>div#page_editor_panel_edgebar_left>button.btn,
 body>div#page_editor_main>div#page_editor_panel_edgebar_right>button.btn {
     display: block;
 }
+
+body>dialog.page-editor-props-bar {
+    position: absolute;
+    display: block;
+    width: 44%;
+    height: 44%;
+    max-width: 88%;
+    max-height: 88%;
+    min-width: 11%;
+    min-height: 11%;
+}

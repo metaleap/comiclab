@@ -39,8 +39,10 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
             ),
             html.div({ 'class': 'page-editor-top-toolbar-block' },
                 ˍ.label_panel_idx,
-                ' — X,Y=', ˍ.input_pos_x, ',', ˍ.input_pos_y, ' — W,H=', ˍ.input_width, ',', ˍ.input_height, ' — roundness=', ˍ.input_round,
+                ' — X,Y=', ˍ.input_pos_x, ',', ˍ.input_pos_y, 'cm — W,H=', ˍ.input_width, ',', ˍ.input_height, 'cm'
             ),
+            html.div({ 'class': 'page-editor-top-toolbar-block' },
+                ˍ.input_round,),
             html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
                 ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev, ˍ.btn_move_first,
             ),

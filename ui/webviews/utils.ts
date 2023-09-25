@@ -14,6 +14,11 @@ export function onInit(vscode: { postMessage: (_: any) => any }, baseUri: string
         if (appState.proj)
             º.appState.proj = appState.proj
     }
+    document.body.oncontextmenu = (evt: MouseEvent) => {
+        const target = evt.target as HTMLElement
+        if (!(target && target.tagName && (target.isContentEditable || ['input', 'textarea'].includes(target.tagName.toLowerCase()))))
+            evt.stopPropagation()
+    }
 }
 
 export function codiconCss(name: string) {
