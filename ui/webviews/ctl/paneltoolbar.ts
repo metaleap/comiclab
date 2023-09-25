@@ -76,10 +76,9 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
             }
             const page = curPage()
             const panel = page.panels[it.canvas.selPanelIdx]
-            {
-                ˍ.label_panel_idx.textContent = `(Panel #${1 + it.canvas.selPanelIdx} / ${page.panels.length})`
-                ˍ.input_round.value = panel.round.toFixed(2)
-            }
+
+            ˍ.label_panel_idx.textContent = `(Panel #${1 + it.canvas.selPanelIdx} / ${page.panels.length})`
+            ˍ.input_round.value = panel.round.toFixed(2)
             for (const inputs of [{ 'x': ˍ.input_pos_x, 'y': ˍ.input_pos_y, 'w': ˍ.input_width, 'h': ˍ.input_height } as { [_: string]: HTMLInputElement }])
                 for (const prop_name in inputs) {
                     const input = inputs[prop_name] as HTMLInputElement
