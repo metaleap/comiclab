@@ -1,6 +1,6 @@
 
 export const appState: AppState = {
-    proj: { collections: [], collProps: { content: {}, pages: { panels: {} } } },
+    proj: { collections: [], collProps: {}, pageProps: {}, panelProps: {} },
     config: { contentAuthoring: {} },
 }
 
@@ -26,50 +26,55 @@ export type PaperFormat = {
 export type Proj = {
     collections: Collection[]
     collProps: CollProps
+    pageProps: PageProps
+    panelProps: PanelProps
 }
 
 export type Collection = {
-    name: string,
-    collections: Collection[],
-    pages: Page[],
-    collProps: CollProps,
-}
-
-export type CollProps = {
-    content: {
-        authorId?: string,
-        customFields?: { [id: string]: { [lang_id: string]: string } },
-    },
-    pages: {
-        paperFormatId?: string,
-        panels: {
-            borderWidthMm?: number,
-        }
-    },
+    name: string
+    collections: Collection[]
+    pages: Page[]
+    collProps: CollProps
+    pageProps: PageProps
+    panelProps: PanelProps
 }
 
 export type Page = {
-    name: string,
-    panels: Panel[],
-    pageProps: PageProps,
-}
-
-export type PageProps = {
+    name: string
+    panels: Panel[]
+    pageProps: PageProps
+    panelProps: PanelProps
 }
 
 export type Panel = {
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    round: number,
-    props: PanelProps,
+    x: number
+    y: number
+    w: number
+    h: number
+    round: number
+    panelProps: PanelProps
+}
+
+export type ProjOrColl = {
+    name?: string
+    collections: Collection[]
+    collProps: CollProps
+    pageProps: PageProps
+    panelProps: PanelProps
+}
+
+export type CollProps = {
+    authorId?: string
+    customFields?: { [id: string]: { [lang_id: string]: string } }
+}
+
+export type PageProps = {
+    paperFormatId?: string
 }
 
 export type PanelProps = {
+    borderWidthMm?: number
 }
-
-type ProjOrColl = { name?: string, collections: Collection[], collProps: CollProps }
 
 export function walkCollections<T>(perColl: (_: Collection[]) => any, parents?: Collection[]) {
     const colls = (parents && parents.length) ? parents[0].collections : appState.proj.collections
@@ -159,8 +164,8 @@ export function collFromPath(path: string): Collection | undefined {
 export function collPageFormat(coll: Collection): PaperFormat | undefined {
     const path = [coll].concat(collParents(coll))
     for (const coll of path)
-        if (coll.collProps.pages.paperFormatId && coll.collProps.pages.paperFormatId.length > 0)
-            return appState.config.contentAuthoring.paperFormats ? appState.config.contentAuthoring.paperFormats[coll.collProps.pages.paperFormatId] : undefined
+        if (coll.pageProps.paperFormatId && coll.pageProps.paperFormatId.length > 0)
+            return appState.config.contentAuthoring.paperFormats ? appState.config.contentAuthoring.paperFormats[coll.pageProps.paperFormatId] : undefined
     return undefined
 }
 
@@ -168,8 +173,31 @@ export function collProp<T>(it: ProjOrColl, propsPath: string[], defaultValue: T
     let prop: any = it.collProps
     for (const path_part of propsPath)
         prop = prop[path_part]
-    return (prop && ((typeof prop) === (typeof defaultValue))) ? prop :
-        ((it === appState.proj) ? defaultValue : collProp<T>(collParent(it as Collection), propsPath, defaultValue))
+    return (prop && ((typeof prop) === (typeof defaultValue))) ? prop
+        : ((it === appState.proj) ? defaultValue
+            : collProp<T>(collParent(it as Collection), propsPath, defaultValue))
+}
+export function pageProp<T>(it: ProjOrColl | Page, propsPath: string[], defaultValue: T): T {
+    const is_page = ((it as any)['panels'] !== undefined)
+    let prop: any = it.pageProps
+    for (const path_part of propsPath)
+        prop = prop[path_part]
+    return (prop && ((typeof prop) === (typeof defaultValue))) ? prop
+        : ((it === appState.proj) ? defaultValue
+            : pageProp<T>(is_page ? pageParent(it as Page)
+                : collParent(it as Collection), propsPath, defaultValue))
+}
+export function panelProp<T>(it: ProjOrColl | Page, propsPath: string[], defaultValue: T, panelIdx?: number): T {
+    const is_page = ((it as any)['panels'] !== undefined)
+    let prop: any = it.panelProps
+    if (is_page && (panelIdx !== undefined))
+        prop = (it as Page).panels[panelIdx].panelProps
+    for (const path_part of propsPath)
+        prop = prop[path_part]
+    return (prop && ((typeof prop) === (typeof defaultValue))) ? prop
+        : ((it === appState.proj) ? defaultValue
+            : panelProp<T>(is_page ? ((panelIdx !== undefined) ? it : pageParent(it as Page))
+                : collParent(it as Collection), propsPath, defaultValue))
 }
 
 export type PageSize = { wMm: number, hMm: number }

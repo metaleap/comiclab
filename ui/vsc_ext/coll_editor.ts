@@ -35,6 +35,8 @@ class CollEditor extends base_editor.WebviewPanel {
         switch (msg.ident) {
             case 'onCollModified':
                 coll.collProps = msg.payload.collProps
+                coll.pageProps = msg.payload.pageProps
+                coll.panelProps = msg.payload.panelProps
                 app.events.modifiedProj.now(º.appState.proj)
                 break
             default:

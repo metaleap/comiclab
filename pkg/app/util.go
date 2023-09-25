@@ -6,7 +6,7 @@ import (
 )
 
 func JSON(obj any) ([]byte, error) {
-	return json.Marshal(obj)
+	return json.MarshalIndent(obj, "", "  ")
 }
 
 func FromJSON[T any](jsonBytes []byte) (ret T, err error) {

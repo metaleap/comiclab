@@ -20,6 +20,8 @@ func init() {
 type Proj struct {
 	Collections []*Collection `json:"collections"`
 	CollProps   CollProps     `json:"collProps"`
+	PageProps   PageProps     `json:"pageProps"`
+	PanelProps  PanelProps    `json:"panelProps"`
 }
 
 func (me *Proj) FilePath() string { return filepath.Join(projDirPath, projFileName) }
