@@ -120,7 +120,8 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
         }
         const panelBorderWidthMm = props.borderWidthMm ?? 0
         const rect = svg.rect({
-            'id': 'panel_' + pidx, 'class': 'panel' + ((pidx === selPanelIdx) ? ' panel-selected' : ''), 'stroke-width': `${panelBorderWidthMm}mm`, 'tabindex': 2,
+            'id': 'panel_' + pidx, 'class': 'panel' + ((pidx === selPanelIdx) ? ' panel-selected' : ''),
+            'stroke-width': `${panelBorderWidthMm}mm`, 'tabindex': 2, 'data-panelIdx': pidx,
             'x': `${panel.x}mm`, 'y': `${panel.y}mm`, 'width': `${panel.w}mm`, 'height': `${panel.h}mm`, 'rx': rx + 'mm', 'ry': ry + 'mm',
             'onfocus': (evt: Event) => it.panelSelect(pidx), 'onclick': (evt: Event) => evt.stopPropagation(),
             'onkeydown': (evt: KeyboardEvent) => {

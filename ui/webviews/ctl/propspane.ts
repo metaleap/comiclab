@@ -8,7 +8,13 @@ const html = van.tags
 
 export type PropsDesc = ctl_inputform.Field[]
 
-export function create(domId: string, page: º.Page, panelIdx?: number): HTMLDialogElement {
-    return html.dialog({ 'class': 'page-editor-props-dialog' },
-        coll_editor.createForPageOrPanel(domId, page, panelIdx))
+export function show(domId: string, page: º.Page, targetDom: HTMLElement) {
+    if (!(targetDom && targetDom.tagName && targetDom.id && targetDom.classList))
+        return
+    const panel_idx = parseInt(targetDom.getAttribute('data-panelIdx') ?? '')
+    const dialog = html.dialog({ 'class': 'page-editor-props-dialog' },
+        coll_editor.initAndCreateForPageOrPanel(domId, page, isNaN(panel_idx) ? undefined : panel_idx))
+    dialog.onclose = (evt) => dialog.remove()
+    van.add(document.body, dialog)
+    dialog.showModal()
 }

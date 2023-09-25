@@ -11,6 +11,8 @@ const html = van.tags
 
 
 let collPath: string = ''
+let altTargetPage: º.Page | undefined
+let altTargetPanelIdx: number | undefined
 const authorFieldPlaceholder = van.state('')
 const authorFieldLookup = van.state({} as ctl_inputform.Lookup)
 const paperFormatFieldPlaceholder = van.state('')
@@ -29,20 +31,22 @@ const pageprops_form = ctl_inputform.create('pageprops_form', [paperFormatField]
     (userModifiedRec: ctl_inputform.Rec) => {
         setDisabled(true)
         const coll = º.collFromPath(collPath) as º.Collection
-        coll.pageProps.paperFormatId = userModifiedRec['paperFormatId']
+        const props = altTargetPage ? altTargetPage.pageProps : coll.pageProps
+        props.paperFormatId = userModifiedRec['paperFormatId']
         utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
     })
 const panelprops_form = ctl_inputform.create('panelprops_form', [panelBorderWidthField, panelRoundnessField], undefined,
     (userModifiedRec: ctl_inputform.Rec) => {
         setDisabled(true)
         const coll = º.collFromPath(collPath) as º.Collection
-        if (isNaN(coll.panelProps.borderWidthMm = parseFloat(userModifiedRec['panelBorderWidth'])))
-            delete coll.panelProps.borderWidthMm
-        if (isNaN(coll.panelProps.roundness = parseFloat(userModifiedRec['roundness'])))
-            delete coll.panelProps.roundness
+        const props = altTargetPage ? altTargetPage.panelProps : coll.panelProps
+        if (isNaN(props.borderWidthMm = parseFloat(userModifiedRec['panelBorderWidth'])))
+            delete props.borderWidthMm
+        if (isNaN(props.roundness = parseFloat(userModifiedRec['roundness'])))
+            delete props.roundness
         utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
     })
-const contentprops_form = ctl_inputform.create('contentprops_form', [authorField], contentDynFields,
+const collprops_form = ctl_inputform.create('collprops_form', [authorField], contentDynFields,
     (userModifiedRec: ctl_inputform.Rec) => {
         setDisabled(true)
         const coll = º.collFromPath(collPath) as º.Collection
@@ -64,22 +68,12 @@ const contentprops_form = ctl_inputform.create('contentprops_form', [authorField
 
 let main_tabs = ctl_tabs.create('coll_editor_main', {
     "Details": ctl_multipanel.create('coll_editor_props', {
-        "Collection Properties": contentprops_form.dom,
+        "Collection Properties": collprops_form.dom,
         "Page Defaults": pageprops_form.dom,
         "Panel Defaults": panelprops_form.dom,
     }),
     "Preview": html.div('(TODO)'),
 })
-
-export function createForPageOrPanel(domId: string, page: º.Page, panelIdx?: number) {
-    const coll = º.pageParent(page)
-    collPath = º.collToPath(coll)
-
-    return ctl_multipanel.create(domId, (panelIdx === undefined)
-        ? { "Page Properties": pageprops_form.dom, "Panel Defaults": panelprops_form.dom }
-        : { "Panel Properties": panelprops_form.dom },
-    )
-}
 
 export function onInit(editorReuseKeyDerivedCollPath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfgSettings: object, appState: º.AppState) {
     utils.onInit(vscode, extUri, vscCfgSettings, appState)
@@ -89,15 +83,30 @@ export function onInit(editorReuseKeyDerivedCollPath: string, vscode: { postMess
     window.addEventListener('message', onMessage)
 }
 
+export function initAndCreateForPageOrPanel(domId: string, page: º.Page, panelIdx?: number) {
+    const coll = º.pageParent(page)
+    collPath = º.collToPath(coll)
+    altTargetPage = page
+    altTargetPanelIdx = panelIdx
+    onAppStateRefreshed()
+    window.addEventListener('message', onMessage)
+    return ctl_multipanel.create(domId, (panelIdx === undefined)
+        ? { "Page Properties": pageprops_form.dom, "Panel Defaults": panelprops_form.dom }
+        : { "Panel Properties": panelprops_form.dom },
+    )
+}
+
 function setDisabled(disabled: boolean) {
     (main_tabs as HTMLElement).style.visibility = disabled ? 'hidden' : 'visible'
 }
 
-function onAppStateRefreshed(newAppState: º.AppState) {
-    if (newAppState.config)
-        º.appState.config = newAppState.config
-    if (newAppState.proj)
-        º.appState.proj = newAppState.proj
+function onAppStateRefreshed(newAppState?: º.AppState) {
+    if (newAppState) {
+        if (newAppState.config)
+            º.appState.config = newAppState.config
+        if (newAppState.proj)
+            º.appState.proj = newAppState.proj
+    }
 
     authorFieldLookup.val = º.appState.config.contentAuthoring.authors ?? {}
     paperFormatFieldLookup.val = º.appState.config.contentAuthoring.paperFormats ? utils.dictMap(º.strPaperFormat, º.appState.config.contentAuthoring.paperFormats) : {}
@@ -112,27 +121,27 @@ function onAppStateRefreshed(newAppState: º.AppState) {
         }).flat()
     const coll = º.collFromPath(collPath)
     if (coll) {
-        refreshPlaceholders(coll, [
-            { fill: panelBorderWidthPlaceholder, from: (_) => _.panelProps.borderWidthMm?.toFixed(1) ?? '', },
-            { fill: panelRoundnessPlaceholder, from: (_) => _.panelProps.roundness?.toFixed(2) ?? '', },
+        collprops_form.onDataChangedAtSource(curCollPropsRec(coll))
+        pageprops_form.onDataChangedAtSource(curPagePropsRec(coll))
+        panelprops_form.onDataChangedAtSource(curPanelPropsRec(coll))
+        refreshPlaceholders(coll, altTargetPage ? true : false, [
+            { fill: (_) => { panelBorderWidthPlaceholder.val = _ }, from: (_) => _.panelProps.borderWidthMm?.toFixed(1) ?? '', },
+            { fill: (_) => { panelRoundnessPlaceholder.val = _ }, from: (_) => _.panelProps.roundness?.toFixed(2) ?? '', },
             {
-                fill: authorFieldPlaceholder, from: (_) => _.collProps.authorId ?? '', display: (_) =>
+                fill: (_) => { authorFieldPlaceholder.val = _ }, from: (_) => _.collProps.authorId ?? '', display: (_) =>
                     º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[_] ?? '') : ''
             },
             {
-                fill: paperFormatFieldPlaceholder, from: (_) => _.pageProps.paperFormatId ?? '', display: (_) =>
+                fill: (_) => { paperFormatFieldPlaceholder.val = _ }, from: (_) => _.pageProps.paperFormatId ?? '', display: (_) =>
                     º.appState.config.contentAuthoring.paperFormats ? º.strPaperFormat(º.appState.config.contentAuthoring.paperFormats[_]) : ''
             },
         ])
-        contentprops_form.onDataChangedAtSource(curContentPropsRec(coll))
-        pageprops_form.onDataChangedAtSource(curPagePropsRec(coll))
-        panelprops_form.onDataChangedAtSource(curPanelPropsRec(coll))
     }
     setDisabled(false)
 }
 
-function refreshPlaceholders(coll: º.Collection, placeholders: { fill: State<string>, from: (_: º.ProjOrColl) => string | undefined, display?: (_: string) => string }[]) {
-    const parents = º.collParents(coll)
+function refreshPlaceholders(coll: º.Collection, inclColl: boolean, placeholders: { fill: (_: string) => void, from: (_: º.ProjOrColl) => string | undefined, display?: (_: string) => string }[]) {
+    const parents = (inclColl ? [coll] : []).concat(º.collParents(coll))
     for (const placeholder of placeholders) {
         let placeholder_val = ''
         for (const parent of parents)
@@ -141,7 +150,7 @@ function refreshPlaceholders(coll: º.Collection, placeholders: { fill: State<st
         if (placeholder_val === '')
             placeholder_val = placeholder.from(º.appState.proj) ?? ''
         const display_text = placeholder.display ? placeholder.display(placeholder_val) : placeholder_val
-        placeholder.fill.val = (display_text && display_text !== '') ? display_text : placeholder_val
+        placeholder.fill((display_text && display_text !== '') ? display_text : placeholder_val)
     }
 }
 
@@ -157,7 +166,7 @@ function onMessage(evt: MessageEvent) {
     }
 }
 
-function curContentPropsRec(coll: º.Collection): ctl_inputform.Rec {
+function curCollPropsRec(coll: º.Collection): ctl_inputform.Rec {
     const ret: ctl_inputform.Rec = { 'authorId': coll.collProps.authorId ?? '' }
     if (coll.collProps.customFields)
         for (const dyn_field_id in coll.collProps.customFields)
@@ -168,12 +177,12 @@ function curContentPropsRec(coll: º.Collection): ctl_inputform.Rec {
 }
 
 function curPagePropsRec(coll: º.Collection): ctl_inputform.Rec {
-    return { 'paperFormatId': coll.pageProps.paperFormatId ?? '' }
+    return { 'paperFormatId': (altTargetPage ? altTargetPage.pageProps : coll.pageProps).paperFormatId ?? '' }
 }
 
 function curPanelPropsRec(coll: º.Collection): ctl_inputform.Rec {
     return {
-        'panelBorderWidth': coll.panelProps.borderWidthMm?.toFixed(1) ?? '',
-        'roundness': coll.panelProps.roundness?.toFixed(2) ?? '',
+        'panelBorderWidth': (altTargetPage ? altTargetPage.panelProps : coll.panelProps).borderWidthMm?.toFixed(1) ?? '',
+        'roundness': (altTargetPage ? altTargetPage.panelProps : coll.panelProps).roundness?.toFixed(2) ?? '',
     }
 }

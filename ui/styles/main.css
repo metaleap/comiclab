@@ -305,6 +305,10 @@ body>dialog.page-editor-props-dialog h3 {
     margin-top: 0;
 }
 
+body>dialog.page-editor-props-dialog div.multipanel>span.multipanel-section {
+    margin-bottom: 1.23em;
+}
+
 body>dialog.page-editor-props-dialog h3,
 body>dialog.page-editor-props-dialog div.inputform div.inputform-field {
     white-space: nowrap;

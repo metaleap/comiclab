@@ -201,17 +201,10 @@ function createGui() {
                 ˍ.page_canvas.panelSelect()
         },
         'onauxclick': (evt: PointerEvent) => {
-            const dom = evt.target as HTMLElement
             if (evt.button === 1) // mid-click
                 ˍ.page_canvas.addNewPanel()
-            else if ((evt.button === 2) && dom && dom.tagName && dom.id && dom.classList) { // right-click
-                const is_panel = (dom.tagName.toLowerCase() === 'rect') && dom.classList.contains('panel')
-                const panel_idx = 0
-                const dialog = ctl_propspane.create('page_editor_panelprops', page, (is_panel) ? panel_idx : undefined)
-                van.add(document.body, dialog)
-                dialog.onclose = (evt) => dialog.remove()
-                dialog.showModal()
-            }
+            else if (evt.button === 2)  // right-click
+                ctl_propspane.show('page_editor_panelprops', page, evt.target as HTMLElement)
         },
         'onwheel': (evt: WheelEvent) => {
             if (evt.shiftKey)
