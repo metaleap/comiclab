@@ -1,6 +1,6 @@
 
 export const appState: AppState = {
-    proj: { collections: [], defaults: { content: {}, pages: {} } },
+    proj: { collections: [], defaults: { content: {}, pages: { panels: {} } } },
     config: { contentAuthoring: {} },
 }
 
@@ -42,7 +42,9 @@ export type CollProps = {
     },
     pages: {
         paperFormatId?: string,
-        borderWidthMm?: number,
+        panels: {
+            borderWidthMm?: number,
+        }
     },
 }
 

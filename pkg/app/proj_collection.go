@@ -14,7 +14,9 @@ type CollProps struct {
 	} `json:"content"`
 	Pages struct {
 		PaperFormatID string `json:"paperFormatId,omitempty"`
-		BorderWidthMm int    `json:"borderWidthMm,omitempty"`
+		Panels        struct {
+			BorderWidthMm int `json:"borderWidthMm,omitempty"`
+		} `json:"panels"`
 	} `json:"pages"`
 }
 

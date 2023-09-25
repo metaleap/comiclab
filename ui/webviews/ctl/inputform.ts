@@ -3,7 +3,7 @@ import * as utils from '../utils.js'
 
 const html = van.tags
 
-export type Num = { min?: number, max?: number, step?: number }
+export type Num = { int: boolean, min?: number, max?: number, step?: number }
 export type Rec = { [_: string]: string }
 export type Lookup = { [_: string]: string }
 export type Field = {
@@ -21,6 +21,10 @@ export type RecsFunc = (recs: Rec[]) => void
 
 
 export function create(domId: string, fields: Field[], dynFields: State<Field[]> | undefined, onDataUserModified: RecFunc): { dom: ChildDom, onDataChangedAtSource: RecFunc } {
+    for (const field of fields)
+        if (field.num)
+            field.validators.push(validatorNumeric())
+
     let latest_rec = van.state({} as Rec)
 
     let fieldRow = (field: Field, isDyn: boolean): ChildDom => {
@@ -129,24 +133,26 @@ export let validatorLookup: ValidateFunc = (_: Rec, field: Field, newFieldValue:
     return undefined
 }
 
-export function validatorNumeric(min?: number, max?: number, step?: number): ValidateFunc {
+export function validatorNumeric(numOptions?: Num): ValidateFunc {
     return (_: Rec, field: Field, newFieldValue: string) => {
-        if (newFieldValue.length == 0)
+        const num = numOptions ?? field.num
+        console.log(num)
+        if ((num === undefined) || (newFieldValue.length === 0))
             return undefined
         let n: number
         try {
-            n = parseInt(newFieldValue)
+            n = (num.int ? parseInt : parseFloat)(newFieldValue)
             if (n === undefined || n === null || Number.isNaN(n))
                 throw `'${field.title}' must be a numeric value.`
         } catch (err: any) {
             return { name: 'Numeric', message: err.toString() }
         }
-        if ((min !== undefined) && n < min)
-            return { name: 'Minimum', message: `${n} is less than the minimum of ${min}.` }
-        if ((max !== undefined) && n > max)
-            return { name: 'Maximum', message: `${n} exceeds the maximum of ${max}.` }
-        if ((step !== undefined) && (n % step) != 0)
-            return { name: 'Step', message: `${n} is not a multiple of ${step}.` }
+        if ((num.min !== undefined) && n < num.min)
+            return { name: 'Minimum', message: `${n} is less than the minimum of ${num.min}.` }
+        if ((num.max !== undefined) && n > num.max)
+            return { name: 'Maximum', message: `${n} exceeds the maximum of ${num.max}.` }
+        if (num.int && (num.step !== undefined) && (n % num.step) != 0)
+            return { name: 'Step', message: `${n} is not a multiple of ${num.step}.` }
         return undefined
     }
 }

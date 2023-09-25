@@ -18,7 +18,7 @@ export function create(domId: string, fields: Field[], onDataUserModified: RecsF
             field.validators.push(validatorNonEmpty, validatorUnique(() => latestDataset))
         }
         if (field.num)
-            field.validators.push(validatorNumeric(field.num.min, field.num.max, field.num.step))
+            field.validators.push(validatorNumeric())
     }
 
     const recAdd = (_: MouseEvent) => {

@@ -22,8 +22,8 @@ let grid_customfields = ctl_inputgrid.create('config_customfields', [
 })
 let grid_paperformats = ctl_inputgrid.create('config_paperformats', [
     { id: 'id', title: "Paper Format ID", validators: [/*validators added by input_grid.create*/] },
-    { id: 'widthMm', title: 'Width (mm)', num: { min: 11, max: 1234 }, validators: [ctl_inputform.validatorNonEmpty] },
-    { id: 'heightMm', title: 'Height (mm)', num: { min: 11, max: 1234 }, validators: [ctl_inputform.validatorNonEmpty] },
+    { id: 'widthMm', title: 'Width (mm)', num: { int: true, min: 11, max: 1234 }, validators: [ctl_inputform.validatorNonEmpty] },
+    { id: 'heightMm', title: 'Height (mm)', num: { int: true, min: 11, max: 1234 }, validators: [ctl_inputform.validatorNonEmpty] },
 ], (userModifiedRecs) => {
     setDisabled(true)
     º.appState.config.contentAuthoring.paperFormats = utils.dictFromArr(userModifiedRecs, (rec) => [rec.id, { widthMm: parseInt(rec.widthMm), heightMm: parseInt(rec.heightMm) }])

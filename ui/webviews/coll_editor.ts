@@ -1,4 +1,4 @@
-import van from './vanjs/van-1.2.1.js'
+import van, { State } from './vanjs/van-1.2.1.js'
 import * as º from './_º.js'
 import * as utils from './utils.js'
 
@@ -13,21 +13,29 @@ const html = van.tags
 let collPath: string = ''
 const authorFieldPlaceHolder = van.state('')
 const authorFieldLookup = van.state({} as ctl_inputform.Lookup)
-const pageFormatFieldPlaceHolder = van.state('')
-const pageFormatFieldLookup = van.state({} as ctl_inputform.Lookup)
+const paperFormatFieldPlaceHolder = van.state('')
+const paperFormatFieldLookup = van.state({} as ctl_inputform.Lookup)
 const contentDynFields = van.state([] as ctl_inputform.Field[])
 const contentDynFieldsLangSep = ':'
 
 const authorField: ctl_inputform.Field = { id: 'authorId', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: authorFieldLookup, placeHolder: authorFieldPlaceHolder }
-const pageFormatField: ctl_inputform.Field = { id: 'pageFormatId', title: 'Page Format', validators: [ctl_inputform.validatorLookup], lookUp: pageFormatFieldLookup, placeHolder: pageFormatFieldPlaceHolder }
+const paperFormatField: ctl_inputform.Field = { id: 'paperFormatId', title: 'Page Format', validators: [ctl_inputform.validatorLookup], lookUp: paperFormatFieldLookup, placeHolder: paperFormatFieldPlaceHolder }
+const panelBorderWidthField: ctl_inputform.Field = { id: 'panelBorderWidth', title: 'Panel Border Width (mm)', validators: [], num: { int: false, min: 0, max: 10, step: 0.1 } }
 
-
-const main_form = ctl_inputform.create('coll_editor_form', [authorField, pageFormatField], contentDynFields,
-    (userModifiedRec) => {
+const pageprops_form = ctl_inputform.create('pageprops_form', [paperFormatField, panelBorderWidthField], undefined,
+    (userModifiedRec: ctl_inputform.Rec) => {
+        setDisabled(true)
+        const coll = º.collFromPath(collPath) as º.Collection
+        coll.props.pages.paperFormatId = userModifiedRec['paperFormatId']
+        if (isNaN(coll.props.pages.panels.borderWidthMm = parseFloat(userModifiedRec['panelBorderWidth'])))
+            coll.props.pages.panels.borderWidthMm = undefined
+        utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
+    })
+const contentprops_form = ctl_inputform.create('contentprops_form', [authorField], contentDynFields,
+    (userModifiedRec: ctl_inputform.Rec) => {
         setDisabled(true)
         const coll = º.collFromPath(collPath) as º.Collection
         coll.props.content.authorId = userModifiedRec['authorId']
-        coll.props.pages.paperFormatId = userModifiedRec['pageFormatId']
         coll.props.content.customFields = {}
         if (º.appState.config.contentAuthoring.customFields)
             for (const dyn_field_id in º.appState.config.contentAuthoring.customFields) {
@@ -45,8 +53,8 @@ const main_form = ctl_inputform.create('coll_editor_form', [authorField, pageFor
 
 let main_tabs = ctl_tabs.create('coll_editor_main', {
     "Collection Settings": ctl_multipanel.create('coll_editor_props', {
-        "Properties": main_form.dom,
-        "Page Defaults": html.div("TODO"),
+        "Content Properties": contentprops_form.dom,
+        "Page Defaults": pageprops_form.dom,
     }),
     "Preview": html.div('(TODO)'),
 })
@@ -70,13 +78,11 @@ function onAppStateRefreshed(newAppState: º.AppState) {
         º.appState.proj = newAppState.proj
 
     authorFieldLookup.val = º.appState.config.contentAuthoring.authors ?? {}
-    pageFormatFieldLookup.val = º.appState.config.contentAuthoring.paperFormats ? utils.dictMap(º.strPaperFormat, º.appState.config.contentAuthoring.paperFormats) : {}
+    paperFormatFieldLookup.val = º.appState.config.contentAuthoring.paperFormats ? utils.dictMap(º.strPaperFormat, º.appState.config.contentAuthoring.paperFormats) : {}
     contentDynFields.val = utils.dictToArr(º.appState.config.contentAuthoring.customFields, (k, v) => ({ 'id': k, 'localizable': v }))
-        .sort((a, b) => (a.id == 'title') ? -123456789 : (a.id.localeCompare(b.id)))
+        .sort((a, b) => (a.id == 'title') ? -987654321 : (a.id.localeCompare(b.id)))
         .map((_) => {
             const ret = [{ 'id': _.id + contentDynFieldsLangSep, 'title': _.id, validators: [] } as ctl_inputform.Field]
-            if (_.id.includes('year'))
-                ret[0].validators = [ctl_inputform.validatorNumeric(1234, 2345)]
             if (_.localizable)
                 for (const lang_id in º.appState.config.contentAuthoring.languages)
                     ret.push({ 'id': _.id + contentDynFieldsLangSep + lang_id, 'title': `    (${º.appState.config.contentAuthoring.languages[lang_id]})`, } as ctl_inputform.Field)
@@ -84,25 +90,32 @@ function onAppStateRefreshed(newAppState: º.AppState) {
         }).flat()
     const coll = º.collFromPath(collPath)
     if (coll) {
-        let author_field_placeholder = '', pageformat_field_placeholder = ''
-        if (coll) {
-            const parents = º.collParents(coll)
-            for (const parent of parents) if (parent.props) {
-                if (author_field_placeholder == '' && parent.props.content.authorId && parent.props.content.authorId.length > 0) {
-                    const display_text = º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[parent.props.content.authorId] ?? '') : ''
-                    author_field_placeholder = (display_text.length > 0) ? display_text : parent.props.content.authorId
-                }
-                if (pageformat_field_placeholder == '' && parent.props.pages.paperFormatId && parent.props.pages.paperFormatId.length > 0) {
-                    const display_text = º.appState.config.contentAuthoring.paperFormats ? º.strPaperFormat(º.appState.config.contentAuthoring.paperFormats[parent.props.pages.paperFormatId]) : ''
-                    pageformat_field_placeholder = (display_text.length > 0) ? display_text : parent.props.pages.paperFormatId
-                }
-            }
-        }
-        authorFieldPlaceHolder.val = author_field_placeholder
-        pageFormatFieldPlaceHolder.val = pageformat_field_placeholder
-        main_form.onDataChangedAtSource(curProps(coll))
+        refreshPlaceholders(coll, [
+            {
+                fill: authorFieldPlaceHolder, from: (_) => _.content.authorId ?? '', display: (_) =>
+                    º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[_] ?? '') : ''
+            },
+            {
+                fill: paperFormatFieldPlaceHolder, from: (_) => _.pages.paperFormatId ?? '', display: (_) =>
+                    º.appState.config.contentAuthoring.paperFormats ? º.strPaperFormat(º.appState.config.contentAuthoring.paperFormats[_]) : ''
+            },
+        ])
+        contentprops_form.onDataChangedAtSource(curContentProps(coll))
+        pageprops_form.onDataChangedAtSource(curPageProps(coll))
     }
     setDisabled(false)
+}
+
+function refreshPlaceholders(coll: º.Collection, placeholders: { fill: State<string>, from: (_: º.CollProps) => string | undefined, display?: (_: string) => string }[]) {
+    const parents = º.collParents(coll)
+    for (const placeholder of placeholders) {
+        let placeholder_val = ''
+        for (const parent of parents)
+            if (parent.props && ((placeholder_val = placeholder.from(parent.props) ?? '') !== ''))
+                break
+        const display_text = placeholder.display ? placeholder.display(placeholder_val) : placeholder_val
+        placeholder.fill.val = (display_text && display_text !== '') ? display_text : placeholder_val
+    }
 }
 
 function onMessage(evt: MessageEvent) {
@@ -117,12 +130,17 @@ function onMessage(evt: MessageEvent) {
     }
 }
 
-function curProps(coll: º.Collection) {
-    const ret: ctl_inputform.Rec = { 'authorId': coll.props.content.authorId ?? '', 'pageFormatId': coll.props.pages.paperFormatId ?? '' }
+function curContentProps(coll: º.Collection) {
+    const ret: ctl_inputform.Rec = { 'authorId': coll.props.content.authorId ?? '' }
     if (coll.props.content.customFields)
         for (const dyn_field_id in coll.props.content.customFields)
             if (coll.props.content.customFields[dyn_field_id])
                 for (const lang_id in coll.props.content.customFields[dyn_field_id])
                     ret[dyn_field_id + contentDynFieldsLangSep + lang_id] = coll.props.content.customFields[dyn_field_id][lang_id]
+    return ret
+}
+
+function curPageProps(coll: º.Collection) {
+    const ret: ctl_inputform.Rec = { 'paperFormatId': coll.props.pages.paperFormatId ?? '', 'panelBorderWidth': coll.props.pages.panels.borderWidthMm?.toFixed(1) ?? '' }
     return ret
 }
