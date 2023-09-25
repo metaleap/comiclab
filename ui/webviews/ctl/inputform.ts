@@ -13,7 +13,7 @@ export type Field = {
     readOnly?: boolean,
     validators: ValidateFunc[]
     lookUp?: State<Lookup>
-    placeHolder?: State<string>
+    placeholder?: State<string>
 }
 export type ValidateFunc = (curRec: Rec, field: Field, newFieldValue: string) => Error | undefined
 export type RecFunc = (rec: Rec) => void
@@ -88,7 +88,7 @@ export function htmlInput(isAddRec: boolean, domId: string, recId: string, field
         'data-field-id': field.id,
         'readOnly': field.readOnly ? (!isAddRec) : false,
         'type': is_bool ? 'checkbox' : (field.num ? 'number' : 'text'),
-        'placeholder': field.placeHolder ? field.placeHolder : (placeholder ?? ''),
+        'placeholder': field.placeholder ? field.placeholder : (placeholder ?? ''),
     }
     if (value)
         init.value = value

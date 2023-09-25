@@ -11,16 +11,17 @@ const html = van.tags
 
 
 let collPath: string = ''
-const authorFieldPlaceHolder = van.state('')
+const authorFieldPlaceholder = van.state('')
 const authorFieldLookup = van.state({} as ctl_inputform.Lookup)
-const paperFormatFieldPlaceHolder = van.state('')
+const paperFormatFieldPlaceholder = van.state('')
 const paperFormatFieldLookup = van.state({} as ctl_inputform.Lookup)
+const panelBorderWidthPlaceholder = van.state('')
 const contentDynFields = van.state([] as ctl_inputform.Field[])
 const contentDynFieldsLangSep = ':'
 
-const authorField: ctl_inputform.Field = { id: 'authorId', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: authorFieldLookup, placeHolder: authorFieldPlaceHolder }
-const paperFormatField: ctl_inputform.Field = { id: 'paperFormatId', title: 'Page Format', validators: [ctl_inputform.validatorLookup], lookUp: paperFormatFieldLookup, placeHolder: paperFormatFieldPlaceHolder }
-const panelBorderWidthField: ctl_inputform.Field = { id: 'panelBorderWidth', title: 'Panel Border Width (mm)', validators: [], num: { int: false, min: 0, max: 10, step: 0.1 } }
+const authorField: ctl_inputform.Field = { id: 'authorId', title: 'Author', validators: [ctl_inputform.validatorLookup], lookUp: authorFieldLookup, placeholder: authorFieldPlaceholder }
+const paperFormatField: ctl_inputform.Field = { id: 'paperFormatId', title: 'Page Format', validators: [ctl_inputform.validatorLookup], lookUp: paperFormatFieldLookup, placeholder: paperFormatFieldPlaceholder }
+const panelBorderWidthField: ctl_inputform.Field = { id: 'panelBorderWidth', title: 'Panel Border Width (mm)', validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: panelBorderWidthPlaceholder }
 
 const pageprops_form = ctl_inputform.create('pageprops_form', [paperFormatField, panelBorderWidthField], undefined,
     (userModifiedRec: ctl_inputform.Rec) => {
@@ -91,12 +92,13 @@ function onAppStateRefreshed(newAppState: º.AppState) {
     const coll = º.collFromPath(collPath)
     if (coll) {
         refreshPlaceholders(coll, [
+            { fill: panelBorderWidthPlaceholder, from: (_) => _.pages.panels.borderWidthMm?.toFixed(1) ?? '', },
             {
-                fill: authorFieldPlaceHolder, from: (_) => _.content.authorId ?? '', display: (_) =>
+                fill: authorFieldPlaceholder, from: (_) => _.content.authorId ?? '', display: (_) =>
                     º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[_] ?? '') : ''
             },
             {
-                fill: paperFormatFieldPlaceHolder, from: (_) => _.pages.paperFormatId ?? '', display: (_) =>
+                fill: paperFormatFieldPlaceholder, from: (_) => _.pages.paperFormatId ?? '', display: (_) =>
                     º.appState.config.contentAuthoring.paperFormats ? º.strPaperFormat(º.appState.config.contentAuthoring.paperFormats[_]) : ''
             },
         ])
