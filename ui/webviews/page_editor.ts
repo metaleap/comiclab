@@ -5,7 +5,7 @@ import * as ctl_inputform from './ctl/inputform.js'
 import * as ctl_pagecanvas from './ctl/pagecanvas.js'
 import * as ctl_paneltoolbar from './ctl/paneltoolbar.js'
 import * as ctl_paneledgebar from './ctl/paneledgebar.js'
-import * as ctl_propsbar from './ctl/propsbar.js'
+import * as ctl_propspane from './ctl/propspane.js'
 
 
 const html = van.tags
@@ -206,21 +206,11 @@ function createGui() {
                 ˍ.page_canvas.addNewPanel()
             else if ((evt.button === 2) && dom && dom.tagName && dom.id && dom.classList) { // right-click
                 const is_panel = (dom.tagName.toLowerCase() === 'rect') && dom.classList.contains('panel')
-                const is_pagecanvas = (dom.id === 'page_editor_canvas')
-                const is_backdrop = (dom.id === 'page_editor_main')
-                let dialog = undefined as any as HTMLDialogElement
-
-                if (is_panel) {
-                    dialog = ctl_propsbar.create('page_editor_panelprops', evt, [], (maybeUserModifiedRec?: ctl_inputform.Rec) => {
-
-                        return º.panelProps(page,)
-                    })
-                }
-
-                if (dialog) {
-                    dialog.onclose = (evt) => dialog.remove()
-                    dialog.showModal()
-                }
+                const panel_idx = 0
+                const dialog = ctl_propspane.create('page_editor_panelprops', page, (is_panel) ? panel_idx : undefined)
+                van.add(document.body, dialog)
+                dialog.onclose = (evt) => dialog.remove()
+                dialog.showModal()
             }
         },
         'onwheel': (evt: WheelEvent) => {

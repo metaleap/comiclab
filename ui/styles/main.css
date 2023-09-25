@@ -288,13 +288,33 @@ body>div#page_editor_main>div#page_editor_panel_edgebar_right>button.btn {
     display: block;
 }
 
-body>dialog.page-editor-props-bar {
+body>dialog.page-editor-props-dialog {
     position: absolute;
     display: block;
-    width: 44%;
-    height: 44%;
     max-width: 88%;
     max-height: 88%;
-    min-width: 11%;
-    min-height: 11%;
+    padding: 0.55em;
+    background-color: var(--vscode-sideBar-background);
+    color: var(--vscode-sideBar-foreground);
+    border: 1px solid var(--vscode-editorWidget-border);
+    border-radius: 0.22em;
+    box-shadow: 0 0 0.44em 0 #000;
+}
+
+body>dialog.page-editor-props-dialog h3 {
+    margin-top: 0;
+}
+
+body>dialog.page-editor-props-dialog h3,
+body>dialog.page-editor-props-dialog div.inputform div.inputform-field {
+    white-space: nowrap;
+}
+
+body>dialog.page-editor-props-dialog div.inputform div.inputform-field>div.inputform-field-label {
+    white-space: nowrap;
+    width: auto;
+}
+
+body>dialog.page-editor-props-dialog div.inputform div.inputform-field>div.inputform-field-input {
+    width: auto;
 }

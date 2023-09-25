@@ -63,13 +63,23 @@ const contentprops_form = ctl_inputform.create('contentprops_form', [authorField
     })
 
 let main_tabs = ctl_tabs.create('coll_editor_main', {
-    "Collection Settings": ctl_multipanel.create('coll_editor_props', {
-        "Content Properties": contentprops_form.dom,
+    "Details": ctl_multipanel.create('coll_editor_props', {
+        "Collection Properties": contentprops_form.dom,
         "Page Defaults": pageprops_form.dom,
         "Panel Defaults": panelprops_form.dom,
     }),
     "Preview": html.div('(TODO)'),
 })
+
+export function createForPageOrPanel(domId: string, page: º.Page, panelIdx?: number) {
+    const coll = º.pageParent(page)
+    collPath = º.collToPath(coll)
+
+    return ctl_multipanel.create(domId, (panelIdx === undefined)
+        ? { "Page Properties": pageprops_form.dom, "Panel Defaults": panelprops_form.dom }
+        : { "Panel Properties": panelprops_form.dom },
+    )
+}
 
 export function onInit(editorReuseKeyDerivedCollPath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfgSettings: object, appState: º.AppState) {
     utils.onInit(vscode, extUri, vscCfgSettings, appState)
