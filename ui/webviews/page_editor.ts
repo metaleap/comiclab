@@ -83,9 +83,8 @@ function refreshPanelBars(edgeBarsOnly?: boolean) {
 }
 
 function onAppStateRefreshed(newAppState: º.AppState) {
-    const old_pageprops = º.pageProps(page)
-    const old_panelprops = º.panelProps(page)
-    // console.log("OLD", º.jsonUnJson(old_pageprops), º.jsonUnJson(old_panelprops))
+    const old_pageprops = º.pageProps(page) // has the coll-level and project-level prop vals where no page-level overrides
+    const old_panelprops = º.panelProps(page) // dito as above
 
     if (newAppState.config)
         º.appState.config = newAppState.config
@@ -93,9 +92,8 @@ function onAppStateRefreshed(newAppState: º.AppState) {
         º.appState.proj = newAppState.proj
 
     const new_page = º.pageFromPath(pagePath) as º.Page
-    const new_panelprops = º.panelProps(new_page)
-    const new_pageprops = º.pageProps(new_page)
-    // console.log("NEW", º.jsonUnJson(new_pageprops), º.deepEq(old_pageprops, new_pageprops), º.jsonUnJson(new_panelprops), º.deepEq(old_panelprops, new_panelprops))
+    const new_panelprops = º.panelProps(new_page) // dito as above
+    const new_pageprops = º.pageProps(new_page) // dito
     const page_changed = !º.deepEq(page, new_page)
     page = new_page
     if (!ˍ.main)

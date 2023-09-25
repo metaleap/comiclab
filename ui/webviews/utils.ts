@@ -28,11 +28,7 @@ export function alert(msg: string) {
     vs.postMessage({ ident: 'alert', payload: msg })
 }
 
-export function dictMerge<TDict>(...dicts: { [_: string]: TDict }[]): { [_: string]: TDict } {
-    return Object.assign({}, ...dicts) // dictMap<TDict, TDict>((_) => _, ...dicts)
-}
-
-export const dictClone = dictMerge
+export const dictClone = º.dictMerge
 
 export function dictMap<TIn, TOut>(to: (_: TIn) => TOut, ...dicts: { [_: string]: TIn }[]) {
     const ret: { [_: string]: TOut } = {}

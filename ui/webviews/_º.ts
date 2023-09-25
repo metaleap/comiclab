@@ -222,17 +222,14 @@ export function panelProps(it: ProjOrCollOrPage, panelIdx?: number): PanelProps 
 }
 export function props<T>(it: ProjOrCollOrPage, propsName: string): T {
     const is_page = (it.panels !== undefined)
-    const ret = (appState.proj as any)[propsName] as T
-    if (propsName === 'panelProps')
-        console.log("/", jsonUnJson(ret), appState.proj)
+    const ret = dictMerge((appState.proj as any)[propsName]) as T
     const colls = (it == appState.proj) ? [] : (is_page ? pageParents(it as Page) : [it as Collection].concat(collParents(it as Collection)))
     for (let i = colls.length - 1; i >= 0; i--) {
         const coll = colls[i]
-        for (const k in (coll as any)[propsName] as T)
-            if ((((coll as any)[propsName] as T as any)[k] !== undefined) && ((ret as any)[k] === undefined))
+        for (const k in (coll as any)[propsName] as T) {
+            if (((coll as any)[propsName] as T as any)[k] !== undefined)
                 (ret as any)[k] = ((coll as any)[propsName] as T as any)[k]
-        if (propsName === 'panelProps')
-            console.log(coll.name, jsonUnJson(ret))
+        }
     }
     return ret
 }
@@ -333,6 +330,10 @@ export function deepEq(val1: any, val2: any, ignoreArrayOrder?: boolean): boolea
         }
     }
     return false
+}
+
+export function dictMerge<TDict>(...dicts: { [_: string]: TDict }[]): { [_: string]: TDict } {
+    return Object.assign({}, ...dicts) // dictMap<TDict, TDict>((_) => _, ...dicts)
 }
 
 export function jsonUnJson(v: any): any {
