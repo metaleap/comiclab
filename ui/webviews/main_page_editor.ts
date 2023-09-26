@@ -27,13 +27,14 @@ let ˍ: {
     panelbar_right: ctl_paneledgebar.PanelEdgeBar,
     panelbar_upper: ctl_paneledgebar.PanelEdgeBar,
     panelbar_lower: ctl_paneledgebar.PanelEdgeBar,
+    props_dialog?: ctl_propspane.PropsDialog,
 } = {} as any
 
 export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfg: object, appState: º.AppState) {
     utils.onInit(vscode, extUri, vscCfg, appState)
     pagePath = editorReuseKeyDerivedPagePath
     page = º.pageFromPath(pagePath)!
-    onAppStateRefreshed(appState)
+    onAppStateRefreshed()
     window.addEventListener('message', onMessage)
 }
 
@@ -83,14 +84,16 @@ function refreshPanelBars(edgeBarsOnly?: boolean) {
     }
 }
 
-function onAppStateRefreshed(newAppState: º.AppState) {
+function onAppStateRefreshed(newAppState?: º.AppState) {
     const old_pageprops = º.pageProps(page) // has the coll-level and project-level prop vals where no page-level overrides
     const old_panelprops = º.panelProps(page) // dito as above
 
-    if (newAppState.config)
-        º.appState.config = newAppState.config
-    if (newAppState.proj)
-        º.appState.proj = newAppState.proj
+    if (newAppState) {
+        if (newAppState.config)
+            º.appState.config = newAppState.config
+        if (newAppState.proj)
+            º.appState.proj = newAppState.proj
+    }
 
     const new_page = º.pageFromPath(pagePath) as º.Page
     const new_panelprops = º.panelProps(new_page) // dito as above
@@ -101,6 +104,8 @@ function onAppStateRefreshed(newAppState: º.AppState) {
         createGui()
     else if (page_changed || (!º.deepEq(old_pageprops, new_pageprops)) || (!º.deepEq(old_panelprops, new_panelprops)))
         reRenderPageCanvas()
+    if (ˍ.props_dialog)
+        ˍ.props_dialog.refresh()
 }
 
 function onMessage(evt: MessageEvent) {
@@ -203,7 +208,17 @@ function createGui() {
             if (evt.button === 1) // mid-click
                 ˍ.page_canvas.addNewPanel()
             else if (evt.button === 2)  // right-click
-                ctl_propspane.show('page_editor_panelprops', page, evt.target as HTMLElement)
+                ˍ.props_dialog = ctl_propspane.show('page_editor_panelprops', page, evt.target as HTMLElement,
+                    () => { ˍ.props_dialog = undefined },
+                    (userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps) => {
+                        if (userModifiedPageProps || userModifiedPanelProps) {
+                            if (userModifiedPageProps)
+                                page.pageProps = userModifiedPageProps
+                            if (userModifiedPanelProps)
+                                page.panelProps = userModifiedPanelProps
+                            onUserModifiedPanel()
+                        }
+                    })
         },
         'onwheel': (evt: WheelEvent) => {
             if (evt.shiftKey)

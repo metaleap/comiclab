@@ -46,7 +46,7 @@ let main_tabs = ctl_tabs.create('config_editor_main', {
 
 export function onInit(_: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfgSettings: object, appState: º.AppState) {
     utils.onInit(vscode, extUri, vscCfgSettings, appState)
-    onAppStateCfgRefreshed(appState.config)
+    onAppStateCfgRefreshed()
     van.add(document.body, main_tabs)
     window.addEventListener('message', onMessage)
 }
@@ -55,8 +55,9 @@ function setDisabled(disabled: boolean) {
     (main_tabs as HTMLElement).style.visibility = disabled ? 'hidden' : 'visible'
 }
 
-function onAppStateCfgRefreshed(newConfig: º.Config) {
-    º.appState.config = newConfig as º.Config
+function onAppStateCfgRefreshed(newConfig?: º.Config) {
+    if (newConfig)
+        º.appState.config = newConfig
     grid_authors.onDataChangedAtSource(curAuthorRecs())
     grid_paperformats.onDataChangedAtSource(curPaperFormatRecs())
     grid_languages.onDataChangedAtSource(curLanguagesRecs())

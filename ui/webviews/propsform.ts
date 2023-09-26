@@ -15,6 +15,8 @@ export type PropsForm = {
 }
 
 export function create(domId: string, collPath: string, pagePath: string, panelIdx: number | undefined, onUserModified: (c?: º.CollProps, pg?: º.PageProps, pnl?: º.PanelProps) => void): PropsForm {
+    if ((panelIdx !== undefined) && isNaN(panelIdx))
+        panelIdx = undefined
     const for_proj = (collPath === '') && (pagePath === ''), for_coll = (collPath !== ''), for_page = (pagePath !== '') && (panelIdx === undefined), for_panel = (pagePath !== '') && (panelIdx !== undefined)
 
     let collPropsForm: ctl_inputform.InputForm = undefined as any

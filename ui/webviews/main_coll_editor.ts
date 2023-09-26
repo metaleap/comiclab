@@ -3,7 +3,6 @@ import * as º from './_º.js'
 import * as utils from './utils.js'
 
 import * as ctl_tabs from './ctl/tabs.js'
-import * as ctl_multipanel from './ctl/multipanel.js'
 import * as ctl_propsform from './propsform.js'
 
 const html = van.tags
@@ -50,6 +49,7 @@ function onAppStateRefreshed(newAppState?: º.AppState) {
         if (newAppState.proj)
             º.appState.proj = newAppState.proj
     }
+
     props_form.refresh()
     setDisabled(false)
 }
