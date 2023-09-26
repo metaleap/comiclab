@@ -4,6 +4,7 @@ import * as utils from './utils'
 import * as app from './app'
 import * as base_editor from './base_editor'
 import * as page_editor from './page_editor'
+import * as sidebar from './sidebar'
 
 
 const viewTypeIdent = 'coll_editor'

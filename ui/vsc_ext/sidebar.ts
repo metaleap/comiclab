@@ -28,9 +28,9 @@ export abstract class TreeDataProvider implements vs.TreeDataProvider<vs.TreeIte
 import { TreeColls as TreeColls } from './sidebar_colls'
 import { TreeBooks as TreeBooks } from './sidebar_books'
 import { TreeSites as TreeSites } from './sidebar_sites'
-let treeColls = new TreeColls()
-let treeBooks = new TreeBooks()
-let treeSites = new TreeSites()
+export let treeColls = new TreeColls()
+export let treeBooks = new TreeBooks()
+export let treeSites = new TreeSites()
 
 
 export function onInit() {
