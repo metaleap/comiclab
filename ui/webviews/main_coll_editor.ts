@@ -11,9 +11,9 @@ const html = van.tags
 
 let collPath: string = ''
 const authorFieldPlaceholder = van.state('')
-const authorFieldLookup = van.state({} as ctl_inputform.Lookup)
+const authorFieldLookup = van.state({} as ctl_inputform.FieldLookup)
 const paperFormatFieldPlaceholder = van.state('')
-const paperFormatFieldLookup = van.state({} as ctl_inputform.Lookup)
+const paperFormatFieldLookup = van.state({} as ctl_inputform.FieldLookup)
 const panelBorderWidthPlaceholder = van.state('')
 const panelRoundnessPlaceholder = van.state('')
 const contentDynFields = van.state([] as ctl_inputform.Field[])

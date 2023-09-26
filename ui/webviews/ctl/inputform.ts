@@ -3,24 +3,25 @@ import * as utils from '../utils.js'
 
 const html = van.tags
 
-export type Num = { int: boolean, min?: number, max?: number, step?: number }
-export type Rec = { [_: string]: string }
-export type Lookup = { [_: string]: string }
+export type InputForm = { dom: ChildDom, onDataChangedAtSource: RecFunc }
+export type FieldLookup = { [_: string]: string }
+export type FieldNumeric = { int: boolean, min?: number, max?: number, step?: number }
 export type Field = {
     id: string,
     title: string,
-    num?: Num,
+    num?: FieldNumeric,
     readOnly?: boolean,
     validators: ValidateFunc[]
-    lookUp?: State<Lookup>
+    lookUp?: State<FieldLookup>
     placeholder?: State<string>
 }
-export type ValidateFunc = (curRec: Rec, field: Field, newFieldValue: string) => Error | undefined
+export type Rec = { [_: string]: string }
 export type RecFunc = (rec: Rec) => void
 export type RecsFunc = (recs: Rec[]) => void
+export type ValidateFunc = (curRec: Rec, field: Field, newFieldValue: string) => Error | undefined
 
 
-export function create(domId: string, fields: Field[], dynFields: State<Field[]> | undefined, onDataUserModified: RecFunc): { dom: ChildDom, onDataChangedAtSource: RecFunc } {
+export function create(domId: string, fields: Field[], dynFields: State<Field[]> | undefined, onDataUserModified: RecFunc): InputForm {
     for (const field of fields)
         if (field.num)
             field.validators.push(validatorNumeric())
@@ -131,7 +132,7 @@ export let validatorLookup: ValidateFunc = (_: Rec, field: Field, newFieldValue:
     return undefined
 }
 
-export function validatorNumeric(numOptions?: Num): ValidateFunc {
+export function validatorNumeric(numOptions?: FieldNumeric): ValidateFunc {
     return (_: Rec, field: Field, newFieldValue: string) => {
         const num = numOptions ?? field.num
         if ((num === undefined) || (newFieldValue.length === 0))
@@ -154,4 +155,4 @@ export function validatorNumeric(numOptions?: Num): ValidateFunc {
     }
 }
 
-export let lookupBool: State<Lookup> = van.state({ 'false': 'No', 'true': 'Yes' } as Lookup)
+export let lookupBool: State<FieldLookup> = van.state({ 'false': 'No', 'true': 'Yes' } as FieldLookup)
