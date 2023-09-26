@@ -33,7 +33,8 @@ class PageEditor extends base_editor.WebviewPanel {
             return utils.alert("NEW BUG: page " + this.pagePath + " not found?!")
         switch (msg.ident) {
             case 'onPageModified':
-                page.pageProps = msg.payload.props
+                page.pageProps = msg.payload.pageProps
+                page.panelProps = msg.payload.panelProps
                 page.panels = msg.payload.panels
                 app.events.modifiedProj.now(º.appState.proj)
                 break

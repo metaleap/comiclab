@@ -11,7 +11,7 @@ const collDynFieldsLangSep = ':'
 
 export type PropsForm = {
     dom: ChildDom,
-    refresh: (coll?: º.Collection, page?: º.Page) => void,
+    refresh: () => void,
 }
 
 export function create(domId: string, collPath: string, pagePath: string, panelIdx: number | undefined, onUserModified: (c?: º.CollProps, pg?: º.PageProps, pnl?: º.PanelProps) => void): PropsForm {
@@ -91,7 +91,7 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
         sections["Panel " + (for_panel ? "Properties" : "Defaults")] = panelPropsForm.dom
     return {
         dom: ctl_multipanel.create(domId, sections),
-        refresh: (coll?: º.Collection, page?: º.Page) => {
+        refresh: () => {
             // lookups and dyn-fields
             if (collPropsForm) {
                 collAuthorFieldLookup.val = º.appState.config.contentAuthoring.authors ?? {}
@@ -108,11 +108,8 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
             if (pagePropsForm)
                 pagePaperFormatFieldLookup.val = º.appState.config.contentAuthoring.paperFormats ? utils.dictMap(º.strPaperFormat, º.appState.config.contentAuthoring.paperFormats) : {}
 
-            if (!page)
-                page = (pagePath !== '') ? º.pageFromPath(pagePath) : undefined
-            console.log("refresh.page:", page, "refresh.page.pageprops:", page?.pageProps)
-            if (!coll)
-                coll = for_coll ? º.collFromPath(collPath) : (page ? º.pageParent(page) : undefined)
+            const page = (pagePath !== '') ? º.pageFromPath(pagePath) : undefined
+            const coll = for_coll ? º.collFromPath(collPath) : (page ? º.pageParent(page) : undefined)
 
             // placeholders
             if (coll)

@@ -13,7 +13,6 @@ const zoomMax = 321.5
 
 
 let pagePath: string = ''
-let page: º.Page
 
 let ˍ: {
     main: HTMLDivElement,
@@ -33,27 +32,27 @@ let ˍ: {
 export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfg: object, appState: º.AppState) {
     utils.onInit(vscode, extUri, vscCfg, appState)
     pagePath = editorReuseKeyDerivedPagePath
-    page = º.pageFromPath(pagePath)!
     onAppStateRefreshed()
     window.addEventListener('message', onMessage)
 }
 
 function onUserModifiedPage(userModifiedPage: º.Page, reRender?: boolean): º.Page {
-    º.pageUpdate(pagePath, page = userModifiedPage)
-    utils.vs.postMessage({ ident: 'onPageModified', payload: page })
+    º.pageUpdate(pagePath, userModifiedPage)
+    utils.vs.postMessage({ ident: 'onPageModified', payload: userModifiedPage })
     if (!reRender)
         refreshPanelBars()
     else
         reRenderPageCanvas()
     if (ˍ.page_canvas.selPanelIdx !== undefined)
         document.getElementById('panel_' + ˍ.page_canvas.selPanelIdx)?.focus()
-    return page
+    return userModifiedPage
 }
 function onUserModifiedPanel(): º.Page {
+    const page = º.pageFromPath(pagePath)!
     º.pageUpdate(pagePath, page)
-    utils.vs.postMessage({ ident: 'onPageModified', payload: page })
     reRenderPageCanvas()
     refreshPanelBars(true)
+    utils.vs.postMessage({ ident: 'onPageModified', payload: page })
     return page
 }
 
@@ -67,6 +66,7 @@ function refreshPanelBars(edgeBarsOnly?: boolean) {
     for (const panel_bar of [ˍ.panelbar_left, ˍ.panelbar_right, ˍ.panelbar_upper, ˍ.panelbar_lower])
         panel_bar.refresh() // do this before the below, so we'll have a non-0 clientWidth
     if (ˍ.page_canvas.selPanelIdx !== undefined) { // positioning the panel bar right on its assigned panel edge
+        const page = º.pageFromPath(pagePath)!
         const panel = page.panels[ˍ.page_canvas.selPanelIdx]
         const page_size = º.pageSizeMm(page)
         const panel_px_pos = mmToPx(panel.x, panel.y, true, page_size)
@@ -85,8 +85,9 @@ function refreshPanelBars(edgeBarsOnly?: boolean) {
 }
 
 function onAppStateRefreshed(newAppState?: º.AppState) {
-    const old_pageprops = º.pageProps(page) // has the coll-level and project-level prop vals where no page-level overrides
-    const old_panelprops = º.panelProps(page) // dito as above
+    const old_page = º.pageFromPath(pagePath)!
+    const old_pageprops = º.pageProps(old_page) // has the coll-level and project-level prop vals where no page-level overrides
+    const old_panelprops = º.panelProps(old_page) // dito as above
 
     if (newAppState) {
         if (newAppState.config)
@@ -98,8 +99,8 @@ function onAppStateRefreshed(newAppState?: º.AppState) {
     const new_page = º.pageFromPath(pagePath) as º.Page
     const new_panelprops = º.panelProps(new_page) // dito as above
     const new_pageprops = º.pageProps(new_page) // dito
-    const page_changed = !º.deepEq(page, new_page)
-    page = new_page
+    const page_changed = !º.deepEq(old_page, new_page)
+    º.pageUpdate(pagePath, new_page)
     if (!ˍ.main)
         createGui()
     else if (page_changed || (!º.deepEq(old_pageprops, new_pageprops)) || (!º.deepEq(old_panelprops, new_panelprops)))
@@ -130,6 +131,7 @@ function reRenderPageCanvas() {
 }
 
 function createPageCanvas(panelIdx?: number) {
+    const page = º.pageFromPath(pagePath)!
     ˍ.page_canvas = ctl_pagecanvas.create('page_editor_canvas', page, onPanelSelection, panelIdx, onUserModifiedPage)
     for (const panelbar of [ˍ.panel_toolbar, ˍ.panelbar_left, ˍ.panelbar_right, ˍ.panelbar_upper, ˍ.panelbar_lower])
         if (panelbar)
@@ -137,6 +139,7 @@ function createPageCanvas(panelIdx?: number) {
 }
 
 function createGui() {
+    const page = º.pageFromPath(pagePath)!
     const orig_size_zoom_percent: number = (utils.vscCfg && utils.vscCfg['pageEditorDefaultZoom']) ? (utils.vscCfg['pageEditorDefaultZoom'] as number) : 122.5
     const page_size = º.pageSizeMm(page)
     ˍ.top_toolbar_menu_addpanelgrid = html.select({
@@ -208,14 +211,15 @@ function createGui() {
             if (evt.button === 1) // mid-click
                 ˍ.page_canvas.addNewPanel()
             else if (evt.button === 2)  // right-click
-                ˍ.props_dialog = dialog_props.show('page_editor_panelprops', page, evt.target as HTMLElement,
+                ˍ.props_dialog = dialog_props.show('page_editor_panelprops', º.pageFromPath(pagePath)!, evt.target as HTMLElement,
                     () => { ˍ.props_dialog = undefined },
-                    (userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps) => {
+                    (userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps, panelIdx?: number) => {
+                        const page = º.pageFromPath(pagePath)!
                         if (userModifiedPageProps || userModifiedPanelProps) {
                             if (userModifiedPageProps)
                                 page.pageProps = userModifiedPageProps
                             if (userModifiedPanelProps)
-                                page.panelProps = userModifiedPanelProps
+                                ((panelIdx === undefined) ? page : page.panels[panelIdx]).panelProps = userModifiedPanelProps
                             onUserModifiedPanel()
                         }
                     })
@@ -250,13 +254,13 @@ function mmFromPx(xPx: number, yPx: number, areUnzoomed: boolean, pageSize?: º.
     yPx = ((100 / zoom) * yPx) - posY()
     const xfac = areUnzoomed ? (xPx / ˍ.page_canvas.dom!.clientWidth) : 1, yfac = areUnzoomed ? (yPx / ˍ.page_canvas.dom!.clientHeight) : 1
     if (!pageSize)
-        pageSize = º.pageSizeMm(page)
+        pageSize = º.pageSizeMm(º.pageFromPath(pagePath)!)
     return { xPx: pageSize.wMm * xfac, yPx: pageSize.hMm * yfac }
 }
 
 function mmToPx(mmX: number, mmY: number, isPos: boolean, pageSize?: º.PageSize)/*: º.PageSize*/ {
     if (!pageSize)
-        pageSize = º.pageSizeMm(page)
+        pageSize = º.pageSizeMm(º.pageFromPath(pagePath)!)
     const px_per_mm = ˍ.page_canvas.dom!.clientWidth / pageSize.wMm
     const x_off = isPos ? posX() : 0, y_off = isPos ? posY() : 0
     return { xPx: (px_per_mm * mmX) + x_off, xPy: (px_per_mm * mmY) + y_off }

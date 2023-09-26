@@ -10,15 +10,16 @@ export type PropsDialog = {
     refresh: () => void
 }
 
-export function show(domId: string, page: º.Page, targetDom: HTMLElement, onRemovingFromDom: () => void, onUserModified: (pg?: º.PageProps, pnl?: º.PanelProps) => void): PropsDialog {
+export function show(domId: string, page: º.Page, targetDom: HTMLElement, onRemovingFromDom: () => void, onUserModified: (pg?: º.PageProps, pnl?: º.PanelProps, pidx?: number) => void): PropsDialog {
     if (!(targetDom && targetDom.tagName && targetDom.id && targetDom.classList))
         throw targetDom
-    const panel_idx = parseInt(targetDom.getAttribute('data-panelIdx') ?? '')
+    let panel_idx: number | undefined = parseInt(targetDom.getAttribute('data-panelIdx') ?? '')
+    if (isNaN(panel_idx))
+        panel_idx = undefined
 
     const props_form = ctl_propsform.create(domId, '', º.pageToPath(page), panel_idx,
         (userModifiedCollProps?: º.CollProps, userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps) => {
-            console.log("umpgp", userModifiedPageProps, "umpnp", userModifiedPanelProps)
-            onUserModified(userModifiedPageProps, userModifiedPanelProps)
+            onUserModified(userModifiedPageProps, userModifiedPanelProps, panel_idx)
         })
     const dialog = html.dialog({ 'class': 'page-editor-props-dialog' }, props_form.dom)
     dialog.onclose = () => {
