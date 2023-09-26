@@ -113,32 +113,36 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
 
             // placeholders
             if (coll)
-                updatePlaceholders(coll, for_page, [
-                    { fill: (_) => { panelBorderWidthPlaceholder.val = _ }, from: (_) => _.panelProps.borderWidthMm?.toFixed(1) ?? '', },
-                    { fill: (_) => { panelRoundnessPlaceholder.val = _ }, from: (_) => _.panelProps.roundness?.toFixed(2) ?? '', },
+                updatePlaceholders(coll, page, for_panel, [
                     {
-                        fill: (_) => { collAuthorFieldPlaceholder.val = _ }, from: (_) => _.collProps.authorId ?? '', display: (_) =>
-                            º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[_] ?? '') : ''
+                        fill: (_) => { panelBorderWidthPlaceholder.val = _ }, from: (_) => (_.panelProps?.borderWidthMm?.toFixed(1) ?? ''),
                     },
                     {
-                        fill: (_) => { pagePaperFormatFieldPlaceholder.val = _ }, from: (_) => _.pageProps.paperFormatId ?? '', display: (_) =>
-                            º.appState.config.contentAuthoring.paperFormats ? º.strPaperFormat(º.appState.config.contentAuthoring.paperFormats[_]) : ''
+                        fill: (_) => { panelRoundnessPlaceholder.val = _ }, from: (_) => (_.panelProps?.roundness?.toFixed(2) ?? ''),
+                    },
+                    {
+                        fill: (_) => { collAuthorFieldPlaceholder.val = _ }, from: (_) => (_.collProps?.authorId ?? ''),
+                        display: (_) => (º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[_] ?? '') : ''),
+                    },
+                    {
+                        fill: (_) => { pagePaperFormatFieldPlaceholder.val = _ }, from: (_) => (_.pageProps?.paperFormatId ?? ''),
+                        display: (_) => (º.appState.config.contentAuthoring.paperFormats ? º.strPaperFormat(º.appState.config.contentAuthoring.paperFormats[_]) : ''),
                     },
                 ])
 
             // populate form input fields
             collPropsForm?.onDataChangedAtSource(curCollPropsRec(coll))
-            pagePropsForm?.onDataChangedAtSource(curPagePropsRec(coll))
+            pagePropsForm?.onDataChangedAtSource(curPagePropsRec(coll, page))
             panelPropsForm?.onDataChangedAtSource(curPanelPropsRec(coll, page, panelIdx))
         },
     }
 }
 
-function updatePlaceholders(coll: º.Collection, inclColl: boolean, placeholders: { fill: (_: string) => void, from: (_: º.ProjOrColl) => string | undefined, display?: (_: string) => string }[]) {
-    const parents = (inclColl ? [coll] : []).concat(º.collParents(coll))
+function updatePlaceholders(coll: º.Collection, page: º.Page | undefined, forPanel: boolean, placeholders: { fill: (_: string) => void, from: (_: º.ProjOrCollOrPage) => string | undefined, display?: (_: string) => string }[]) {
+    const parents = (page ? [coll] : []).concat(º.collParents(coll))
     for (const placeholder of placeholders) {
-        let placeholder_val = ''
-        for (const parent of parents)
+        let placeholder_val = (forPanel && page) ? (placeholder.from(page) ?? '') : ''
+        if (placeholder_val === '') for (const parent of parents)
             if ((placeholder_val = placeholder.from(parent) ?? '') !== '')
                 break
         if (placeholder_val === '')
