@@ -1,5 +1,5 @@
 export const appState: AppState = {
-    proj: { collections: [], collProps: {}, pageProps: {}, panelProps: {} },
+    proj: { collections: [], collProps: {}, pageProps: {}, panelProps: {}, balloonProps: {} },
     config: { contentAuthoring: {} },
 }
 
@@ -27,6 +27,7 @@ export type Proj = {
     collProps: CollProps
     pageProps: PageProps
     panelProps: PanelProps
+    balloonProps: BalloonProps
 }
 
 export type Collection = {
@@ -36,21 +37,31 @@ export type Collection = {
     collProps: CollProps
     pageProps: PageProps
     panelProps: PanelProps
+    balloonProps: BalloonProps
 }
 
 export type Page = {
     name: string
     panels: Panel[]
+    balloons: Balloon[]
     pageProps: PageProps
     panelProps: PanelProps
+    balloonProps: BalloonProps
 }
 
-export type Panel = {
+export type Shape = {
     x: number
     y: number
     w: number
     h: number
+}
+
+export type Panel = Shape & {
     panelProps: PanelProps
+}
+
+export type Balloon = Shape & {
+    balloonProps: BalloonProps
 }
 
 export type ProjOrColl = (Proj | Collection) & { name?: string }
@@ -59,7 +70,9 @@ export type ProjOrCollOrPage = {
     collProps?: CollProps
     pageProps: PageProps
     panelProps: PanelProps
+    balloonProps: BalloonProps
     panels?: Panel[]
+    balloons?: Balloon[]
 }
 
 export type CollProps = {
@@ -71,11 +84,17 @@ export type PageProps = {
     paperFormatId?: string
 }
 
-export type PanelProps = {
+export type ShapeProps = {
     borderWidthMm?: number
+    roundness?: number
+}
+
+export type PanelProps = ShapeProps & {
     innerMarginMm?: number
     outerMarginMm?: number
-    roundness?: number
+}
+
+export type BalloonProps = ShapeProps & {
 }
 
 export function walkCollections<T>(perColl: (_: Collection[]) => any, parents?: Collection[]) {
@@ -165,39 +184,6 @@ export function collFromPath(path: string): Collection | undefined {
     return coll
 }
 
-export function collProp<T>(it: ProjOrCollOrPage, propsPath: string[], defaultValue: T): T {
-    const is_page = (it.panels !== undefined)
-    if (is_page)
-        return collProp<T>(pageParent(it as Page), propsPath, defaultValue)
-    let prop: any = it.collProps
-    for (const path_part of propsPath)
-        prop = prop[path_part]
-    return (prop && ((typeof prop) === (typeof defaultValue))) ? prop
-        : ((it === appState.proj) ? defaultValue
-            : collProp<T>(collParent(it as Collection), propsPath, defaultValue))
-}
-export function pageProp<T>(it: ProjOrCollOrPage, propsPath: string[], defaultValue: T): T {
-    const is_page = (it.panels !== undefined)
-    let prop: any = it.pageProps
-    for (const path_part of propsPath)
-        prop = prop[path_part]
-    return (prop && ((typeof prop) === (typeof defaultValue))) ? prop
-        : ((it === appState.proj) ? defaultValue
-            : pageProp<T>(is_page ? pageParent(it as Page)
-                : collParent(it as Collection), propsPath, defaultValue))
-}
-export function panelProp<T>(it: ProjOrCollOrPage, propsPath: string[], defaultValue: T, panelIdx?: number): T {
-    const is_page = (it.panels !== undefined)
-    let prop: any = it.panelProps
-    if (is_page && (panelIdx !== undefined))
-        prop = (it as Page).panels[panelIdx].panelProps
-    for (const path_part of propsPath)
-        prop = prop[path_part]
-    return (prop && ((typeof prop) === (typeof defaultValue))) ? prop
-        : ((it === appState.proj) ? defaultValue
-            : panelProp<T>(is_page ? ((panelIdx !== undefined) ? it : pageParent(it as Page))
-                : collParent(it as Collection), propsPath, defaultValue))
-}
 
 export function collProps(it: ProjOrCollOrPage): CollProps {
     return props<CollProps>(it, 'collProps')
@@ -210,6 +196,17 @@ export function panelProps(it: ProjOrCollOrPage, panelIdx?: number): PanelProps 
     const is_page = (it.panels !== undefined)
     if (is_page && panelIdx !== undefined) {
         const props = (it as Page).panels[panelIdx].panelProps
+        for (const k in props)
+            if ((props as any)[k] !== undefined)
+                (ret as any)[k] = (props as any)[k]
+    }
+    return ret
+}
+export function balloonProps(it: ProjOrCollOrPage, balloonIdx?: number): BalloonProps {
+    const ret = props<BalloonProps>(it, 'balloonProps')
+    const is_page = (it.balloons !== undefined)
+    if (is_page && balloonIdx !== undefined) {
+        const props = (it as Page).balloons[balloonIdx].balloonProps
         for (const k in props)
             if ((props as any)[k] !== undefined)
                 (ret as any)[k] = (props as any)[k]

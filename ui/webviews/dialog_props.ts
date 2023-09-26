@@ -16,8 +16,9 @@ export function show(domId: string, page: º.Page, targetDom: HTMLElement, onRem
     let panel_idx: number | undefined = parseInt(targetDom.getAttribute('data-panelIdx') ?? '')
     if (isNaN(panel_idx))
         panel_idx = undefined
+    const balloon_idx: number | undefined = undefined
 
-    const props_form = ctl_propsform.create(domId, '', º.pageToPath(page), panel_idx,
+    const props_form = ctl_propsform.create(domId, '', º.pageToPath(page), panel_idx, balloon_idx,
         (_?: º.CollProps, userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps) => {
             onUserModified(userModifiedPageProps, userModifiedPanelProps, panel_idx)
         })

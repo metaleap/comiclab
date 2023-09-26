@@ -17,7 +17,7 @@ let props_form: ctl_propsform.PropsForm
 export function onInit(editorReuseKeyDerivedCollPath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfgSettings: object, appState: º.AppState) {
     utils.onInit(vscode, extUri, vscCfgSettings, appState)
     collPath = editorReuseKeyDerivedCollPath
-    props_form = ctl_propsform.create((collPath === '') ? 'proj_editor_main' : 'coll_editor_props', collPath, '', undefined,
+    props_form = ctl_propsform.create((collPath === '') ? 'proj_editor_main' : 'coll_editor_props', collPath, '', undefined, undefined,
         (userModifiedCollProps?: º.CollProps, userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps) => {
             setDisabled(true)
             const dst: º.ProjOrColl = º.collFromPath(collPath) ?? º.appState.proj

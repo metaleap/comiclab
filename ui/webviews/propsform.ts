@@ -14,14 +14,17 @@ export type PropsForm = {
     refresh: () => void,
 }
 
-export function create(domId: string, collPath: string, pagePath: string, panelIdx: number | undefined, onUserModified: (c?: º.CollProps, pg?: º.PageProps, pnl?: º.PanelProps) => void): PropsForm {
+export function create(domId: string, collPath: string, pagePath: string, panelIdx: number | undefined, balloonIdx: number | undefined, onUserModified: (c?: º.CollProps, pg?: º.PageProps, pnl?: º.PanelProps, bln?: º.BalloonProps) => void): PropsForm {
     if ((panelIdx !== undefined) && isNaN(panelIdx))
         panelIdx = undefined
-    const for_proj = (collPath === '') && (pagePath === ''), for_coll = (collPath !== ''), for_page = (pagePath !== '') && (panelIdx === undefined), for_panel = (pagePath !== '') && (panelIdx !== undefined)
+    if ((balloonIdx !== undefined) && isNaN(balloonIdx))
+        balloonIdx = undefined
+    const for_proj = (collPath === '') && (pagePath === ''), for_coll = (collPath !== ''), for_page = (pagePath !== '') && (panelIdx === undefined) && (balloonIdx === undefined), for_panel = (pagePath !== '') && (panelIdx !== undefined), for_balloon = (pagePath !== '') && (balloonIdx !== undefined)
 
     let collPropsForm: ctl_inputform.InputForm = undefined as any
     let pagePropsForm: ctl_inputform.InputForm = undefined as any
     let panelPropsForm: ctl_inputform.InputForm = undefined as any
+    let balloonPropsForm: ctl_inputform.InputForm = undefined as any
 
     // create collPropsForm (maybe)
     const collAuthorFieldPlaceholder = van.state('')
@@ -54,7 +57,7 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
     const pagePaperFormatFieldPlaceholder = van.state('')
     const pagePaperFormatFieldLookup = van.state({} as ctl_inputform.FieldLookup)
     const pagePaperFormatField: ctl_inputform.Field = { id: 'paperFormatId', title: "Page format", validators: [ctl_inputform.validatorLookup], lookUp: pagePaperFormatFieldLookup, placeholder: pagePaperFormatFieldPlaceholder }
-    if (!for_panel) {
+    if (!(for_panel || for_balloon)) {
         pagePropsForm = ctl_inputform.create('pageprops_form', [pagePaperFormatField], undefined,
             (userModifiedRec: ctl_inputform.Rec) => {
                 const pageProps: º.PageProps = { paperFormatId: userModifiedRec['paperFormatId'] }
@@ -69,7 +72,7 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
     const panelInnerMarginPlaceholder = van.state('')
     const panelOuterMarginPlaceholder = van.state('')
     const panelRoundnessPlaceholder = van.state('')
-    const panelBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Panel border width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: panelBorderWidthPlaceholder }
+    const panelBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Border width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: panelBorderWidthPlaceholder }
     const panelInnerMarginField: ctl_inputform.Field = { id: 'innerMarginMm', title: "Inter-panel margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelInnerMarginPlaceholder }
     const panelOuterMarginField: ctl_inputform.Field = { id: 'outerMarginMm', title: "Page-edge margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelOuterMarginPlaceholder }
     const panelRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: panelRoundnessPlaceholder }
@@ -84,6 +87,22 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
             onUserModified(undefined, undefined, panelProps)
         })
 
+    // create balloonPropsForm (always)
+    const balloonBorderWidthPlaceholder = van.state('')
+    const balloonRoundnessPlaceholder = van.state('')
+    const balloonBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Border width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: balloonBorderWidthPlaceholder }
+    const balloonRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: balloonRoundnessPlaceholder }
+    balloonPropsForm = ctl_inputform.create(domId + '_balloonprops_form', [balloonBorderWidthField, balloonRoundnessField], undefined,
+        (userModifiedRec: ctl_inputform.Rec) => {
+            const balloonProps: º.BalloonProps = {}
+            for (const num_prop_name of ['borderWidthMm', 'roundness']) {
+                const v = parseFloat(userModifiedRec[num_prop_name])
+                if ((v !== undefined) && !isNaN(v))
+                    (balloonProps as any)[num_prop_name] = v
+            }
+            onUserModified(undefined, undefined, balloonProps)
+        })
+
     const sections: Record<string, ChildDom> = {}
     if (collPropsForm)
         sections["Collection " + (for_coll ? "properties" : "defaults")] = collPropsForm.dom
@@ -91,6 +110,8 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
         sections["Page " + (for_page ? "properties" : "defaults")] = pagePropsForm.dom
     if (panelPropsForm)
         sections["Panel " + (for_panel ? "properties" : "defaults")] = panelPropsForm.dom
+    if (balloonPropsForm)
+        sections["Balloon " + (for_balloon ? "properties" : "defaults")] = balloonPropsForm.dom
     return {
         dom: ctl_multipanel.create(domId, sections),
         refresh: () => {
@@ -116,7 +137,10 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
 
             // placeholders
             if (coll)
-                updatePlaceholders(coll, page, for_panel, [
+                updatePlaceholders(coll, page, for_panel || for_balloon, [
+                    {
+                        fill: (_) => { balloonBorderWidthPlaceholder.val = _ }, from: (_) => (_.balloonProps?.borderWidthMm?.toFixed(1) ?? ''),
+                    },
                     {
                         fill: (_) => { panelBorderWidthPlaceholder.val = _ }, from: (_) => (_.panelProps?.borderWidthMm?.toFixed(1) ?? ''),
                     },
@@ -128,6 +152,9 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
                     },
                     {
                         fill: (_) => { panelRoundnessPlaceholder.val = _ }, from: (_) => (_.panelProps?.roundness?.toFixed(2) ?? ''),
+                    },
+                    {
+                        fill: (_) => { balloonRoundnessPlaceholder.val = _ }, from: (_) => (_.balloonProps?.roundness?.toFixed(2) ?? ''),
                     },
                     {
                         fill: (_) => { collAuthorFieldPlaceholder.val = _ }, from: (_) => (_.collProps?.authorId ?? ''),
@@ -143,14 +170,15 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
             collPropsForm?.onDataChangedAtSource(curCollPropsRec(coll))
             pagePropsForm?.onDataChangedAtSource(curPagePropsRec(coll, page))
             panelPropsForm?.onDataChangedAtSource(curPanelPropsRec(coll, page, panelIdx))
+            balloonPropsForm?.onDataChangedAtSource(curBalloonPropsRec(coll, page, balloonIdx))
         },
     }
 }
 
-function updatePlaceholders(coll: º.Collection, page: º.Page | undefined, forPanel: boolean, placeholders: { fill: (_: string) => void, from: (_: º.ProjOrCollOrPage) => string | undefined, display?: (_: string) => string }[]) {
+function updatePlaceholders(coll: º.Collection, page: º.Page | undefined, forPanelOrBalloon: boolean, placeholders: { fill: (_: string) => void, from: (_: º.ProjOrCollOrPage) => string | undefined, display?: (_: string) => string }[]) {
     const parents = (page ? [coll] : []).concat(º.collParents(coll))
     for (const placeholder of placeholders) {
-        let placeholder_val = (forPanel && page) ? (placeholder.from(page) ?? '') : ''
+        let placeholder_val = (forPanelOrBalloon && page) ? (placeholder.from(page) ?? '') : ''
         if (placeholder_val === '') for (const parent of parents)
             if ((placeholder_val = placeholder.from(parent) ?? '') !== '')
                 break
@@ -184,6 +212,15 @@ function curPanelPropsRec(coll?: º.Collection, page?: º.Page, panelIdx?: numbe
         'borderWidthMm': props.borderWidthMm?.toFixed(1) ?? '',
         'innerMarginMm': props.innerMarginMm?.toFixed(1) ?? '',
         'outerMarginMm': props.outerMarginMm?.toFixed(1) ?? '',
+        'roundness': props.roundness?.toFixed(2) ?? '',
+    }
+}
+
+function curBalloonPropsRec(coll?: º.Collection, page?: º.Page, balloonIdx?: number): ctl_inputform.Rec {
+    const props = ((page) ? ((balloonIdx === undefined) ? page.balloonProps : page.balloons[balloonIdx].balloonProps)
+        : (coll ? coll.balloonProps : º.appState.proj.balloonProps))
+    return {
+        'borderWidthMm': props.borderWidthMm?.toFixed(1) ?? '',
         'roundness': props.roundness?.toFixed(2) ?? '',
     }
 }
