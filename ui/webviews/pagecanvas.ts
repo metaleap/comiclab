@@ -42,15 +42,14 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
             onUserModified(page, reRender)
         },
         addNewPanel: () => {
-            const mx = parseInt((it.xMm ?? 0).toFixed(0)), my = parseInt((it.yMm ?? 0).toFixed(0))
-            page.panels.push({ panelProps: {}, x: parseInt((parseInt((mx / 10).toFixed(0)) * 10).toFixed(0)), y: parseInt((parseInt((my / 10).toFixed(0)) * 10).toFixed(0)), w: 100, h: 100 })
+            page.panels.push({ panelProps: {}, x: ~~(it.xMm ?? 0), y: ~~(it.yMm ?? 0), w: 100, h: 100 })
             it.notifyModified(page, page.panels.length - 1, true)
         },
         addNewPanelGrid: (numRows: number, numCols: number) => {
             const wcols = page_size.wMm / numCols, hrows = page_size.hMm / numRows
             for (let r = 0; r < numRows; r++)
                 for (let c = 0; c < numCols; c++)
-                    page.panels.push({ panelProps: {}, w: wcols, h: hrows, x: c * wcols, y: r * hrows })
+                    page.panels.push({ panelProps: {}, w: ~~wcols, h: ~~hrows, x: ~~(c * wcols), y: ~~(r * hrows) })
             it.notifyModified(page, undefined, true)
         },
         panelReorder: (direction: º.Direction, dontDoIt?: boolean) => {
@@ -111,10 +110,29 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
     for (let pidx = 0; pidx < page.panels.length; pidx++) {
         const panel = page.panels[pidx]
         let px = panel.x, py = panel.y, pw = panel.w, ph = panel.h
-        const is_edge = (px == 0) || (py == 0) || ((px + pw) == page_size.wMm) || ((py + ph) == page_size.hMm)
         const props = º.panelProps(page, pidx)
-        if ((!is_edge) && (props.innerMarginMm !== undefined) && (props.innerMarginMm >= 0.01))
-            [px, py, pw, ph] = [px + props.innerMarginMm, py + props.innerMarginMm, pw - (props.innerMarginMm * 2), ph - (props.innerMarginMm * 2)]
+
+        if (((props.outerMarginMm !== undefined) && (props.outerMarginMm >= 0.1)) || ((props.innerMarginMm !== undefined) && (props.innerMarginMm >= 0.1))) {
+            const mi = props.innerMarginMm ?? 0
+            const e_top = º.fEq(py, 0), e_left = º.fEq(px, 0), e_right = º.fEq((px + pw), page_size.wMm), e_bottom = º.fEq((py + ph), page_size.hMm)
+            px += (e_left ? 0 : mi)
+            py += (e_top ? 0 : mi)
+            const px2 = (panel.x + pw) - (e_right ? 0 : mi), py2 = (panel.y + ph) - (e_bottom ? 0 : mi)
+            pw = px2 - px
+            ph = py2 - py
+            if (props.outerMarginMm !== undefined) {
+                const mo = props.outerMarginMm!
+                if (e_left)
+                    [px, pw] = [px + mo, pw - mo]
+                if (e_top)
+                    [py, ph] = [py + mo, ph - mo]
+                if (e_right)
+                    pw -= mo
+                if (e_bottom)
+                    ph -= mo
+            }
+        }
+
         let rx = 0, ry = 0
         if ((props.roundness !== undefined) && (props.roundness >= 0.01)) {
             rx = 0.5 * Math.max(pw, ph)
@@ -139,9 +157,9 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                     case 'ArrowDown':
                     case 'ArrowUp':
                         evt.stopPropagation()
-                        const factor = ((evt.key == 'ArrowLeft') || (evt.key == 'ArrowUp')) ? -1 : 1,
+                        const factor = ((evt.key === 'ArrowLeft') || (evt.key === 'ArrowUp')) ? -1 : 1,
                             min = evt.altKey ? 10 : undefined,
-                            prop_name = ((evt.key == 'ArrowLeft') || (evt.key == 'ArrowRight'))
+                            prop_name = ((evt.key === 'ArrowLeft') || (evt.key === 'ArrowRight'))
                                 ? (evt.altKey ? 'width' : 'x')
                                 : (evt.altKey ? 'height' : 'y'),
                             new_val = parseInt(((panel as any)[prop_name[0]] + ((evt.shiftKey ? 10 : 1) * factor)).toFixed(0))

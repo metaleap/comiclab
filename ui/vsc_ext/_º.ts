@@ -298,7 +298,11 @@ export function deepEq(val1: any, val2: any, ignoreArrayOrder?: boolean): boolea
     // deepEq only covers the JSON subset of the JS/TS type-scape
     if (val1 === val2 || (val1 === null && val2 === undefined) || (val1 === undefined && val2 === null))
         return true
-    if ((typeof val1 == 'object') && (typeof val2 == 'object')) {
+    if ((typeof val1) !== (typeof val2))
+        return false
+    if (((typeof val1) == 'number') && ((typeof val2) == 'number'))
+        return fEq(val1, val2)
+    if (((typeof val1) == 'object') && ((typeof val2) == 'object')) {
         const arr1 = Array.isArray(val1), arr2 = Array.isArray(val2)
 
         if ((arr1 != arr2) || (arr1 && arr2 && val1.length != val2.length))
@@ -335,9 +339,15 @@ export function deepEq(val1: any, val2: any, ignoreArrayOrder?: boolean): boolea
 }
 
 export function dictMerge<TDict>(...dicts: { [_: string]: TDict }[]): { [_: string]: TDict } {
-    return Object.assign({}, ...dicts) // dictMap<TDict, TDict>((_) => _, ...dicts)
+    return Object.assign({}, ...dicts)
 }
 
 export function jsonUnJson(v: any): any {
     return JSON.parse(JSON.stringify(v))
+}
+
+export function fEq(a: number, b: number): boolean {
+    return (isNaN(a) || isNaN(b))
+        ? (isNaN(a) && isNaN(b))
+        : ((a === b) || Math.abs(a - b) < (((a > 1) || (b > 1)) ? (Math.max(a, b) * Number.EPSILON) : Number.EPSILON))
 }
