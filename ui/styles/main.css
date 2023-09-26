@@ -146,7 +146,8 @@ div.inputform div.inputform-field>div.inputform-field-input {
 }
 
 body>div#config_editor_main,
-body>div#coll_editor_main {
+body>div#coll_editor_main,
+body>div#proj_editor_main {
     margin: 1em;
 }
 

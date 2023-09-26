@@ -46,6 +46,7 @@ export function onInit() {
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.moveDn', cmdMoveDn))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.moveTop', cmdMoveTop))
     utils.disp(vs.commands.registerCommand('comiclab.proj.colls.moveEnd', cmdMoveEnd))
+    utils.disp(vs.commands.registerCommand('comiclab.proj.colls.projSettings', cmdProjSettings))
 
     utils.disp(treeColls.onInit(vs.window.createTreeView('comiclabExplorerProjColls', { treeDataProvider: treeColls, showCollapseAll: true })))
     utils.disp(treeBooks.onInit(vs.window.createTreeView('comiclabExplorerProjBooks', { treeDataProvider: treeBooks, showCollapseAll: true })))
@@ -69,6 +70,9 @@ export function treeNodeCat(treeNode: vs.TreeItem): string {
     return (treeNode.id as string).substring(0, idx)
 }
 
+function cmdProjSettings() {
+    treeColls.openProjCollDefaults()
+}
 function cmdAddPage(...args: any[]): any {
     treeColls.addNew(args[0] as vs.TreeItem, true)
 }

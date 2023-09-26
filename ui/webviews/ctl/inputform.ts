@@ -140,7 +140,7 @@ export function validatorNumeric(numOptions?: FieldNumeric): ValidateFunc {
         let n: number
         try {
             n = (num.int ? parseInt : parseFloat)(newFieldValue)
-            if (n === undefined || n === null || Number.isNaN(n))
+            if (n === undefined || n === null || Number.isNaN(n) || (newFieldValue === 'e'))
                 throw `'${field.title}' must be a numeric value.`
         } catch (err: any) {
             return { name: 'Numeric', message: err.toString() }

@@ -21,7 +21,7 @@ class CollEditor extends base_editor.WebviewPanel {
         this.collPath = collPath
     }
     override title(): string {
-        return º.collFromPath(this.collPath)?.name ?? '?!bug?!'
+        return º.collFromPath(this.collPath)?.name ?? 'Project-wide Collection defaults'
     }
     override onRefreshedEventMessage(evt: app.StateEvent): any {
         if (evt.proj || evt.cfg)
@@ -29,14 +29,13 @@ class CollEditor extends base_editor.WebviewPanel {
         return undefined
     }
     override onMessage(msg: any): void {
-        const coll = º.collFromPath(this.collPath)
-        if (!coll)
-            return utils.alert("NEW BUG: coll " + this.collPath + " not found?!")
         switch (msg.ident) {
+            case 'onProjModified':
             case 'onCollModified':
-                coll.collProps = msg.payload.collProps
-                coll.pageProps = msg.payload.pageProps
-                coll.panelProps = msg.payload.panelProps
+                const dst: º.ProjOrColl = º.collFromPath(this.collPath) ?? º.appState.proj
+                dst.collProps = msg.payload.collProps
+                dst.pageProps = msg.payload.pageProps
+                dst.panelProps = msg.payload.panelProps
                 app.events.modifiedProj.now(º.appState.proj)
                 break
             default:

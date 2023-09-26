@@ -35,7 +35,7 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
                 if (collProps.authorId === '')
                     delete collProps.authorId
                 collProps.customFields = {}
-                if (º.appState.config.contentAuthoring.customFields)
+                if (º.appState.config.contentAuthoring.customFields && for_coll)
                     for (const dyn_field_id in º.appState.config.contentAuthoring.customFields) {
                         collProps.customFields[dyn_field_id] = {}
                         collProps.customFields[dyn_field_id][''] = userModifiedRec[dyn_field_id + collDynFieldsLangSep]
@@ -95,15 +95,16 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
             // lookups and dyn-fields
             if (collPropsForm) {
                 collAuthorFieldLookup.val = º.appState.config.contentAuthoring.authors ?? {}
-                collDynFields.val = utils.dictToArr(º.appState.config.contentAuthoring.customFields, (k, v) => ({ 'id': k, 'localizable': v }))
-                    .sort((a, b) => (a.id == 'title') ? -987654321 : (a.id.localeCompare(b.id)))
-                    .map((_) => {
-                        const ret = [{ 'id': _.id + collDynFieldsLangSep, 'title': _.id, validators: [] } as ctl_inputform.Field]
-                        if (_.localizable)
-                            for (const lang_id in º.appState.config.contentAuthoring.languages)
-                                ret.push({ 'id': _.id + collDynFieldsLangSep + lang_id, 'title': `    (${º.appState.config.contentAuthoring.languages[lang_id]})`, } as ctl_inputform.Field)
-                        return ret
-                    }).flat()
+                if (for_coll)
+                    collDynFields.val = utils.dictToArr(º.appState.config.contentAuthoring.customFields, (k, v) => ({ 'id': k, 'localizable': v }))
+                        .sort((a, b) => (a.id == 'title') ? -987654321 : (a.id.localeCompare(b.id)))
+                        .map((_) => {
+                            const ret = [{ 'id': _.id + collDynFieldsLangSep, 'title': _.id, validators: [] } as ctl_inputform.Field]
+                            if (_.localizable)
+                                for (const lang_id in º.appState.config.contentAuthoring.languages)
+                                    ret.push({ 'id': _.id + collDynFieldsLangSep + lang_id, 'title': `    (${º.appState.config.contentAuthoring.languages[lang_id]})`, } as ctl_inputform.Field)
+                            return ret
+                        }).flat()
             }
             if (pagePropsForm)
                 pagePaperFormatFieldLookup.val = º.appState.config.contentAuthoring.paperFormats ? utils.dictMap(º.strPaperFormat, º.appState.config.contentAuthoring.paperFormats) : {}
@@ -155,7 +156,7 @@ function updatePlaceholders(coll: º.Collection, page: º.Page | undefined, forP
 function curCollPropsRec(coll?: º.Collection): ctl_inputform.Rec {
     const props = coll ? coll.collProps : º.appState.proj.collProps
     const ret: ctl_inputform.Rec = { 'authorId': props.authorId ?? '' }
-    if (props.customFields)
+    if (props.customFields && coll)
         for (const dyn_field_id in props.customFields)
             if (props.customFields[dyn_field_id])
                 for (const lang_id in props.customFields[dyn_field_id])

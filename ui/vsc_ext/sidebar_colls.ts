@@ -211,6 +211,10 @@ export class TreeColls extends sidebar.TreeDataProvider {
         }
         return can_move
     }
+
+    openProjCollDefaults() {
+        coll_editor.show('')
+    }
 }
 
 function collToNodeId(coll: º.Collection) {

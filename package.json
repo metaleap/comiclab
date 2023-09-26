@@ -81,6 +81,11 @@
         "icon": "$(archive)"
       },
       {
+        "command": "comiclab.proj.colls.projSettings",
+        "title": "Project Defaults...",
+        "icon": "$(settings)"
+      },
+      {
         "command": "comiclab.proj.colls.rename",
         "title": "Rename...",
         "icon": "$(edit)"
@@ -166,6 +171,10 @@
       "view/title": [
         {
           "command": "comiclab.proj.colls.addCollTop",
+          "when": "view == comiclabExplorerProjColls",
+          "group": "navigation"
+        }, {
+          "command": "comiclab.proj.colls.projSettings",
           "when": "view == comiclabExplorerProjColls",
           "group": "navigation"
         }

@@ -151,6 +151,8 @@ export function collToPath(coll: Collection): string {
 
 export function collFromPath(path: string): Collection | undefined {
     let coll: Collection | undefined
+    if (path === '')
+        return undefined
     const parts = path.split('/')
     let colls: Collection[] = appState.proj.collections
     for (let i = 0; i < parts.length; i++)
