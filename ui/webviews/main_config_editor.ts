@@ -10,18 +10,18 @@ import * as ctl_multipanel from './ctl/multipanel.js'
 
 const html = van.tags
 
-let grid_authors = newGridForStringMap('config_authors', 'Author', 'author_full_name', 'Full Name', curAuthorRecs, (_ => { º.appState.config.contentAuthoring.authors = _ }))
-let grid_languages = newGridForStringMap('config_languages', 'Language', 'lang_name', 'Name', curLanguagesRecs, (dict) => { º.appState.config.contentAuthoring.languages = dict })
+let grid_authors = newGridForStringMap('config_authors', "Author", 'author_full_name', "Full name", curAuthorRecs, (_ => { º.appState.config.contentAuthoring.authors = _ }))
+let grid_languages = newGridForStringMap('config_languages', "Language", 'lang_name', "Name", curLanguagesRecs, (dict) => { º.appState.config.contentAuthoring.languages = dict })
 let grid_customfields = ctl_inputgrid.create('config_customfields', [
-    { id: 'id', title: "Content Field ID", validators: [] },
-    { id: 'localizable', title: "Multi-Language", validators: [ctl_inputform.validatorLookup], lookUp: ctl_inputform.lookupBool },
+    { id: 'id', title: "ID", validators: [] },
+    { id: 'localizable', title: "Multi-language", validators: [ctl_inputform.validatorLookup], lookUp: ctl_inputform.lookupBool },
 ], (userModifiedRecs) => {
     setDisabled(true)
     º.appState.config.contentAuthoring.customFields = utils.dictFromArr(userModifiedRecs, (rec) => [rec.id, rec['localizable'] == 'true'])
     utils.vs.postMessage({ ident: 'onAppStateCfgModified', payload: º.appState.config })
 })
 let grid_paperformats = ctl_inputgrid.create('config_paperformats', [
-    { id: 'id', title: "Paper Format ID", validators: [/*validators added by input_grid.create*/] },
+    { id: 'id', title: "ID", validators: [/*validators added by input_grid.create*/] },
     { id: 'widthMm', title: 'Width (mm)', num: { int: true, min: 11, max: 1234 }, validators: [ctl_inputform.validatorNonEmpty] },
     { id: 'heightMm', title: 'Height (mm)', num: { int: true, min: 11, max: 1234 }, validators: [ctl_inputform.validatorNonEmpty] },
 ], (userModifiedRecs) => {
@@ -34,13 +34,13 @@ let main_tabs = ctl_tabs.create('config_editor_main', {
     "Collections": ctl_multipanel.create('config_collections', {
         "Authors": grid_authors.dom,
         "Languages": grid_languages.dom,
-        "Custom Content Fields": grid_customfields.dom,
+        "Custom content fields": grid_customfields.dom,
     }),
-    "Page Design": ctl_multipanel.create('config_pagedesign', {
+    "Page design": ctl_multipanel.create('config_pagedesign', {
         "Foo": html.div("Bar"),
     }),
-    "Scans & Paper-Related": ctl_multipanel.create('config_paperrelated', {
-        "Paper Formats": grid_paperformats.dom,
+    "Scans & paper-related": ctl_multipanel.create('config_paperrelated', {
+        "Paper formats": grid_paperformats.dom,
     }),
 })
 
@@ -79,7 +79,7 @@ function onMessage(evt: MessageEvent) {
 
 function newGridForStringMap(id: string, title: string, valueName: string, valueTitle: string, cur: () => ctl_inputform.Rec[], set: (_: { [_: string]: string }) => void) {
     return ctl_inputgrid.create(id, [
-        { id: 'id', title: title + " ID", validators: [/*validators added by input_grid.create*/] },
+        { id: 'id', title: "ID", validators: [/*validators added by input_grid.create*/] },
         { id: valueName, title: valueTitle, validators: [ctl_inputform.validatorNonEmpty, ctl_inputgrid.validatorUnique(cur)] },
     ], (userModifiedRecs) => {
         setDisabled(true)

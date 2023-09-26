@@ -53,7 +53,7 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
     // create pagePropsForm (maybe)
     const pagePaperFormatFieldPlaceholder = van.state('')
     const pagePaperFormatFieldLookup = van.state({} as ctl_inputform.FieldLookup)
-    const pagePaperFormatField: ctl_inputform.Field = { id: 'paperFormatId', title: "Page Format", validators: [ctl_inputform.validatorLookup], lookUp: pagePaperFormatFieldLookup, placeholder: pagePaperFormatFieldPlaceholder }
+    const pagePaperFormatField: ctl_inputform.Field = { id: 'paperFormatId', title: "Page format", validators: [ctl_inputform.validatorLookup], lookUp: pagePaperFormatFieldLookup, placeholder: pagePaperFormatFieldPlaceholder }
     if (!for_panel) {
         pagePropsForm = ctl_inputform.create('pageprops_form', [pagePaperFormatField], undefined,
             (userModifiedRec: ctl_inputform.Rec) => {
@@ -69,9 +69,9 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
     const panelInnerMarginPlaceholder = van.state('')
     const panelOuterMarginPlaceholder = van.state('')
     const panelRoundnessPlaceholder = van.state('')
-    const panelBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Panel Border Width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: panelBorderWidthPlaceholder }
-    const panelInnerMarginField: ctl_inputform.Field = { id: 'innerMarginMm', title: "Inter-Panel Margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelInnerMarginPlaceholder }
-    const panelOuterMarginField: ctl_inputform.Field = { id: 'outerMarginMm', title: "Page Edge Panel Margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelOuterMarginPlaceholder }
+    const panelBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Panel border width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: panelBorderWidthPlaceholder }
+    const panelInnerMarginField: ctl_inputform.Field = { id: 'innerMarginMm', title: "Inter-panel margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelInnerMarginPlaceholder }
+    const panelOuterMarginField: ctl_inputform.Field = { id: 'outerMarginMm', title: "Page-edge margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelOuterMarginPlaceholder }
     const panelRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: panelRoundnessPlaceholder }
     panelPropsForm = ctl_inputform.create(domId + '_panelprops_form', [panelBorderWidthField, panelInnerMarginField, panelOuterMarginField, panelRoundnessField], undefined,
         (userModifiedRec: ctl_inputform.Rec) => {
@@ -86,11 +86,11 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
 
     const sections: Record<string, ChildDom> = {}
     if (collPropsForm)
-        sections["Collection " + (for_coll ? "Properties" : "Defaults")] = collPropsForm.dom
+        sections["Collection " + (for_coll ? "properties" : "defaults")] = collPropsForm.dom
     if (pagePropsForm)
-        sections["Page " + (for_page ? "Properties" : "Defaults")] = pagePropsForm.dom
+        sections["Page " + (for_page ? "properties" : "defaults")] = pagePropsForm.dom
     if (panelPropsForm)
-        sections["Panel " + (for_panel ? "Properties" : "Defaults")] = panelPropsForm.dom
+        sections["Panel " + (for_panel ? "properties" : "defaults")] = panelPropsForm.dom
     return {
         dom: ctl_multipanel.create(domId, sections),
         refresh: () => {
