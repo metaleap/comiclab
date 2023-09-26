@@ -19,6 +19,7 @@ export type PageCanvas = {
 
 export function create(domId: string, page: º.Page, onPanelSelection: () => void, selPanelIdx: number | undefined, onUserModified: (page: º.Page, reRender?: boolean) => void): PageCanvas {
     const page_size = º.pageSizeMm(page)
+    console.log(page.pageProps, page_size)
     if ((selPanelIdx !== undefined) && (selPanelIdx >= page.panels.length))
         selPanelIdx = undefined
     const it: PageCanvas = {

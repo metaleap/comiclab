@@ -161,14 +161,6 @@ export function collFromPath(path: string): Collection | undefined {
     return coll
 }
 
-export function collPageFormat(coll: Collection): PaperFormat | undefined {
-    const path = [coll].concat(collParents(coll))
-    for (const coll of path)
-        if (coll.pageProps.paperFormatId && coll.pageProps.paperFormatId.length > 0)
-            return appState.config.contentAuthoring.paperFormats ? appState.config.contentAuthoring.paperFormats[coll.pageProps.paperFormatId] : undefined
-    return undefined
-}
-
 export function collProp<T>(it: ProjOrCollOrPage, propsPath: string[], defaultValue: T): T {
     const is_page = (it.panels !== undefined)
     if (is_page)
@@ -239,11 +231,14 @@ export function props<T>(it: ProjOrCollOrPage, propsName: string): T {
 
 export type PageSize = { wMm: number, hMm: number }
 export function pageSizeMm(page: Page): PageSize {
-    const coll = pageParent(page)
-    const page_format = collPageFormat(coll)
-    if (page_format)
-        return { wMm: page_format.widthMm, hMm: page_format.heightMm }
+    const paper_format = cfgPaperFormat(pageProps(page).paperFormatId)
+    if (paper_format)
+        return { wMm: paper_format.widthMm, hMm: paper_format.heightMm }
     return { wMm: 0, hMm: 0 }
+}
+
+export function cfgPaperFormat(name?: string): PaperFormat | undefined {
+    return (name && appState.config.contentAuthoring.paperFormats) ? appState.config.contentAuthoring.paperFormats[name] : undefined
 }
 
 export type Direction = 0 | 1 | -1 | typeof NaN

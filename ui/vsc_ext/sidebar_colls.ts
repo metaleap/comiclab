@@ -67,7 +67,7 @@ export class TreeColls extends sidebar.TreeDataProvider {
         let name_sugg = desc_what + (((addNewPage && coll) ? coll.pages : (coll ? coll.collections : º.appState.proj.collections)).length + 1).toString().padStart(addNewPage ? 3 : 2, "0")
         if (nameConflicts(name_sugg))
             name_sugg = ''
-        if (addNewPage && coll && !º.collPageFormat(coll)) {
+        if (addNewPage && coll && !º.cfgPaperFormat(º.pageProps(coll).paperFormatId)) {
             utils.alert(`Collection '${coll.name}' has no valid Page Format set yet.`)
             return
         }
