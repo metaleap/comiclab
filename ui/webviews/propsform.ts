@@ -11,7 +11,7 @@ const collDynFieldsLangSep = ':'
 
 export type PropsForm = {
     dom: ChildDom,
-    refresh: () => void,
+    refresh: (coll?: º.Collection, page?: º.Page) => void,
 }
 
 export function create(domId: string, collPath: string, pagePath: string, panelIdx: number | undefined, onUserModified: (c?: º.CollProps, pg?: º.PageProps, pnl?: º.PanelProps) => void): PropsForm {
@@ -31,22 +31,22 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
     if (for_proj || for_coll) {
         collPropsForm = ctl_inputform.create('collprops_form', [collAuthorField], collDynFields,
             (userModifiedRec: ctl_inputform.Rec) => {
-                const props: º.CollProps = { authorId: userModifiedRec['authorId'] }
-                if (props.authorId === '')
-                    delete props.authorId
-                props.customFields = {}
+                const collProps: º.CollProps = { authorId: userModifiedRec['authorId'] }
+                if (collProps.authorId === '')
+                    delete collProps.authorId
+                collProps.customFields = {}
                 if (º.appState.config.contentAuthoring.customFields)
                     for (const dyn_field_id in º.appState.config.contentAuthoring.customFields) {
-                        props.customFields[dyn_field_id] = {}
-                        props.customFields[dyn_field_id][''] = userModifiedRec[dyn_field_id + collDynFieldsLangSep]
+                        collProps.customFields[dyn_field_id] = {}
+                        collProps.customFields[dyn_field_id][''] = userModifiedRec[dyn_field_id + collDynFieldsLangSep]
                         if (º.appState.config.contentAuthoring.customFields[dyn_field_id]) // if custom field localizable
                             for (const lang_id in º.appState.config.contentAuthoring.languages) {
                                 const loc_val = userModifiedRec[dyn_field_id + collDynFieldsLangSep + lang_id]
                                 if (loc_val && loc_val.length > 0)
-                                    props.customFields[dyn_field_id][lang_id] = loc_val
+                                    collProps.customFields[dyn_field_id][lang_id] = loc_val
                             }
                     }
-                onUserModified(props)
+                onUserModified(collProps)
             })
     }
 
@@ -57,10 +57,10 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
     if (!for_panel) {
         pagePropsForm = ctl_inputform.create('pageprops_form', [pagePaperFormatField], undefined,
             (userModifiedRec: ctl_inputform.Rec) => {
-                const props: º.PageProps = { paperFormatId: userModifiedRec['paperFormatId'] }
-                if (props.paperFormatId === '')
-                    delete props.paperFormatId
-                onUserModified(undefined, props)
+                const pageProps: º.PageProps = { paperFormatId: userModifiedRec['paperFormatId'] }
+                if (pageProps.paperFormatId === '')
+                    delete pageProps.paperFormatId
+                onUserModified(undefined, pageProps)
             })
     }
 
@@ -71,15 +71,15 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
     const panelRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: panelRoundnessPlaceholder }
     panelPropsForm = ctl_inputform.create(domId + '_panelprops_form', [panelBorderWidthField, panelRoundnessField], undefined,
         (userModifiedRec: ctl_inputform.Rec) => {
-            const props: º.PanelProps = {
+            const panelProps: º.PanelProps = {
                 borderWidthMm: parseFloat(userModifiedRec['panelBorderWidth']),
                 roundness: parseFloat(userModifiedRec['roundness']),
             }
-            if (isNaN(props.borderWidthMm!))
-                delete props.borderWidthMm
-            if (isNaN(props.roundness!))
-                delete props.roundness
-            onUserModified(undefined, undefined, props)
+            if (isNaN(panelProps.borderWidthMm!))
+                delete panelProps.borderWidthMm
+            if (isNaN(panelProps.roundness!))
+                delete panelProps.roundness
+            onUserModified(undefined, undefined, panelProps)
         })
 
     const sections: Record<string, ChildDom> = {}
@@ -91,7 +91,7 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
         sections["Panel " + (for_panel ? "Properties" : "Defaults")] = panelPropsForm.dom
     return {
         dom: ctl_multipanel.create(domId, sections),
-        refresh: () => {
+        refresh: (coll?: º.Collection, page?: º.Page) => {
             // lookups and dyn-fields
             if (collPropsForm) {
                 collAuthorFieldLookup.val = º.appState.config.contentAuthoring.authors ?? {}
@@ -108,8 +108,11 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
             if (pagePropsForm)
                 pagePaperFormatFieldLookup.val = º.appState.config.contentAuthoring.paperFormats ? utils.dictMap(º.strPaperFormat, º.appState.config.contentAuthoring.paperFormats) : {}
 
-            const page = (pagePath !== '') ? º.pageFromPath(pagePath) : undefined
-            const coll = for_coll ? º.collFromPath(collPath) : (page ? º.pageParent(page) : undefined)
+            if (!page)
+                page = (pagePath !== '') ? º.pageFromPath(pagePath) : undefined
+            console.log("refresh.page:", page, "refresh.page.pageprops:", page?.pageProps)
+            if (!coll)
+                coll = for_coll ? º.collFromPath(collPath) : (page ? º.pageParent(page) : undefined)
 
             // placeholders
             if (coll)

@@ -4,7 +4,7 @@ import * as utils from './utils.js'
 import * as ctl_pagecanvas from './pagecanvas.js'
 import * as ctl_paneltoolbar from './paneltoolbar.js'
 import * as ctl_paneledgebar from './paneledgebar.js'
-import * as ctl_propspane from './propspane.js'
+import * as dialog_props from './dialog_props.js'
 
 
 const html = van.tags
@@ -27,7 +27,7 @@ let ˍ: {
     panelbar_right: ctl_paneledgebar.PanelEdgeBar,
     panelbar_upper: ctl_paneledgebar.PanelEdgeBar,
     panelbar_lower: ctl_paneledgebar.PanelEdgeBar,
-    props_dialog?: ctl_propspane.PropsDialog,
+    props_dialog?: dialog_props.PropsDialog,
 } = {} as any
 
 export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfg: object, appState: º.AppState) {
@@ -208,7 +208,7 @@ function createGui() {
             if (evt.button === 1) // mid-click
                 ˍ.page_canvas.addNewPanel()
             else if (evt.button === 2)  // right-click
-                ˍ.props_dialog = ctl_propspane.show('page_editor_panelprops', page, evt.target as HTMLElement,
+                ˍ.props_dialog = dialog_props.show('page_editor_panelprops', page, evt.target as HTMLElement,
                     () => { ˍ.props_dialog = undefined },
                     (userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps) => {
                         if (userModifiedPageProps || userModifiedPanelProps) {
