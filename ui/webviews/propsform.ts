@@ -66,21 +66,21 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
 
     // create panelPropsForm (always)
     const panelBorderWidthPlaceholder = van.state('')
-    const panelMarginPlaceholder = van.state('')
+    const panelInnerMarginPlaceholder = van.state('')
+    const panelOuterMarginPlaceholder = van.state('')
     const panelRoundnessPlaceholder = van.state('')
     const panelBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Panel Border Width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: panelBorderWidthPlaceholder }
-    const panelMarginField: ctl_inputform.Field = { id: 'marginMm', title: "Panel Margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelMarginPlaceholder }
+    const panelInnerMarginField: ctl_inputform.Field = { id: 'innerMarginMm', title: "Inter-Panel Margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelInnerMarginPlaceholder }
+    const panelOuterMarginField: ctl_inputform.Field = { id: 'outerMarginMm', title: "Page Edge Panel Margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelOuterMarginPlaceholder }
     const panelRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: panelRoundnessPlaceholder }
-    panelPropsForm = ctl_inputform.create(domId + '_panelprops_form', [panelBorderWidthField, panelMarginField, panelRoundnessField], undefined,
+    panelPropsForm = ctl_inputform.create(domId + '_panelprops_form', [panelBorderWidthField, panelInnerMarginField, panelOuterMarginField, panelRoundnessField], undefined,
         (userModifiedRec: ctl_inputform.Rec) => {
-            const panelProps: º.PanelProps = {
-                borderWidthMm: parseFloat(userModifiedRec['borderWidthMm']),
-                marginMm: parseFloat(userModifiedRec['marginMm']),
-                roundness: parseFloat(userModifiedRec['roundness']),
+            const panelProps: º.PanelProps = {}
+            for (const num_prop_name of ['innerMarginMm', 'outerMarginMm', 'borderWidthMm', 'roundness']) {
+                const v = parseFloat(userModifiedRec[num_prop_name])
+                if ((v !== undefined) && !isNaN(v))
+                    (panelProps as any)[num_prop_name] = v
             }
-            for (const num_prop_name of ['marginMm', 'borderWidthMm', 'roundness'])
-                if (((panelProps as any)[num_prop_name] === undefined) || isNaN((panelProps as any)[num_prop_name]))
-                    delete (panelProps as any)[num_prop_name]
             onUserModified(undefined, undefined, panelProps)
         })
 
@@ -121,7 +121,10 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
                         fill: (_) => { panelBorderWidthPlaceholder.val = _ }, from: (_) => (_.panelProps?.borderWidthMm?.toFixed(1) ?? ''),
                     },
                     {
-                        fill: (_) => { panelMarginPlaceholder.val = _ }, from: (_) => (_.panelProps?.marginMm?.toFixed(1) ?? ''),
+                        fill: (_) => { panelInnerMarginPlaceholder.val = _ }, from: (_) => (_.panelProps?.innerMarginMm?.toFixed(1) ?? ''),
+                    },
+                    {
+                        fill: (_) => { panelOuterMarginPlaceholder.val = _ }, from: (_) => (_.panelProps?.outerMarginMm?.toFixed(1) ?? ''),
                     },
                     {
                         fill: (_) => { panelRoundnessPlaceholder.val = _ }, from: (_) => (_.panelProps?.roundness?.toFixed(2) ?? ''),
@@ -179,7 +182,8 @@ function curPanelPropsRec(coll?: º.Collection, page?: º.Page, panelIdx?: numbe
         : (coll ? coll.panelProps : º.appState.proj.panelProps))
     return {
         'borderWidthMm': props.borderWidthMm?.toFixed(1) ?? '',
-        'marginMm': props.marginMm?.toFixed(1) ?? '',
+        'innerMarginMm': props.innerMarginMm?.toFixed(1) ?? '',
+        'outerMarginMm': props.outerMarginMm?.toFixed(1) ?? '',
         'roundness': props.roundness?.toFixed(2) ?? '',
     }
 }

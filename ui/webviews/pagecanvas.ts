@@ -111,9 +111,10 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
     for (let pidx = 0; pidx < page.panels.length; pidx++) {
         const panel = page.panels[pidx]
         let px = panel.x, py = panel.y, pw = panel.w, ph = panel.h
+        const is_edge = (px == 0) || (py == 0) || ((px + pw) == page_size.wMm) || ((py + ph) == page_size.hMm)
         const props = º.panelProps(page, pidx)
-        if (props.marginMm !== undefined && props.marginMm >= 0.01)
-            [px, py, pw, ph] = [px + props.marginMm, py + props.marginMm, pw - (props.marginMm * 2), ph - (props.marginMm * 2)]
+        if ((!is_edge) && (props.innerMarginMm !== undefined) && (props.innerMarginMm >= 0.01))
+            [px, py, pw, ph] = [px + props.innerMarginMm, py + props.innerMarginMm, pw - (props.innerMarginMm * 2), ph - (props.innerMarginMm * 2)]
         let rx = 0, ry = 0
         if ((props.roundness !== undefined) && (props.roundness >= 0.01)) {
             rx = 0.5 * Math.max(pw, ph)

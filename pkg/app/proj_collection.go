@@ -36,5 +36,6 @@ type PageProps struct {
 type PanelProps struct {
 	Roundness     *float64 `json:"roundness,omitempty"`
 	BorderWidthMm *float64 `json:"borderWidthMm,omitempty"`
-	MarginMm      *float64 `json:"marginMm,omitempty"`
+	OuterMarginMm *float64 `json:"outerMarginMm,omitempty"`
+	InnerMarginMm *float64 `json:"innerMarginMm,omitempty"`
 }
