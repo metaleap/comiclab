@@ -236,7 +236,7 @@ function createGui() {
         },
         'onmouseout': (evt: Event) => {
             [ˍ.page_canvas.xMm, ˍ.page_canvas.yMm] = [undefined, undefined]
-            ˍ.top_toolbar_mpos_text.innerHTML = 'Add panel: <i>mid-click</i>.&nbsp;&nbsp;—&nbsp;&nbsp;Add balloon: <i>shift+mid-click</i>.'
+            ˍ.top_toolbar_mpos_text.innerHTML = 'Some mouse-out info text here?'
         },
         'onmousemove': (evt: MouseEvent) => {
             const mm = mmFromPx(evt.clientX, evt.clientY, true, page_size)

@@ -317,9 +317,13 @@ body>dialog.page-editor-props-dialog div.inputform div.inputform-field {
 
 body>dialog.page-editor-props-dialog div.inputform div.inputform-field>div.inputform-field-label {
     white-space: nowrap;
-    width: auto;
+    width: 9em;
+}
+
+body>dialog.page-editor-props-dialog div.inputform div.inputform-field>div.inputform-field-label strong {
+    font-weight: normal;
 }
 
 body>dialog.page-editor-props-dialog div.inputform div.inputform-field>div.inputform-field-input {
-    width: auto;
+    width: 7em;
 }
