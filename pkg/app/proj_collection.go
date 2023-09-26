@@ -6,16 +6,17 @@ type Collection struct {
 	Pages        []*Page       `json:"pages"`
 	CollProps    CollProps     `json:"collProps"`
 	PageProps    PageProps     `json:"pageProps"`
-	PanelProps   PanelProps    `json:"panelProps"`
 	BalloonProps BalloonProps  `json:"balloonProps"`
+	PanelProps   PanelProps    `json:"panelProps"`
 }
 
 type Page struct {
 	Name         string       `json:"name"`
 	Panels       []*Panel     `json:"panels"`
+	Balloons     []*Balloon   `json:"balloons"`
 	PageProps    PageProps    `json:"pageProps"`
-	PanelProps   PanelProps   `json:"panelProps"`
 	BalloonProps BalloonProps `json:"balloonProps"`
+	PanelProps   PanelProps   `json:"panelProps"`
 }
 
 type Shape struct {

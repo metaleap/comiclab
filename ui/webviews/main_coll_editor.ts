@@ -18,7 +18,7 @@ export function onInit(editorReuseKeyDerivedCollPath: string, vscode: { postMess
     utils.onInit(vscode, extUri, vscCfgSettings, appState)
     collPath = editorReuseKeyDerivedCollPath
     props_form = ctl_propsform.create((collPath === '') ? 'proj_editor_main' : 'coll_editor_props', collPath, '', undefined, undefined,
-        (userModifiedCollProps?: º.CollProps, userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps) => {
+        (userModifiedCollProps?: º.CollProps, userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps, userModifiedBalloonProps?: º.BalloonProps) => {
             setDisabled(true)
             const dst: º.ProjOrColl = º.collFromPath(collPath) ?? º.appState.proj
             if (userModifiedCollProps)
@@ -27,6 +27,8 @@ export function onInit(editorReuseKeyDerivedCollPath: string, vscode: { postMess
                 dst.pageProps = userModifiedPageProps
             if (userModifiedPanelProps)
                 dst.panelProps = userModifiedPanelProps
+            if (userModifiedBalloonProps)
+                dst.balloonProps = userModifiedBalloonProps
             utils.vs.postMessage({ ident: (collPath === '') ? 'onProjModified' : 'onCollModified', payload: dst })
         })
     main_tabs = ctl_tabs.create('coll_editor_main', {

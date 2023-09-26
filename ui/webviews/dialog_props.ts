@@ -10,7 +10,7 @@ export type PropsDialog = {
     refresh: () => void
 }
 
-export function show(domId: string, page: º.Page, targetDom: HTMLElement, onRemovingFromDom: () => void, onUserModified: (pg?: º.PageProps, pnl?: º.PanelProps, pidx?: number) => void): PropsDialog {
+export function show(domId: string, page: º.Page, targetDom: HTMLElement, onRemovingFromDom: () => void, onUserModified: (pg?: º.PageProps, pnl?: º.PanelProps, bln?: º.BalloonProps, pidx?: number, bidx?: number) => void): PropsDialog {
     if (!(targetDom && targetDom.tagName && targetDom.id && targetDom.classList))
         throw targetDom
     let panel_idx: number | undefined = parseInt(targetDom.getAttribute('data-panelIdx') ?? '')
@@ -19,8 +19,8 @@ export function show(domId: string, page: º.Page, targetDom: HTMLElement, onRem
     const balloon_idx: number | undefined = undefined
 
     const props_form = ctl_propsform.create(domId, '', º.pageToPath(page), panel_idx, balloon_idx,
-        (_?: º.CollProps, userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps) => {
-            onUserModified(userModifiedPageProps, userModifiedPanelProps, panel_idx)
+        (_?: º.CollProps, userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps, userModifiedBalloonProps?: º.BalloonProps) => {
+            onUserModified(userModifiedPageProps, userModifiedPanelProps, userModifiedBalloonProps, panel_idx, balloon_idx)
         })
     const dialog = html.dialog({ 'class': 'page-editor-props-dialog' }, props_form.dom)
     dialog.onclose = () => {

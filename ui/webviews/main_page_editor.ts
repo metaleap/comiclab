@@ -212,13 +212,15 @@ function createGui() {
             else if (evt.button === 2)  // right-click
                 ˍ.props_dialog = dialog_props.show('page_editor_panelprops', º.pageFromPath(pagePath)!, evt.target as HTMLElement,
                     () => { ˍ.props_dialog = undefined },
-                    (userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps, panelIdx?: number) => {
+                    (userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps, userModifiedBalloonProps?: º.BalloonProps, panelIdx?: number, balloonIdx?: number) => {
                         const page = º.pageFromPath(pagePath)!
                         if (userModifiedPageProps || userModifiedPanelProps) {
                             if (userModifiedPageProps)
                                 page.pageProps = userModifiedPageProps
                             if (userModifiedPanelProps)
                                 ((panelIdx === undefined) ? page : page.panels[panelIdx]).panelProps = userModifiedPanelProps
+                            if (userModifiedBalloonProps)
+                                ((balloonIdx === undefined) ? page : page.balloons[balloonIdx]).balloonProps = userModifiedBalloonProps
                             onUserModifiedPanel()
                         }
                     })

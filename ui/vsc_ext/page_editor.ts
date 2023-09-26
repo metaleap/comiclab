@@ -35,6 +35,7 @@ class PageEditor extends base_editor.WebviewPanel {
             case 'onPageModified':
                 page.pageProps = msg.payload.pageProps
                 page.panelProps = msg.payload.panelProps
+                page.balloonProps = msg.payload.balloonProps
                 page.panels = msg.payload.panels
                 app.events.modifiedProj.now(º.appState.proj)
                 break

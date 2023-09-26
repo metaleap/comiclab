@@ -36,6 +36,7 @@ class CollEditor extends base_editor.WebviewPanel {
                 dst.collProps = msg.payload.collProps
                 dst.pageProps = msg.payload.pageProps
                 dst.panelProps = msg.payload.panelProps
+                dst.balloonProps = msg.payload.balloonProps
                 app.events.modifiedProj.now(º.appState.proj)
                 break
             default:

@@ -19,7 +19,11 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
         panelIdx = undefined
     if ((balloonIdx !== undefined) && isNaN(balloonIdx))
         balloonIdx = undefined
-    const for_proj = (collPath === '') && (pagePath === ''), for_coll = (collPath !== ''), for_page = (pagePath !== '') && (panelIdx === undefined) && (balloonIdx === undefined), for_panel = (pagePath !== '') && (panelIdx !== undefined), for_balloon = (pagePath !== '') && (balloonIdx !== undefined)
+    const for_proj = (collPath === '') && (pagePath === ''),
+        for_coll = (collPath !== ''),
+        for_page = (pagePath !== '') && (panelIdx === undefined) && (balloonIdx === undefined),
+        for_panel = (pagePath !== '') && (panelIdx !== undefined),
+        for_balloon = (pagePath !== '') && (balloonIdx !== undefined)
 
     let collPropsForm: ctl_inputform.InputForm = undefined as any
     let pagePropsForm: ctl_inputform.InputForm = undefined as any
@@ -30,8 +34,8 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
     const collAuthorFieldPlaceholder = van.state('')
     const collAuthorFieldLookup = van.state({} as ctl_inputform.FieldLookup)
     const collDynFields = van.state([] as ctl_inputform.Field[])
-    const collAuthorField: ctl_inputform.Field = { id: 'authorId', title: "Author", validators: [ctl_inputform.validatorLookup], lookUp: collAuthorFieldLookup, placeholder: collAuthorFieldPlaceholder }
     if (for_proj || for_coll) {
+        const collAuthorField: ctl_inputform.Field = { id: 'authorId', title: "Author", validators: [ctl_inputform.validatorLookup], lookUp: collAuthorFieldLookup, placeholder: collAuthorFieldPlaceholder }
         collPropsForm = ctl_inputform.create('collprops_form', [collAuthorField], collDynFields,
             (userModifiedRec: ctl_inputform.Rec) => {
                 const collProps: º.CollProps = { authorId: userModifiedRec['authorId'] }
@@ -56,8 +60,8 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
     // create pagePropsForm (maybe)
     const pagePaperFormatFieldPlaceholder = van.state('')
     const pagePaperFormatFieldLookup = van.state({} as ctl_inputform.FieldLookup)
-    const pagePaperFormatField: ctl_inputform.Field = { id: 'paperFormatId', title: "Page format", validators: [ctl_inputform.validatorLookup], lookUp: pagePaperFormatFieldLookup, placeholder: pagePaperFormatFieldPlaceholder }
     if (!(for_panel || for_balloon)) {
+        const pagePaperFormatField: ctl_inputform.Field = { id: 'paperFormatId', title: "Page format", validators: [ctl_inputform.validatorLookup], lookUp: pagePaperFormatFieldLookup, placeholder: pagePaperFormatFieldPlaceholder }
         pagePropsForm = ctl_inputform.create('pageprops_form', [pagePaperFormatField], undefined,
             (userModifiedRec: ctl_inputform.Rec) => {
                 const pageProps: º.PageProps = { paperFormatId: userModifiedRec['paperFormatId'] }
@@ -67,41 +71,45 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
             })
     }
 
-    // create panelPropsForm (always)
+    // create panelPropsForm (maybe)
     const panelBorderWidthPlaceholder = van.state('')
     const panelInnerMarginPlaceholder = van.state('')
     const panelOuterMarginPlaceholder = van.state('')
     const panelRoundnessPlaceholder = van.state('')
-    const panelBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Border width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: panelBorderWidthPlaceholder }
-    const panelInnerMarginField: ctl_inputform.Field = { id: 'innerMarginMm', title: "Inter-panel margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelInnerMarginPlaceholder }
-    const panelOuterMarginField: ctl_inputform.Field = { id: 'outerMarginMm', title: "Page-edge margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelOuterMarginPlaceholder }
-    const panelRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: panelRoundnessPlaceholder }
-    panelPropsForm = ctl_inputform.create(domId + '_panelprops_form', [panelBorderWidthField, panelInnerMarginField, panelOuterMarginField, panelRoundnessField], undefined,
-        (userModifiedRec: ctl_inputform.Rec) => {
-            const panelProps: º.PanelProps = {}
-            for (const num_prop_name of ['innerMarginMm', 'outerMarginMm', 'borderWidthMm', 'roundness']) {
-                const v = parseFloat(userModifiedRec[num_prop_name])
-                if ((v !== undefined) && !isNaN(v))
-                    (panelProps as any)[num_prop_name] = v
-            }
-            onUserModified(undefined, undefined, panelProps)
-        })
+    if (!for_balloon) {
+        const panelBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Border width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: panelBorderWidthPlaceholder }
+        const panelInnerMarginField: ctl_inputform.Field = { id: 'innerMarginMm', title: "Inter-panel margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelInnerMarginPlaceholder }
+        const panelOuterMarginField: ctl_inputform.Field = { id: 'outerMarginMm', title: "Page-edge margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelOuterMarginPlaceholder }
+        const panelRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: panelRoundnessPlaceholder }
+        panelPropsForm = ctl_inputform.create(domId + '_panelprops_form', [panelBorderWidthField, panelInnerMarginField, panelOuterMarginField, panelRoundnessField], undefined,
+            (userModifiedRec: ctl_inputform.Rec) => {
+                const panelProps: º.PanelProps = {}
+                for (const num_prop_name of ['innerMarginMm', 'outerMarginMm', 'borderWidthMm', 'roundness']) {
+                    const v = parseFloat(userModifiedRec[num_prop_name])
+                    if ((v !== undefined) && !isNaN(v))
+                        (panelProps as any)[num_prop_name] = v
+                }
+                onUserModified(undefined, undefined, panelProps)
+            })
+    }
 
-    // create balloonPropsForm (always)
+    // create balloonPropsForm (maybe)
     const balloonBorderWidthPlaceholder = van.state('')
     const balloonRoundnessPlaceholder = van.state('')
-    const balloonBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Border width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: balloonBorderWidthPlaceholder }
-    const balloonRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: balloonRoundnessPlaceholder }
-    balloonPropsForm = ctl_inputform.create(domId + '_balloonprops_form', [balloonBorderWidthField, balloonRoundnessField], undefined,
-        (userModifiedRec: ctl_inputform.Rec) => {
-            const balloonProps: º.BalloonProps = {}
-            for (const num_prop_name of ['borderWidthMm', 'roundness']) {
-                const v = parseFloat(userModifiedRec[num_prop_name])
-                if ((v !== undefined) && !isNaN(v))
-                    (balloonProps as any)[num_prop_name] = v
-            }
-            onUserModified(undefined, undefined, balloonProps)
-        })
+    if (!for_panel) {
+        const balloonBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Border width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: balloonBorderWidthPlaceholder }
+        const balloonRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: balloonRoundnessPlaceholder }
+        balloonPropsForm = ctl_inputform.create(domId + '_balloonprops_form', [balloonBorderWidthField, balloonRoundnessField], undefined,
+            (userModifiedRec: ctl_inputform.Rec) => {
+                const balloonProps: º.BalloonProps = {}
+                for (const num_prop_name of ['borderWidthMm', 'roundness']) {
+                    const v = parseFloat(userModifiedRec[num_prop_name])
+                    if ((v !== undefined) && !isNaN(v))
+                        (balloonProps as any)[num_prop_name] = v
+                }
+                onUserModified(undefined, undefined, undefined, balloonProps)
+            })
+    }
 
     const sections: Record<string, ChildDom> = {}
     if (collPropsForm)
