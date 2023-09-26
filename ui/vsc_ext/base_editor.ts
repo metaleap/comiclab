@@ -82,7 +82,7 @@ export abstract class WebviewPanel {
                     <link rel='stylesheet' type='text/css' href='${this.htmlUri(utils.cssPath('main'))}'>
                 </head><body>
                     <script type='module'>
-                        import * as main_view from '${this.htmlUri(utils.jsPath(this.viewTypeIdent))}'
+                        import * as main_view from '${this.htmlUri(utils.jsPath('main_' + this.viewTypeIdent))}'
                         main_view.onInit(
                             '${this.reuseKey.substring(this.reuseKey.indexOf(reuseKeySep) + 1)}',
                             acquireVsCodeApi(),

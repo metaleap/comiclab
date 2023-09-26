@@ -10,8 +10,6 @@ const html = van.tags
 
 
 let collPath: string = ''
-let altTargetPage: º.Page | undefined
-let altTargetPanelIdx: number | undefined
 const authorFieldPlaceholder = van.state('')
 const authorFieldLookup = van.state({} as ctl_inputform.Lookup)
 const paperFormatFieldPlaceholder = van.state('')
@@ -30,19 +28,17 @@ const pageprops_form = ctl_inputform.create('pageprops_form', [paperFormatField]
     (userModifiedRec: ctl_inputform.Rec) => {
         setDisabled(true)
         const coll = º.collFromPath(collPath) as º.Collection
-        const props = altTargetPage ? altTargetPage.pageProps : coll.pageProps
-        props.paperFormatId = userModifiedRec['paperFormatId']
+        coll.pageProps.paperFormatId = userModifiedRec['paperFormatId']
         utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
     })
 const panelprops_form = ctl_inputform.create('panelprops_form', [panelBorderWidthField, panelRoundnessField], undefined,
     (userModifiedRec: ctl_inputform.Rec) => {
         setDisabled(true)
         const coll = º.collFromPath(collPath) as º.Collection
-        const props = altTargetPage ? altTargetPage.panelProps : coll.panelProps
-        if (isNaN(props.borderWidthMm = parseFloat(userModifiedRec['panelBorderWidth'])))
-            delete props.borderWidthMm
-        if (isNaN(props.roundness = parseFloat(userModifiedRec['roundness'])))
-            delete props.roundness
+        if (isNaN(coll.panelProps.borderWidthMm = parseFloat(userModifiedRec['panelBorderWidth'])))
+            delete coll.panelProps.borderWidthMm
+        if (isNaN(coll.panelProps.roundness = parseFloat(userModifiedRec['roundness'])))
+            delete coll.panelProps.roundness
         utils.vs.postMessage({ ident: 'onCollModified', payload: coll })
     })
 const collprops_form = ctl_inputform.create('collprops_form', [authorField], contentDynFields,
@@ -84,13 +80,8 @@ export function onInit(editorReuseKeyDerivedCollPath: string, vscode: { postMess
 
 export function initAndCreateForPageOrPanel(domId: string, page: º.Page, panelIdx?: number) {
     paperFormatFieldPlaceholder.val = 'onInit'
-    setInterval(() => {
-        paperFormatFieldPlaceholder.val = new Date().getTime().toString()
-    }, 1234)
     const coll = º.pageParent(page)
     collPath = º.collToPath(coll)
-    altTargetPage = page
-    altTargetPanelIdx = panelIdx
     return {
         dom: ctl_multipanel.create(domId, (panelIdx === undefined)
             ? { "Page Properties": pageprops_form.dom, "Panel Defaults": panelprops_form.dom }
@@ -133,7 +124,7 @@ function onAppStateRefreshed(newAppState?: º.AppState) {
         collprops_form.onDataChangedAtSource(curCollPropsRec(coll))
         pageprops_form.onDataChangedAtSource(curPagePropsRec(coll))
         panelprops_form.onDataChangedAtSource(curPanelPropsRec(coll))
-        refreshPlaceholders(coll, altTargetPage ? true : false, [
+        refreshPlaceholders(coll, false, [
             { fill: (_) => { panelBorderWidthPlaceholder.val = _ }, from: (_) => _.panelProps.borderWidthMm?.toFixed(1) ?? '', },
             { fill: (_) => { panelRoundnessPlaceholder.val = _ }, from: (_) => _.panelProps.roundness?.toFixed(2) ?? '', },
             {
@@ -186,12 +177,12 @@ function curCollPropsRec(coll: º.Collection): ctl_inputform.Rec {
 }
 
 function curPagePropsRec(coll: º.Collection): ctl_inputform.Rec {
-    return { 'paperFormatId': (altTargetPage ? altTargetPage.pageProps : coll.pageProps).paperFormatId ?? '' }
+    return { 'paperFormatId': coll.pageProps.paperFormatId ?? '' }
 }
 
 function curPanelPropsRec(coll: º.Collection): ctl_inputform.Rec {
     return {
-        'panelBorderWidth': (altTargetPage ? altTargetPage.panelProps : coll.panelProps).borderWidthMm?.toFixed(1) ?? '',
-        'roundness': (altTargetPage ? altTargetPage.panelProps : coll.panelProps).roundness?.toFixed(2) ?? '',
+        'panelBorderWidth': coll.panelProps.borderWidthMm?.toFixed(1) ?? '',
+        'roundness': coll.panelProps.roundness?.toFixed(2) ?? '',
     }
 }

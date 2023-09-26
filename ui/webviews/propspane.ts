@@ -1,6 +1,6 @@
-import van, { ChildDom } from '../vanjs/van-1.2.1.debug.js'
-import * as º from '../_º.js'
-import * as coll_editor from '../coll_editor.js'
+import van from './vanjs/van-1.2.1.debug.js'
+import * as º from './_º.js'
+import * as coll_editor from './main_coll_editor.js'
 
 const html = van.tags
 

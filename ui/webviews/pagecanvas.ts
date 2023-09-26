@@ -1,6 +1,6 @@
-import van, { ChildDom } from '../vanjs/van-1.2.1.debug.js'
-import * as utils from '../utils.js'
-import * as º from '../_º.js'
+import van from './vanjs/van-1.2.1.debug.js'
+import * as utils from './utils.js'
+import * as º from './_º.js'
 
 const svg = van.tagsNS("http://www.w3.org/2000/svg")
 

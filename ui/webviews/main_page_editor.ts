@@ -1,11 +1,10 @@
 import van from './vanjs/van-1.2.1.debug.js'
 import * as º from './_º.js'
 import * as utils from './utils.js'
-import * as ctl_inputform from './ctl/inputform.js'
-import * as ctl_pagecanvas from './ctl/pagecanvas.js'
-import * as ctl_paneltoolbar from './ctl/paneltoolbar.js'
-import * as ctl_paneledgebar from './ctl/paneledgebar.js'
-import * as ctl_propspane from './ctl/propspane.js'
+import * as ctl_pagecanvas from './pagecanvas.js'
+import * as ctl_paneltoolbar from './paneltoolbar.js'
+import * as ctl_paneledgebar from './paneledgebar.js'
+import * as ctl_propspane from './propspane.js'
 
 
 const html = van.tags
