@@ -18,7 +18,7 @@ export function show(domId: string, page: º.Page, targetDom: HTMLElement, onRem
         panel_idx = undefined
 
     const props_form = ctl_propsform.create(domId, '', º.pageToPath(page), panel_idx,
-        (userModifiedCollProps?: º.CollProps, userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps) => {
+        (_?: º.CollProps, userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps) => {
             onUserModified(userModifiedPageProps, userModifiedPanelProps, panel_idx)
         })
     const dialog = html.dialog({ 'class': 'page-editor-props-dialog' }, props_form.dom)

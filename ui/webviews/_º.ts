@@ -231,6 +231,9 @@ export function props<T>(it: ProjOrCollOrPage, propsName: string): T {
                 (ret as any)[k] = ((coll as any)[propsName] as T as any)[k]
         }
     }
+    for (const k in (it as any)[propsName])
+        if (((it as any)[propsName][k]) !== undefined)
+            (ret as any)[k] = (it as any)[propsName][k]
     return ret
 }
 
