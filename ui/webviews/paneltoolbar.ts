@@ -62,10 +62,10 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
             const page = curPage()
             if (it.canvas.selPanelIdx !== undefined) { // accounts for the move-to-front/send-to-back/etc `page.panels` array reorderings
                 const panel = page.panels[it.canvas.selPanelIdx]
-                panel.w = parseInt((parseFloat(ˍ.input_width.value) * 10).toFixed(0))
-                panel.h = parseInt((parseFloat(ˍ.input_height.value) * 10).toFixed(0))
-                panel.x = parseInt((parseFloat(ˍ.input_pos_x.value) * 10).toFixed(0))
-                panel.y = parseInt((parseFloat(ˍ.input_pos_y.value) * 10).toFixed(0))
+                panel.w = ~~((parseFloat(ˍ.input_width.value) * 10))
+                panel.h = ~~((parseFloat(ˍ.input_height.value) * 10))
+                panel.x = ~~((parseFloat(ˍ.input_pos_x.value) * 10))
+                panel.y = ~~((parseFloat(ˍ.input_pos_y.value) * 10))
                 if (isNaN(panel.panelProps.roundness = parseFloat(ˍ.input_round.value)))
                     panel.panelProps.roundness = undefined
             }

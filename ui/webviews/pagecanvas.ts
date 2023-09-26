@@ -162,7 +162,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                             prop_name = ((evt.key === 'ArrowLeft') || (evt.key === 'ArrowRight'))
                                 ? (evt.altKey ? 'width' : 'x')
                                 : (evt.altKey ? 'height' : 'y'),
-                            new_val = parseInt(((panel as any)[prop_name[0]] + ((evt.shiftKey ? 10 : 1) * factor)).toFixed(0))
+                            new_val = ~~(((panel as any)[prop_name[0]] as number) + ((evt.shiftKey ? 10 : 1) * factor))
                         if ((min === undefined) || new_val >= min) {
                             (panel as any)[prop_name[0]] = new_val
                             rect.setAttribute(prop_name, (panel as any)[prop_name[0]] + 'mm')
