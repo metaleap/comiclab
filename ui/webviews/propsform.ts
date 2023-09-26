@@ -66,19 +66,21 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
 
     // create panelPropsForm (always)
     const panelBorderWidthPlaceholder = van.state('')
+    const panelMarginPlaceholder = van.state('')
     const panelRoundnessPlaceholder = van.state('')
-    const panelBorderWidthField: ctl_inputform.Field = { id: 'panelBorderWidth', title: "Panel Border Width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: panelBorderWidthPlaceholder }
+    const panelBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Panel Border Width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: panelBorderWidthPlaceholder }
+    const panelMarginField: ctl_inputform.Field = { id: 'marginMm', title: "Panel Margin (mm)", validators: [], num: { int: false, min: 0, max: 100, step: 0.1 }, placeholder: panelMarginPlaceholder }
     const panelRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: panelRoundnessPlaceholder }
-    panelPropsForm = ctl_inputform.create(domId + '_panelprops_form', [panelBorderWidthField, panelRoundnessField], undefined,
+    panelPropsForm = ctl_inputform.create(domId + '_panelprops_form', [panelBorderWidthField, panelMarginField, panelRoundnessField], undefined,
         (userModifiedRec: ctl_inputform.Rec) => {
             const panelProps: º.PanelProps = {
-                borderWidthMm: parseFloat(userModifiedRec['panelBorderWidth']),
+                borderWidthMm: parseFloat(userModifiedRec['borderWidthMm']),
+                marginMm: parseFloat(userModifiedRec['marginMm']),
                 roundness: parseFloat(userModifiedRec['roundness']),
             }
-            if (isNaN(panelProps.borderWidthMm!))
-                delete panelProps.borderWidthMm
-            if (isNaN(panelProps.roundness!))
-                delete panelProps.roundness
+            for (const num_prop_name of ['marginMm', 'borderWidthMm', 'roundness'])
+                if (((panelProps as any)[num_prop_name] === undefined) || isNaN((panelProps as any)[num_prop_name]))
+                    delete (panelProps as any)[num_prop_name]
             onUserModified(undefined, undefined, panelProps)
         })
 
@@ -117,6 +119,9 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
                 updatePlaceholders(coll, page, for_panel, [
                     {
                         fill: (_) => { panelBorderWidthPlaceholder.val = _ }, from: (_) => (_.panelProps?.borderWidthMm?.toFixed(1) ?? ''),
+                    },
+                    {
+                        fill: (_) => { panelMarginPlaceholder.val = _ }, from: (_) => (_.panelProps?.marginMm?.toFixed(1) ?? ''),
                     },
                     {
                         fill: (_) => { panelRoundnessPlaceholder.val = _ }, from: (_) => (_.panelProps?.roundness?.toFixed(2) ?? ''),
@@ -173,7 +178,8 @@ function curPanelPropsRec(coll?: º.Collection, page?: º.Page, panelIdx?: numbe
     const props = ((page) ? ((panelIdx === undefined) ? page.panelProps : page.panels[panelIdx].panelProps)
         : (coll ? coll.panelProps : º.appState.proj.panelProps))
     return {
-        'panelBorderWidth': props.borderWidthMm?.toFixed(1) ?? '',
+        'borderWidthMm': props.borderWidthMm?.toFixed(1) ?? '',
+        'marginMm': props.marginMm?.toFixed(1) ?? '',
         'roundness': props.roundness?.toFixed(2) ?? '',
     }
 }

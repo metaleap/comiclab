@@ -73,6 +73,7 @@ export type PageProps = {
 
 export type PanelProps = {
     borderWidthMm?: number
+    marginMm?: number
     roundness?: number
 }
 

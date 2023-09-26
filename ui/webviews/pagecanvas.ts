@@ -110,10 +110,13 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
     const panels: Element[] = []
     for (let pidx = 0; pidx < page.panels.length; pidx++) {
         const panel = page.panels[pidx]
+        let px = panel.x, py = panel.y, pw = panel.w, ph = panel.h
         const props = º.panelProps(page, pidx)
+        if (props.marginMm !== undefined && props.marginMm >= 0.01)
+            [px, py, pw, ph] = [px + props.marginMm, py + props.marginMm, pw - (props.marginMm * 2), ph - (props.marginMm * 2)]
         let rx = 0, ry = 0
         if ((props.roundness !== undefined) && (props.roundness >= 0.01)) {
-            rx = 0.5 * Math.max(panel.w, panel.h)
+            rx = 0.5 * Math.max(pw, ph)
             ry = rx
             if (props.roundness <= 0.99)
                 [rx, ry] = [rx * props.roundness, ry * props.roundness]
@@ -122,7 +125,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
         const rect = svg.rect({
             'id': 'panel_' + pidx, 'class': 'panel' + ((pidx === selPanelIdx) ? ' panel-selected' : ''),
             'stroke-width': `${panelBorderWidthMm}mm`, 'tabindex': 2, 'data-panelIdx': pidx,
-            'x': `${panel.x}mm`, 'y': `${panel.y}mm`, 'width': `${panel.w}mm`, 'height': `${panel.h}mm`, 'rx': rx + 'mm', 'ry': ry + 'mm',
+            'x': `${px}mm`, 'y': `${py}mm`, 'width': `${pw}mm`, 'height': `${ph}mm`, 'rx': rx + 'mm', 'ry': ry + 'mm',
             'onfocus': (evt: Event) => it.panelSelect(pidx), 'onclick': (evt: Event) => evt.stopPropagation(),
             'onkeydown': (evt: KeyboardEvent) => {
                 switch (evt.key) {
