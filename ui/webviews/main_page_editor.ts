@@ -139,9 +139,8 @@ function createPageCanvas(panelIdx?: number) {
 }
 
 function createGui() {
-    const page = º.pageFromPath(pagePath)!
     const orig_size_zoom_percent: number = (utils.vscCfg && utils.vscCfg['pageEditorDefaultZoom']) ? (utils.vscCfg['pageEditorDefaultZoom'] as number) : 122.5
-    const page_size = º.pageSizeMm(page)
+    const page_size = º.pageSizeMm(º.pageFromPath(pagePath)!)
     ˍ.top_toolbar_menu_addpanelgrid = html.select({
         'class': 'placeholder',
         'onchange': () => {
@@ -175,7 +174,7 @@ function createGui() {
             ˍ.top_toolbar_mpos_text = html.span({}, " ")),
     )
     createPageCanvas()
-    ˍ.panel_toolbar = ctl_paneltoolbar.create('page_editor_panel_toolbar', ˍ.page_canvas, (() => page), onUserModifiedPanel)
+    ˍ.panel_toolbar = ctl_paneltoolbar.create('page_editor_panel_toolbar', ˍ.page_canvas, (() => º.pageFromPath(pagePath)!), onUserModifiedPanel)
     ˍ.panelbar_left = ctl_paneledgebar.create('page_editor_panel_edgebar_left', ˍ.page_canvas, º.DirLeft)
     ˍ.panelbar_right = ctl_paneledgebar.create('page_editor_panel_edgebar_right', ˍ.page_canvas, º.DirRight)
     ˍ.panelbar_upper = ctl_paneledgebar.create('page_editor_panel_edgebar_upper', ˍ.page_canvas, º.DirUp)
