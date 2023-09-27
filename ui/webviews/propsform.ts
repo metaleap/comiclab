@@ -18,8 +18,8 @@ export function create(domId: string, collPath: string, pagePath: string, sel: Â
     const for_proj = (collPath === '') && (pagePath === ''),
         for_coll = (collPath !== ''),
         for_page = (pagePath !== '') && !sel,
-        for_balloon = (pagePath !== '') && (sel ? true : false) && sel!.balloon,
-        for_panel = (pagePath !== '') && (sel ? true : false) && !(sel!.balloon)
+        for_balloon = (pagePath !== '') && (sel ? true : false) && sel!.isBalloon,
+        for_panel = (pagePath !== '') && (sel ? true : false) && !(sel!.isBalloon)
 
     let collPropsForm: ctl_inputform.InputForm = undefined as any
     let pagePropsForm: ctl_inputform.InputForm = undefined as any
@@ -173,8 +173,8 @@ export function create(domId: string, collPath: string, pagePath: string, sel: Â
             // populate form input fields
             collPropsForm?.onDataChangedAtSource(curCollPropsRec(coll))
             pagePropsForm?.onDataChangedAtSource(curPagePropsRec(coll, page))
-            panelPropsForm?.onDataChangedAtSource(curPanelPropsRec(coll, page, (sel?.balloon) ? undefined : sel?.idx))
-            balloonPropsForm?.onDataChangedAtSource(curBalloonPropsRec(coll, page, (sel?.balloon) ? sel.idx : undefined))
+            panelPropsForm?.onDataChangedAtSource(curPanelPropsRec(coll, page, (sel?.isBalloon) ? undefined : sel?.idx))
+            balloonPropsForm?.onDataChangedAtSource(curBalloonPropsRec(coll, page, (sel?.isBalloon) ? sel.idx : undefined))
         },
     }
 }

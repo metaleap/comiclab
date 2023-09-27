@@ -37,6 +37,7 @@ class PageEditor extends base_editor.WebviewPanel {
                 page.panelProps = msg.payload.panelProps
                 page.balloonProps = msg.payload.balloonProps
                 page.panels = msg.payload.panels
+                page.balloons = msg.payload.balloons
                 app.events.modifiedProj.now(º.appState.proj)
                 break
             default:

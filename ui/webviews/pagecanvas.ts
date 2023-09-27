@@ -8,7 +8,7 @@ export type PageCanvas = {
     dom?: HTMLElement & SVGElement
     sel?: º.ShapeRef
     mousePosMm?: { x: number, y: number }
-    notifyModified: (page: º.Page, pIdx?: number, bIdx?: number, reRender?: boolean) => void
+    notifyModified: (page: º.Page, pIdx: number | undefined, bIdx: number | undefined, reRender?: boolean) => void
     addNewBalloon: () => void
     addNewPanel: () => void
     addNewPanelGrid: (numRows: number, numCols: number) => void
@@ -20,7 +20,7 @@ export type PageCanvas = {
 
 export function create(domId: string, page: º.Page, onShapeSelection: () => void, sel: º.ShapeRef | undefined, onUserModified: (page: º.Page, reRender?: boolean) => void): PageCanvas {
     const page_size_mm = º.pageSizeMm(page)
-    if (sel && (sel.idx >= (sel.balloon ? page.balloons : page.panels).length))
+    if (sel && (sel.idx >= (sel.isBalloon ? page.balloons : page.panels).length))
         sel = undefined
     const it: PageCanvas = {
         sel: sel,
@@ -30,7 +30,7 @@ export function create(domId: string, page: º.Page, onShapeSelection: () => voi
                 for (const shapekind of ['balloon', 'panel'])
                     document.getElementById(shapekind + '_' + it.sel.idx)?.classList.remove(shapekind + '-selected', 'shape-selected')
             if ((it.sel = sel) !== undefined)
-                for (const shapekind of [it.sel.balloon ? 'balloon' : 'panel']) {
+                for (const shapekind of [it.sel.isBalloon ? 'balloon' : 'panel']) {
                     const dom = document.getElementById(shapekind + '_' + it.sel.idx)
                     dom?.classList.add(shapekind + '-selected', 'shape-selected')
                     dom?.focus()
@@ -38,7 +38,7 @@ export function create(domId: string, page: º.Page, onShapeSelection: () => voi
             if (!dontRaiseEvent)
                 onShapeSelection()
         },
-        notifyModified: (page: º.Page, panelIdx?: number, balloonIdx?: number, reRender?: boolean) => {
+        notifyModified: (page: º.Page, panelIdx: number | undefined, balloonIdx: number | undefined, reRender?: boolean) => {
             it.select(selFrom(panelIdx, balloonIdx), true)
             onUserModified(page, reRender)
         },
@@ -58,7 +58,7 @@ export function create(domId: string, page: º.Page, onShapeSelection: () => voi
             it.notifyModified(page, undefined, undefined, true)
         },
         shapeRestack: (direction: º.Direction, dontDoIt?: boolean) => {
-            if (º.pageReorder(page, ((it.sel?.balloon) ? undefined : (it.sel?.idx)), ((it.sel?.balloon) ? (it.sel?.idx) : undefined), direction, dontDoIt)) {
+            if (º.pageReorder(page, ((it.sel?.isBalloon) ? undefined : (it.sel?.idx)), ((it.sel?.isBalloon) ? (it.sel?.idx) : undefined), direction, dontDoIt)) {
                 if (!dontDoIt)
                     it.notifyModified(page, undefined, undefined, true)
                 return true
@@ -66,7 +66,7 @@ export function create(domId: string, page: º.Page, onShapeSelection: () => voi
             return false
         },
         shapeSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean) => {
-            let shapes = (it.sel!.balloon ? page.balloons : page.panels) as º.Shape[]
+            let shapes = (it.sel!.isBalloon ? page.balloons : page.panels) as º.Shape[]
             const shape = shapes[it.sel!.idx]
             const edge_lr = (edge === º.DirLeft) || (edge === º.DirRight)
             let newx = shape.x, newy = shape.y, neww = shape.w, newh = shape.h
@@ -106,7 +106,7 @@ export function create(domId: string, page: º.Page, onShapeSelection: () => voi
             const can_snap = ((newx !== shape.x) || (newy !== shape.y) || (neww !== shape.w) || (newh !== shape.h)) && (neww >= 10) && (newh >= 10)
             if (can_snap && !dontDoIt) {
                 [shape.x, shape.y, shape.w, shape.h] = [newx, newy, neww, newh]
-                it.notifyModified(page, ((it.sel!.balloon) ? undefined : (it.sel!.idx)), ((it.sel!.balloon) ? (it.sel!.idx) : undefined), true)
+                it.notifyModified(page, ((it.sel!.isBalloon) ? undefined : (it.sel!.idx)), ((it.sel!.isBalloon) ? (it.sel!.idx) : undefined), true)
             }
             return can_snap
         },
@@ -116,93 +116,28 @@ export function create(domId: string, page: º.Page, onShapeSelection: () => voi
                 pos = it.mousePosMm
             for (let pidx = 0; pos && pidx < page.panels.length; pidx++)
                 if (º.isPosInShape(page.panels[pidx], pos))
-                    ret = { idx: pidx, balloon: false } // dont break early tho, later overlappers are to take over that spot
+                    ret = { idx: pidx, isBalloon: false } // dont break early tho, later overlappers are to take over that spot
             for (let bidx = 0; pos && bidx < page.balloons.length; bidx++)
                 if (º.isPosInShape(page.balloons[bidx], pos))
-                    ret = { idx: bidx, balloon: true } // dito as above
+                    ret = { idx: bidx, isBalloon: true } // dito as above
             return ret
         },
     }
 
-    const panels: Element[] = []
-    for (let pidx = 0; pidx < page.panels.length; pidx++) {
-        const panel = page.panels[pidx]
-        let px = panel.x, py = panel.y, pw = panel.w, ph = panel.h
-        const props = º.panelProps(page, pidx)
-
-        if (((props.outerMarginMm !== undefined) && (props.outerMarginMm >= 0.1)) || ((props.innerMarginMm !== undefined) && (props.innerMarginMm >= 0.1))) {
-            const mi = props.innerMarginMm ?? 0
-            const e_top = º.fEq(py, 0), e_left = º.fEq(px, 0), e_right = º.fEq((px + pw), page_size_mm.w), e_bottom = º.fEq((py + ph), page_size_mm.h)
-            px += (e_left ? 0 : mi)
-            py += (e_top ? 0 : mi)
-            const px2 = (panel.x + pw) - (e_right ? 0 : mi), py2 = (panel.y + ph) - (e_bottom ? 0 : mi)
-            pw = px2 - px
-            ph = py2 - py
-            if (props.outerMarginMm !== undefined) {
-                const mo = props.outerMarginMm!
-                if (e_left)
-                    [px, pw] = [px + mo, pw - mo]
-                if (e_top)
-                    [py, ph] = [py + mo, ph - mo]
-                if (e_right)
-                    pw -= mo
-                if (e_bottom)
-                    ph -= mo
-            }
-        }
-
-        let rx = 0, ry = 0
-        if ((props.roundness !== undefined) && (props.roundness >= 0.01)) {
-            rx = 0.5 * Math.max(pw, ph)
-            ry = rx
-            if (props.roundness <= 0.99)
-                [rx, ry] = [rx * props.roundness, ry * props.roundness]
-        }
-        const panelBorderWidthMm = props.borderWidthMm ?? 0
-        const is_sel = sel && (!sel.balloon) && (pidx === sel.idx)
-        const rect = svg.rect({
-            'id': 'panel_' + pidx, 'class': 'shape panel' + (is_sel ? ' shape-selected panel-selected' : ''),
-            'stroke-width': `${panelBorderWidthMm}mm`, 'tabindex': 2, 'data-panelIdx': pidx,
-            'x': `${px}mm`, 'y': `${py}mm`, 'width': `${pw}mm`, 'height': `${ph}mm`, 'rx': rx + 'mm', 'ry': ry + 'mm',
-            'onfocus': (evt: Event) => { it.select({ balloon: false, idx: pidx }) }, 'onclick': (evt: Event) => { evt.stopPropagation() },
-            'onkeydown': (evt: KeyboardEvent) => {
-                switch (evt.key) {
-                    case 'Escape':
-                        it.select(undefined, undefined)
-                        it.dom?.focus()
-                        break
-                    case 'ArrowLeft':
-                    case 'ArrowRight':
-                    case 'ArrowDown':
-                    case 'ArrowUp':
-                        evt.stopPropagation()
-                        const factor = ((evt.key === 'ArrowLeft') || (evt.key === 'ArrowUp')) ? -1 : 1,
-                            min = evt.altKey ? 10 : undefined,
-                            prop_name = ((evt.key === 'ArrowLeft') || (evt.key === 'ArrowRight'))
-                                ? (evt.altKey ? 'width' : 'x')
-                                : (evt.altKey ? 'height' : 'y'),
-                            new_val = ~~(((panel as any)[prop_name[0]] as number) + ((evt.shiftKey ? 10 : 1) * factor))
-                        if ((min === undefined) || new_val >= min) {
-                            (panel as any)[prop_name[0]] = new_val
-                            rect.setAttribute(prop_name, (panel as any)[prop_name[0]] + 'mm')
-                            it.notifyModified(page, pidx)
-                        }
-                        break
-                }
-            }
-        })
-        panels.push(rect)
-    }
+    const shape_rects: Element[] = []
+    for (let idx = 0; idx < page.panels.length; idx++)
+        shape_rects.push(renderShape(it, page, page_size_mm, page.panels[idx], idx, false))
+    for (let idx = 0; idx < page.balloons.length; idx++)
+        shape_rects.push(renderShape(it, page, page_size_mm, page.balloons[idx], idx, true))
 
     const dom_style = { 'width': `${page_size_mm.w}mm`, 'height': `${page_size_mm.h}mm`, 'background-color': '#fff' }
     it.dom = svg.svg({
         'id': domId, 'tabindex': 1, 'width': `${page_size_mm.w}mm`, 'height': `${page_size_mm.h}mm`,
         'style': utils.dictToArr(dom_style, (k, v) => k + ':' + v).join(';'),
         'onfocus': (evt) => { it.select(undefined, undefined) },
-    }, ...panels) as any
+    }, ...shape_rects) as any
     return it
 }
-
 
 function findSnap(pos: number, initial: number, prev: boolean, maybes: number[]) {
     for (const other of maybes) {
@@ -214,6 +149,75 @@ function findSnap(pos: number, initial: number, prev: boolean, maybes: number[])
     return initial
 }
 
+function renderShape(it: PageCanvas, page: º.Page, pageSizeMm: º.Size, shape: º.Panel | º.Balloon, idx: number, isBalloon: boolean): Element {
+    let shx = shape.x, shy = shape.y, shw = shape.w, shh = shape.h
+    const props: º.ShapeProps = (isBalloon ? º.balloonProps : º.panelProps)(page, idx)
+
+    const pprops = isBalloon ? undefined : props as º.PanelProps
+    if (pprops && (((pprops.outerMarginMm ?? 0) >= 0.1) || ((pprops.innerMarginMm ?? 0) >= 0.1))) {
+        const mi = pprops.innerMarginMm ?? 0
+        const e_top = º.fEq(shy, 0), e_left = º.fEq(shx, 0), e_right = º.fEq((shx + shw), pageSizeMm.w), e_bottom = º.fEq((shy + shh), pageSizeMm.h)
+        shx += (e_left ? 0 : mi)
+        shy += (e_top ? 0 : mi)
+        const px2 = (shape.x + shw) - (e_right ? 0 : mi), py2 = (shape.y + shh) - (e_bottom ? 0 : mi)
+        shw = px2 - shx
+        shh = py2 - shy
+        if (pprops.outerMarginMm !== undefined) {
+            const mo = pprops.outerMarginMm!
+            if (e_left)
+                [shx, shw] = [shx + mo, shw - mo]
+            if (e_top)
+                [shy, shh] = [shy + mo, shh - mo]
+            if (e_right)
+                shw -= mo
+            if (e_bottom)
+                shh -= mo
+        }
+    }
+
+    let rx = 0, ry = 0
+    if ((props.roundness !== undefined) && (props.roundness >= 0.01)) {
+        rx = 0.5 * Math.max(shw, shh)
+        ry = rx
+        if (props.roundness <= 0.99)
+            [rx, ry] = [rx * props.roundness, ry * props.roundness]
+    }
+    const is_sel = it.sel && (idx === it.sel.idx) && (isBalloon === it.sel.isBalloon)
+    const shape_kind = isBalloon ? 'balloon' : 'panel'
+    const rect = svg.rect({
+        'id': shape_kind + '_' + idx, 'class': 'shape ' + shape_kind + (is_sel ? (' shape-selected ' + shape_kind + '-selected') : ''),
+        'stroke-width': `${props.borderWidthMm ?? 0}mm`, 'tabindex': 2,
+        'x': `${shx}mm`, 'y': `${shy}mm`, 'width': `${shw}mm`, 'height': `${shh}mm`, 'rx': rx + 'mm', 'ry': ry + 'mm',
+        'onfocus': (evt: Event) => { it.select({ isBalloon: isBalloon, idx: idx }) }, 'onclick': (evt: Event) => { evt.stopPropagation() },
+        'onkeydown': (evt: KeyboardEvent) => {
+            switch (evt.key) {
+                case 'Escape':
+                    it.select(undefined, undefined)
+                    it.dom?.focus()
+                    break
+                case 'ArrowLeft':
+                case 'ArrowRight':
+                case 'ArrowDown':
+                case 'ArrowUp':
+                    evt.stopPropagation()
+                    const factor = ((evt.key === 'ArrowLeft') || (evt.key === 'ArrowUp')) ? -1 : 1,
+                        min = evt.altKey ? 10 : undefined,
+                        prop_name = ((evt.key === 'ArrowLeft') || (evt.key === 'ArrowRight'))
+                            ? (evt.altKey ? 'width' : 'x')
+                            : (evt.altKey ? 'height' : 'y'),
+                        new_val = ~~(((shape as any)[prop_name[0]] as number) + ((evt.shiftKey ? 10 : 1) * factor))
+                    if ((min === undefined) || new_val >= min) {
+                        (shape as any)[prop_name[0]] = new_val
+                        rect.setAttribute(prop_name, (shape as any)[prop_name[0]] + 'mm')
+                        it.notifyModified(page, isBalloon ? undefined : idx, isBalloon ? idx : undefined)
+                    }
+                    break
+            }
+        }
+    })
+    return rect
+}
+
 export function selFrom(panelIdx?: number, balloonIdx?: number): º.ShapeRef | undefined {
-    return ((panelIdx === undefined) && (balloonIdx === undefined)) ? undefined : { idx: panelIdx ?? balloonIdx!, balloon: (balloonIdx !== undefined) }
+    return ((panelIdx === undefined) && (balloonIdx === undefined)) ? undefined : { idx: panelIdx ?? balloonIdx!, isBalloon: (balloonIdx !== undefined) }
 }

@@ -61,8 +61,8 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
             it.toggleDeletePrompt(false)
             const page = curPage()
             if (it.canvas.sel) { // accounts for the move-to-front/send-to-back/etc `page.panels` array reorderings
-                const shape: º.Shape = (it.canvas.sel.balloon ? page.balloons : page.panels)[it.canvas.sel.idx]
-                const props: º.ShapeProps = it.canvas.sel.balloon ? ((shape as º.Balloon).balloonProps) : ((shape as º.Panel).panelProps)
+                const shape: º.Shape = (it.canvas.sel.isBalloon ? page.balloons : page.panels)[it.canvas.sel.idx]
+                const props: º.ShapeProps = it.canvas.sel.isBalloon ? ((shape as º.Balloon).balloonProps) : ((shape as º.Panel).panelProps)
                 shape.w = ~~((parseFloat(ˍ.input_width.value) * 10))
                 shape.h = ~~((parseFloat(ˍ.input_height.value) * 10))
                 shape.x = ~~((parseFloat(ˍ.input_pos_x.value) * 10))
@@ -79,11 +79,11 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
                 return
             }
             const page = curPage()
-            const shapes: º.Shape[] = it.canvas.sel.balloon ? page.balloons : page.panels
+            const shapes: º.Shape[] = it.canvas.sel.isBalloon ? page.balloons : page.panels
             const shape: º.Shape = shapes[it.canvas.sel.idx]
-            const props: º.ShapeProps = it.canvas.sel.balloon ? ((shape as º.Balloon).balloonProps) : ((shape as º.Panel).panelProps)
+            const props: º.ShapeProps = it.canvas.sel.isBalloon ? ((shape as º.Balloon).balloonProps) : ((shape as º.Panel).panelProps)
 
-            ˍ.label_panel_idx.textContent = `(${it.canvas.sel.balloon ? 'Balloon' : 'Panel'} #${1 + it.canvas.sel.idx} / ${shapes.length})`
+            ˍ.label_panel_idx.textContent = `(${it.canvas.sel.isBalloon ? 'Balloon' : 'Panel'} #${1 + it.canvas.sel.idx} / ${shapes.length})`
             ˍ.input_round.value = (props.roundness ?? 0).toFixed(2)
             for (const inputs of [{ 'x': ˍ.input_pos_x, 'y': ˍ.input_pos_y, 'w': ˍ.input_width, 'h': ˍ.input_height } as { [_: string]: HTMLInputElement }])
                 for (const prop_name in inputs) {

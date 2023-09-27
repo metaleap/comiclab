@@ -72,7 +72,7 @@ export type Balloon = Shape & {
 
 export type ShapeRef = {
     idx: number
-    balloon: boolean
+    isBalloon: boolean
 }
 
 export type ProjOrColl = (Proj | Collection) & { name?: string }

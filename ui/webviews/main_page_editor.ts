@@ -45,7 +45,7 @@ function onUserModifiedPage(userModifiedPage: º.Page, reRender?: boolean): º.P
     else
         reRenderPageCanvas()
     if (ˍ.page_canvas.sel)
-        document.getElementById((ˍ.page_canvas.sel.balloon ? 'balloon_' : 'panel_') + ˍ.page_canvas.sel.idx)?.focus()
+        document.getElementById((ˍ.page_canvas.sel.isBalloon ? 'balloon_' : 'panel_') + ˍ.page_canvas.sel.idx)?.focus()
     return userModifiedPage
 }
 function onUserModifiedPanel(): º.Page {
@@ -70,14 +70,14 @@ function refreshShapeWidgets(skipToolbar?: boolean) {
         const px_pos = mmToPx(panel.x, panel.y, true, page_size)
         const px_size = mmToPx(panel.w, panel.h, false, page_size)
         const pad = 11
-        const visible = (!ˍ.page_canvas.sel) || ((!ˍ.page_canvas.sel.balloon) && (ˍ.page_canvas.sel.idx === pIdx))
+        const visible = (!ˍ.page_canvas.sel) || ˍ.page_canvas.sel.isBalloon || (ˍ.page_canvas.sel.idx === pIdx)
         const textarea = html.div({
             'class': 'page-editor-textarea', 'style':
                 `visibility: ${visible ? 'visible' : 'hidden'}; left: ${px_pos.x + pad}px; top: ${px_pos.y + pad}px; width: ${px_size.x - (2 * pad)}px; height: ${px_size.y - (2 * pad)}px;`,
             'onclick': (evt: MouseEvent) => {
                 const dom = ˍ.panel_textareas[pIdx].firstChild as HTMLElement
                 if (!dom.hasAttribute('contenteditable'))
-                    ˍ.page_canvas.select({ idx: pIdx, balloon: false })
+                    ˍ.page_canvas.select(ˍ.page_canvas.whatsAt())
             },
         }, html.div({
             'class': 'page-editor-textarea',
@@ -98,7 +98,7 @@ function refreshShapeWidgets(skipToolbar?: boolean) {
         panel_bar.refresh() // do this before the below, so we'll have a non-0 clientWidth
 
     if (ˍ.page_canvas.sel) { // positioning the panel bar right on its assigned panel edge
-        const shapes: º.Shape[] = (ˍ.page_canvas.sel.balloon) ? page.balloons : page.panels
+        const shapes: º.Shape[] = (ˍ.page_canvas.sel.isBalloon) ? page.balloons : page.panels
         const shape: º.Shape = shapes[ˍ.page_canvas.sel.idx]
         const shape_px_pos = mmToPx(shape.x, shape.y, true, page_size)
         const shape_px_size = mmToPx(shape.w, shape.h, false, page_size)
@@ -215,7 +215,7 @@ function createGui() {
         switch (evt.key) {
             case 'Escape':
                 ˍ.shape_toolbar.toggleDeletePrompt(false)
-                if (ˍ.page_canvas.sel && !ˍ.page_canvas.sel.balloon) {
+                if (ˍ.page_canvas.sel && !ˍ.page_canvas.sel.isBalloon) {
                     const dom = ˍ.panel_textareas[ˍ.page_canvas.sel.idx].firstChild as HTMLElement
                     dom.blur()
                 }
@@ -228,7 +228,7 @@ function createGui() {
                 }
                 break
             case 'F2':
-                if (ˍ.page_canvas.sel && !ˍ.page_canvas.sel.balloon) {
+                if (ˍ.page_canvas.sel && !ˍ.page_canvas.sel.isBalloon) {
                     const dom = ˍ.panel_textareas[ˍ.page_canvas.sel.idx].firstChild as HTMLElement
                     if (!dom.hasAttribute('contenteditable')) {
                         dom.setAttribute('contenteditable', 'true')
@@ -245,7 +245,10 @@ function createGui() {
                 evt.preventDefault()
                 ˍ.page_canvas.dom?.focus()
                 ˍ.page_canvas.select(undefined, undefined)
-                ˍ.page_canvas.addNewPanel()
+                if (evt.shiftKey)
+                    ˍ.page_canvas.addNewBalloon()
+                else
+                    ˍ.page_canvas.addNewPanel()
             }
         },
         'onclick': (evt: MouseEvent) => { // ensure canvas shape deselection when clicking outside the page
@@ -263,9 +266,9 @@ function createGui() {
                             if (userModifiedPageProps)
                                 page.pageProps = userModifiedPageProps
                             if (userModifiedPanelProps)
-                                ((sel && !sel.balloon) ? page.panels[sel.idx] : page).panelProps = userModifiedPanelProps
+                                ((sel && !sel.isBalloon) ? page.panels[sel.idx] : page).panelProps = userModifiedPanelProps
                             if (userModifiedBalloonProps)
-                                ((sel?.balloon) ? page.balloons[sel.idx] : page).balloonProps = userModifiedBalloonProps
+                                ((sel?.isBalloon) ? page.balloons[sel.idx] : page).balloonProps = userModifiedBalloonProps
                             onUserModifiedPanel()
                         }
                     })
