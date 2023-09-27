@@ -67,12 +67,12 @@ function refreshPanelControls(edgeBarsOnly?: boolean) {
     const page = º.pageFromPath(pagePath)!
     const page_size = º.pageSizeMm(page)
     ˍ.panel_textareas = page.panels.map((panel, pIdx) => {
-        const pos = mmToPx(panel.x, panel.y, true, page_size)
-        const size = mmToPx(panel.w, panel.h, false, page_size)
+        const px_pos = mmToPx(panel.x, panel.y, true, page_size)
+        const px_size = mmToPx(panel.w, panel.h, false, page_size)
         const pad = 11
         const textarea = html.div({
             'class': 'page-editor-textarea',
-            'style': `left: ${pos.xPx + pad}px; top: ${pos.yPx + pad}px; width: ${size.xPx - (2 * pad)}px; height: ${size.yPx - (2 * pad)}px;`,
+            'style': `left: ${px_pos.x + pad}px; top: ${px_pos.y + pad}px; width: ${px_size.x - (2 * pad)}px; height: ${px_size.y - (2 * pad)}px;`,
             'onclick': (evt: UIEvent) => {
                 const dom = ˍ.panel_textareas[pIdx].firstChild as HTMLElement
                 if (!dom.hasAttribute('contenteditable'))
@@ -101,15 +101,15 @@ function refreshPanelControls(edgeBarsOnly?: boolean) {
         const panel_px_pos = mmToPx(panel.x, panel.y, true, page_size)
         const panel_px_size = mmToPx(panel.w, panel.h, false, page_size)
 
-        ˍ.panelbar_upper.dom.style.left = ((panel_px_pos.xPx + (panel_px_size.xPx / 2)) - (ˍ.panelbar_upper.dom.clientWidth / 2)).toFixed(0) + 'px'
+        ˍ.panelbar_upper.dom.style.left = ((panel_px_pos.x + (panel_px_size.x / 2)) - (ˍ.panelbar_upper.dom.clientWidth / 2)).toFixed(0) + 'px'
         ˍ.panelbar_lower.dom.style.left = ˍ.panelbar_upper.dom.style.left
-        ˍ.panelbar_upper.dom.style.top = (panel_px_pos.yPx - 12).toFixed(0) + 'px'
-        ˍ.panelbar_lower.dom.style.top = (panel_px_pos.yPx + panel_px_size.yPx).toFixed(0) + 'px'
+        ˍ.panelbar_upper.dom.style.top = (panel_px_pos.y - 12).toFixed(0) + 'px'
+        ˍ.panelbar_lower.dom.style.top = (panel_px_pos.y + panel_px_size.y).toFixed(0) + 'px'
 
-        ˍ.panelbar_left.dom.style.top = ((panel_px_pos.yPx + (panel_px_size.yPx / 2)) - (ˍ.panelbar_left.dom.clientHeight / 2)).toFixed(0) + 'px'
+        ˍ.panelbar_left.dom.style.top = ((panel_px_pos.y + (panel_px_size.y / 2)) - (ˍ.panelbar_left.dom.clientHeight / 2)).toFixed(0) + 'px'
         ˍ.panelbar_right.dom.style.top = ˍ.panelbar_left.dom.style.top
-        ˍ.panelbar_left.dom.style.left = (panel_px_pos.xPx - 12).toFixed(0) + 'px'
-        ˍ.panelbar_right.dom.style.left = (panel_px_pos.xPx + panel_px_size.xPx).toFixed(0) + 'px'
+        ˍ.panelbar_left.dom.style.left = (panel_px_pos.x - 12).toFixed(0) + 'px'
+        ˍ.panelbar_right.dom.style.left = (panel_px_pos.x + panel_px_size.x).toFixed(0) + 'px'
     }
 }
 
@@ -169,7 +169,7 @@ function createPageCanvas(panelIdx?: number) {
 
 function createGui() {
     const orig_size_zoom_percent: number = (utils.vscCfg && utils.vscCfg['pageEditorDefaultZoom']) ? (utils.vscCfg['pageEditorDefaultZoom'] as number) : 122.5
-    const page_size = º.pageSizeMm(º.pageFromPath(pagePath)!)
+    const page_size_mm = º.pageSizeMm(º.pageFromPath(pagePath)!)
     ˍ.top_toolbar_menu_addpanelgrid = html.select({
         'class': 'placeholder',
         'onchange': () => {
@@ -190,8 +190,8 @@ function createGui() {
                     zoomSet(parseFloat(ˍ.top_toolbar_zoom_input.value))
             }),
             ˍ.top_toolbar_zoom_text = html.span({}, orig_size_zoom_percent + '%'),
-            html.button({ 'class': 'btn', 'title': `Original size (${page_size.wMm / 10} × ${page_size.hMm / 10} cm)`, 'style': utils.codiconCss('screen-full'), 'onclick': () => zoomSet(orig_size_zoom_percent) }),
-            html.button({ 'class': 'btn', 'title': `View size (${((page_size.wMm / 1.5) / 10).toFixed(1)} × ${((page_size.hMm / 1.5) / 10).toFixed(1)} cm)`, 'style': utils.codiconCss('preview'), 'onclick': () => zoomSet(orig_size_zoom_percent / 1.5) }),
+            html.button({ 'class': 'btn', 'title': `Original size (${page_size_mm.w / 10} × ${page_size_mm.h / 10} cm)`, 'style': utils.codiconCss('screen-full'), 'onclick': () => zoomSet(orig_size_zoom_percent) }),
+            html.button({ 'class': 'btn', 'title': `View size (${((page_size_mm.w / 1.5) / 10).toFixed(1)} × ${((page_size_mm.h / 1.5) / 10).toFixed(1)} cm)`, 'style': utils.codiconCss('preview'), 'onclick': () => zoomSet(orig_size_zoom_percent / 1.5) }),
             html.button({ 'class': 'btn', 'title': 'Fit into canvas', 'style': utils.codiconCss('screen-normal'), 'onclick': () => zoomSet() }),
         ),
         html.div({ 'class': 'page-editor-top-toolbar-block', },
@@ -251,8 +251,8 @@ function createGui() {
         'onauxclick': (evt: PointerEvent) => {
             if (evt.button === 1) // mid-click
                 ˍ.page_canvas.addNewPanel()
-            else if (evt.button === 2)  // right-click
-                ˍ.props_dialog = dialog_props.show('page_editor_panelprops', º.pageFromPath(pagePath)!, evt.target as HTMLElement,
+            else if (evt.button === 2) // right-click
+                ˍ.props_dialog = dialog_props.show('page_editor_props_dialog', º.pageFromPath(pagePath)!, ˍ.page_canvas,
                     () => { ˍ.props_dialog = undefined },
                     (userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps, userModifiedBalloonProps?: º.BalloonProps, panelIdx?: number, balloonIdx?: number) => {
                         const page = º.pageFromPath(pagePath)!
@@ -277,36 +277,34 @@ function createGui() {
             }
         },
         'onmouseout': (evt: Event) => {
-            [ˍ.page_canvas.xMm, ˍ.page_canvas.yMm] = [undefined, undefined]
+            ˍ.page_canvas.mousePosMm = undefined
             ˍ.top_toolbar_mpos_text.innerHTML = 'Some mouse-out info text here?'
         },
         'onmousemove': (evt: MouseEvent) => {
-            const mm = mmFromPx(evt.clientX, evt.clientY, true, page_size)
-            ˍ.page_canvas.xMm = mm.xPx
-            ˍ.page_canvas.yMm = mm.yPx
-            ˍ.top_toolbar_mpos_text.innerText = `X: ${(ˍ.page_canvas.xMm * 0.1).toFixed(1)}cm , Y:${(ˍ.page_canvas.yMm * 0.1).toFixed(1)}cm`
+            ˍ.page_canvas.mousePosMm = mmFromPx(evt.clientX, evt.clientY, true, page_size_mm)
+            ˍ.top_toolbar_mpos_text.innerText = `X: ${(ˍ.page_canvas.mousePosMm.x * 0.1).toFixed(1)}cm , Y:${(ˍ.page_canvas.mousePosMm.y * 0.1).toFixed(1)}cm`
         },
     }, ˍ.page_canvas.dom, ˍ.panelbar_left.dom, ˍ.panelbar_right.dom, ˍ.panelbar_upper.dom, ˍ.panelbar_lower.dom)
     van.add(document.body, ˍ.main, ˍ.panel_toolbar.dom, ˍ.top_toolbar)
     zoomSet()
 }
 
-function mmFromPx(xPx: number, yPx: number, areUnzoomed: boolean, pageSize?: º.PageSize) {
+function mmFromPx(xPx: number, yPx: number, areUnzoomed: boolean, pageSizeMm?: º.Size) {
     const zoom = zoomGet()
     xPx = ((100 / zoom) * xPx) - posX()
     yPx = ((100 / zoom) * yPx) - posY()
     const xfac = areUnzoomed ? (xPx / ˍ.page_canvas.dom!.clientWidth) : 1, yfac = areUnzoomed ? (yPx / ˍ.page_canvas.dom!.clientHeight) : 1
-    if (!pageSize)
-        pageSize = º.pageSizeMm(º.pageFromPath(pagePath)!)
-    return { xPx: pageSize.wMm * xfac, yPx: pageSize.hMm * yfac }
+    if (!pageSizeMm)
+        pageSizeMm = º.pageSizeMm(º.pageFromPath(pagePath)!)
+    return { x: pageSizeMm.w * xfac, y: pageSizeMm.h * yfac }
 }
 
-function mmToPx(mmX: number, mmY: number, isPos: boolean, pageSize?: º.PageSize) {
-    if (!pageSize)
-        pageSize = º.pageSizeMm(º.pageFromPath(pagePath)!)
-    const x_px_per_mm = ˍ.page_canvas.dom!.clientWidth / pageSize.wMm, y_px_per_mm = ˍ.page_canvas.dom!.clientHeight / pageSize.hMm
+function mmToPx(mmX: number, mmY: number, isPos: boolean, pageSizeMm?: º.Size) {
+    if (!pageSizeMm)
+        pageSizeMm = º.pageSizeMm(º.pageFromPath(pagePath)!)
+    const x_px_per_mm = ˍ.page_canvas.dom!.clientWidth / pageSizeMm.w, y_px_per_mm = ˍ.page_canvas.dom!.clientHeight / pageSizeMm.h
     const x_off = isPos ? posX() : 0, y_off = isPos ? posY() : 0
-    return { xPx: (x_px_per_mm * mmX) + x_off, yPx: (y_px_per_mm * mmY) + y_off }
+    return { x: (x_px_per_mm * mmX) + x_off, y: (y_px_per_mm * mmY) + y_off }
 }
 
 function posX(newX?: number): number {

@@ -21,7 +21,7 @@ class CollEditor extends base_editor.WebviewPanel {
         this.collPath = collPath
     }
     override title(): string {
-        return º.collFromPath(this.collPath)?.name ?? 'Project-wide Collection defaults'
+        return º.collFromPath(this.collPath)?.name ?? 'Project defaults'
     }
     override onRefreshedEventMessage(evt: app.StateEvent): any {
         if (evt.proj || evt.cfg)

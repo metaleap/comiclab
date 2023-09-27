@@ -49,12 +49,17 @@ export type Page = {
     balloonProps: BalloonProps
 }
 
-export type Shape = {
+export type Pos = {
     x: number
     y: number
+}
+
+export type Size = {
     w: number
     h: number
 }
+
+export type Shape = Pos & Size
 
 export type Panel = Shape & {
     text?: string
@@ -231,12 +236,11 @@ export function props<T>(it: ProjOrCollOrPage, propsName: string): T {
     return ret
 }
 
-export type PageSize = { wMm: number, hMm: number }
-export function pageSizeMm(page: Page): PageSize {
+export function pageSizeMm(page: Page): Size {
     const paper_format = cfgPaperFormat(pageProps(page).paperFormatId)
     if (paper_format)
-        return { wMm: paper_format.widthMm, hMm: paper_format.heightMm }
-    return { wMm: 0, hMm: 0 }
+        return { w: paper_format.widthMm, h: paper_format.heightMm }
+    return { w: 0, h: 0 }
 }
 
 export function cfgPaperFormat(name?: string): PaperFormat | undefined {
@@ -334,6 +338,10 @@ export function deepEq(val1: any, val2: any, ignoreArrayOrder?: boolean): boolea
         }
     }
     return false
+}
+
+export function isPosInShape(shape: Shape, pos: Pos) {
+
 }
 
 export function dictMerge<TDict>(...dicts: { [_: string]: TDict }[]): { [_: string]: TDict } {

@@ -6,19 +6,19 @@ const svg = van.tagsNS("http://www.w3.org/2000/svg")
 
 export type PageCanvas = {
     dom?: HTMLElement & SVGElement
-    selPanelIdx?: number,
-    xMm?: number,
-    yMm?: number,
-    notifyModified: (page: º.Page, pIdx?: number, reRender?: boolean) => void,
-    addNewPanel: () => void,
-    addNewPanelGrid: (numRows: number, numCols: number) => void,
-    panelSelect: (panelIdx?: number, dontRaiseEvent?: boolean) => void,
+    selPanelIdx?: number
+    mousePosMm?: { x: number, y: number }
+    notifyModified: (page: º.Page, pIdx?: number, reRender?: boolean) => void
+    addNewPanel: () => void
+    addNewPanelGrid: (numRows: number, numCols: number) => void
+    panelSelect: (panelIdx?: number, dontRaiseEvent?: boolean) => void
     panelReorder: (direction: º.Direction, dontDoIt?: boolean) => boolean
-    panelSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean) => boolean,
+    panelSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean) => boolean
+    whatsAt(pos?: { x: number, y: number }): { panelIdx?: number, balloonIdx?: number }
 }
 
 export function create(domId: string, page: º.Page, onPanelSelection: () => void, selPanelIdx: number | undefined, onUserModified: (page: º.Page, reRender?: boolean) => void): PageCanvas {
-    const page_size = º.pageSizeMm(page)
+    const page_size_mm = º.pageSizeMm(page)
     if ((selPanelIdx !== undefined) && (selPanelIdx >= page.panels.length))
         selPanelIdx = undefined
     const it: PageCanvas = {
@@ -41,11 +41,11 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
             onUserModified(page, reRender)
         },
         addNewPanel: () => {
-            page.panels.push({ panelProps: {}, x: ~~(it.xMm ?? 0), y: ~~(it.yMm ?? 0), w: 100, h: 100 })
+            page.panels.push({ panelProps: {}, x: ~~(it.mousePosMm?.x ?? 0), y: ~~(it.mousePosMm?.y ?? 0), w: 100, h: 100 })
             it.notifyModified(page, page.panels.length - 1, true)
         },
         addNewPanelGrid: (numRows: number, numCols: number) => {
-            const wcols = page_size.wMm / numCols, hrows = page_size.hMm / numRows
+            const wcols = page_size_mm.w / numCols, hrows = page_size_mm.h / numRows
             for (let r = 0; r < numRows; r++)
                 for (let c = 0; c < numCols; c++)
                     page.panels.push({ panelProps: {}, w: ~~wcols, h: ~~hrows, x: ~~(c * wcols), y: ~~(r * hrows) })
@@ -70,12 +70,12 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                     if (snapDir === º.DirLeft)
                         newx = findSnap(panel.x, 0, true, others)
                     else
-                        newx = findSnap(panel.x, page_size.wMm, false, others)
+                        newx = findSnap(panel.x, page_size_mm.w, false, others)
                 } else {
                     if (snapDir === º.DirLeft)
                         neww = findSnap(panel.x + panel.w, 0, true, others) - panel.x
                     else
-                        neww = findSnap(panel.x + panel.w, page_size.wMm, false, others) - panel.x
+                        neww = findSnap(panel.x + panel.w, page_size_mm.w, false, others) - panel.x
                 }
             } else {
                 const others = panels.map((_) => _.y + _.h).concat(panels.map((_) => _.y))
@@ -83,12 +83,12 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                     if (snapDir === º.DirUp)
                         newy = findSnap(panel.y, 0, true, others)
                     else
-                        newy = findSnap(panel.y, page_size.hMm, false, others)
+                        newy = findSnap(panel.y, page_size_mm.h, false, others)
                 } else {
                     if (snapDir === º.DirUp)
                         newh = findSnap(panel.y + panel.h, 0, true, others) - panel.y
                     else
-                        newh = findSnap(panel.y + panel.h, page_size.hMm, false, others) - panel.y
+                        newh = findSnap(panel.y + panel.h, page_size_mm.h, false, others) - panel.y
                 }
             }
 
@@ -103,6 +103,16 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
             }
             return can_snap
         },
+        whatsAt: (pos) => {
+            const ret: { panelIdx?: number, balloonIdx?: number } = {}
+            if (!pos)
+                pos = it.mousePosMm
+            for (let i = 0; i < page.panels.length; i++) {
+
+            }
+            if (pos) { }
+            return ret
+        },
     }
 
     const panels: Element[] = []
@@ -113,7 +123,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
 
         if (((props.outerMarginMm !== undefined) && (props.outerMarginMm >= 0.1)) || ((props.innerMarginMm !== undefined) && (props.innerMarginMm >= 0.1))) {
             const mi = props.innerMarginMm ?? 0
-            const e_top = º.fEq(py, 0), e_left = º.fEq(px, 0), e_right = º.fEq((px + pw), page_size.wMm), e_bottom = º.fEq((py + ph), page_size.hMm)
+            const e_top = º.fEq(py, 0), e_left = º.fEq(px, 0), e_right = º.fEq((px + pw), page_size_mm.w), e_bottom = º.fEq((py + ph), page_size_mm.h)
             px += (e_left ? 0 : mi)
             py += (e_top ? 0 : mi)
             const px2 = (panel.x + pw) - (e_right ? 0 : mi), py2 = (panel.y + ph) - (e_bottom ? 0 : mi)
@@ -174,9 +184,9 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
         panels.push(rect)
     }
 
-    const dom_style = { 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`, 'background-color': '#fff' }
+    const dom_style = { 'width': `${page_size_mm.w}mm`, 'height': `${page_size_mm.h}mm`, 'background-color': '#fff' }
     it.dom = svg.svg({
-        'id': domId, 'tabindex': 1, 'width': `${page_size.wMm}mm`, 'height': `${page_size.hMm}mm`,
+        'id': domId, 'tabindex': 1, 'width': `${page_size_mm.w}mm`, 'height': `${page_size_mm.h}mm`,
         'style': utils.dictToArr(dom_style, (k, v) => k + ':' + v).join(';'),
         'onfocus': (evt) => it.panelSelect(),
     }, ...panels) as any
