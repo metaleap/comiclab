@@ -329,15 +329,19 @@ body>dialog.page-editor-props-dialog div.inputform div.inputform-field>div.input
 }
 
 body>div#page_editor_main>div.page-editor-textarea {
-    display: table;
-    border: 0 solid #ffffff;
     position: absolute;
+    text-align: center;
     font-size: 1.77em;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
 }
 
 body>div#page_editor_main>div.page-editor-textarea>div.page-editor-textarea {
-    display: table-cell;
-    text-align: center;
-    vertical-align: middle;
     white-space: pre-wrap;
+    font-family: CCComicrazy;
+    text-align: center;
+    font-size: 5mm;
 }

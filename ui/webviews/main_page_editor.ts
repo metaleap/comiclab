@@ -69,15 +69,14 @@ function refreshPanelControls(edgeBarsOnly?: boolean) {
     ˍ.panel_textareas = page.panels.map((panel, pIdx) => {
         const pos = mmToPx(panel.x, panel.y, true, page_size)
         const size = mmToPx(panel.w, panel.h, false, page_size)
-        const pad = 11// Math.max(size.xPx / 10, size.yPx / 10)
+        const pad = 11
         const textarea = html.div({
             'class': 'page-editor-textarea',
             'style': `left: ${pos.xPx + pad}px; top: ${pos.yPx + pad}px; width: ${size.xPx - (2 * pad)}px; height: ${size.yPx - (2 * pad)}px;`,
-            'onclick': () => ˍ.page_canvas.panelSelect(pIdx),
-            'ondblclick': (evt: Event) => {
+            'onclick': (evt: UIEvent) => {
                 const dom = ˍ.panel_textareas[pIdx].firstChild as HTMLElement
-                dom.setAttribute('contenteditable', 'true')
-                window.getSelection()?.selectAllChildren(evt.target as Node)
+                if (!dom.hasAttribute('contenteditable'))
+                    ˍ.page_canvas.panelSelect(pIdx)
             },
         }, html.div({
             'class': 'page-editor-textarea',
@@ -213,12 +212,25 @@ function createGui() {
         switch (evt.key) {
             case 'Escape':
                 ˍ.panel_toolbar.toggleDeletePrompt(false)
+                if (ˍ.page_canvas.selPanelIdx !== undefined) {
+                    const dom = ˍ.panel_textareas[ˍ.page_canvas.selPanelIdx].firstChild as HTMLElement
+                    dom.blur()
+                }
                 break
             case '+':
             case '-':
                 if (!(evt.shiftKey || evt.ctrlKey || evt.altKey || evt.metaKey)) {
                     evt.preventDefault()
                     zoomSet(zoomGet() + (5 * ((evt.key == '+') ? 1 : -1)))
+                }
+                break
+            case 'F2':
+                if (ˍ.page_canvas.selPanelIdx !== undefined) {
+                    const dom = ˍ.panel_textareas[ˍ.page_canvas.selPanelIdx].firstChild as HTMLElement
+                    if (!dom.hasAttribute('contenteditable')) {
+                        dom.setAttribute('contenteditable', 'true')
+                        window.getSelection()?.selectAllChildren(dom)
+                    }
                 }
                 break
         }

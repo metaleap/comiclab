@@ -24,8 +24,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
     const it: PageCanvas = {
         selPanelIdx: selPanelIdx,
         panelSelect: (panelIdx?: number, dontRaiseEvent?: boolean) => {
-            if (it.selPanelIdx === panelIdx)
-                return
+            // even if no change in selPanelIdx, do not return early since we do want the below focus() call
             if (it.selPanelIdx !== undefined)
                 document.getElementById('panel_' + it.selPanelIdx)?.classList.remove('panel-selected')
             it.selPanelIdx = panelIdx
