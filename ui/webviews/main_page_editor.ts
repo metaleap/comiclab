@@ -74,7 +74,7 @@ function refreshShapeWidgets(skipToolbar?: boolean) {
         const textarea = html.div({
             'class': 'page-editor-textarea', 'style':
                 `visibility: ${visible ? 'visible' : 'hidden'}; left: ${px_pos.x + pad}px; top: ${px_pos.y + pad}px; width: ${px_size.x - (2 * pad)}px; height: ${px_size.y - (2 * pad)}px;`,
-            'onclick': (evt: UIEvent) => {
+            'onclick': (evt: MouseEvent) => {
                 const dom = ˍ.panel_textareas[pIdx].firstChild as HTMLElement
                 if (!dom.hasAttribute('contenteditable'))
                     ˍ.page_canvas.select({ idx: pIdx, balloon: false })
@@ -245,6 +245,7 @@ function createGui() {
                 evt.preventDefault()
                 ˍ.page_canvas.dom?.focus()
                 ˍ.page_canvas.select(undefined, undefined)
+                ˍ.page_canvas.addNewPanel()
             }
         },
         'onclick': (evt: MouseEvent) => { // ensure canvas shape deselection when clicking outside the page
@@ -253,9 +254,7 @@ function createGui() {
                 ˍ.page_canvas.select(undefined)
         },
         'onauxclick': (evt: PointerEvent) => {
-            if (evt.button === 1) // mid-click
-                ˍ.page_canvas.addNewPanel()
-            else if (evt.button === 2) // right-click
+            if (evt.button === 2) // right-click
                 ˍ.props_dialog = dialog_props.show('page_editor_props_dialog', º.pageFromPath(pagePath)!, ˍ.page_canvas,
                     () => { ˍ.props_dialog = undefined },
                     (userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps, userModifiedBalloonProps?: º.BalloonProps, sel?: º.ShapeRef) => {

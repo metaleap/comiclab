@@ -164,7 +164,7 @@ export function create(domId: string, page: º.Page, onShapeSelection: () => voi
             'id': 'panel_' + pidx, 'class': 'shape panel' + (is_sel ? ' shape-selected panel-selected' : ''),
             'stroke-width': `${panelBorderWidthMm}mm`, 'tabindex': 2, 'data-panelIdx': pidx,
             'x': `${px}mm`, 'y': `${py}mm`, 'width': `${pw}mm`, 'height': `${ph}mm`, 'rx': rx + 'mm', 'ry': ry + 'mm',
-            'onfocus': (evt: Event) => { it.select(sel) }, 'onclick': (evt: Event) => { evt.stopPropagation() },
+            'onfocus': (evt: Event) => { it.select({ balloon: false, idx: pidx }) }, 'onclick': (evt: Event) => { evt.stopPropagation() },
             'onkeydown': (evt: KeyboardEvent) => {
                 switch (evt.key) {
                     case 'Escape':
