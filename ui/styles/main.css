@@ -327,3 +327,17 @@ body>dialog.page-editor-props-dialog div.inputform div.inputform-field>div.input
 body>dialog.page-editor-props-dialog div.inputform div.inputform-field>div.inputform-field-input {
     width: 7em;
 }
+
+body>div#page_editor_main>div.page-editor-textarea {
+    display: table;
+    border: 0 solid #ffffff;
+    position: absolute;
+    font-size: 1.77em;
+}
+
+body>div#page_editor_main>div.page-editor-textarea>div.page-editor-textarea {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+    white-space: pre-wrap;
+}

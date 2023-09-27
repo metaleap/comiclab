@@ -28,6 +28,7 @@ type Shape struct {
 
 type Panel struct {
 	Shape
+	Text       string     `json:"text,omitempty"`
 	PanelProps PanelProps `json:"panelProps"`
 }
 

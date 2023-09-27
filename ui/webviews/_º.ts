@@ -57,6 +57,7 @@ export type Shape = {
 }
 
 export type Panel = Shape & {
+    text?: string
     panelProps: PanelProps
 }
 

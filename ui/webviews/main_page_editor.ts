@@ -26,8 +26,9 @@ let ˍ: {
     panelbar_right: ctl_paneledgebar.PanelEdgeBar,
     panelbar_upper: ctl_paneledgebar.PanelEdgeBar,
     panelbar_lower: ctl_paneledgebar.PanelEdgeBar,
+    panel_textareas: HTMLDivElement[],
     props_dialog?: dialog_props.PropsDialog,
-} = {} as any
+} = { panel_textareas: [] } as any
 
 export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMessage: (_: any) => any }, extUri: string, vscCfg: object, appState: º.AppState) {
     utils.onInit(vscode, extUri, vscCfg, appState)
@@ -40,7 +41,7 @@ function onUserModifiedPage(userModifiedPage: º.Page, reRender?: boolean): º.P
     º.pageUpdate(pagePath, userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: userModifiedPage })
     if (!reRender)
-        refreshPanelBars()
+        refreshPanelControls()
     else
         reRenderPageCanvas()
     if (ˍ.page_canvas.selPanelIdx !== undefined)
@@ -51,33 +52,62 @@ function onUserModifiedPanel(): º.Page {
     const page = º.pageFromPath(pagePath)!
     º.pageUpdate(pagePath, page)
     reRenderPageCanvas()
-    refreshPanelBars(true)
+    refreshPanelControls(true)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
     return page
 }
 
 function onPanelSelection() {
-    refreshPanelBars()
+    refreshPanelControls()
 }
 
-function refreshPanelBars(edgeBarsOnly?: boolean) {
+function refreshPanelControls(edgeBarsOnly?: boolean) {
+    for (const textarea of ˍ.panel_textareas)
+        textarea.remove()
+    const page = º.pageFromPath(pagePath)!
+    const page_size = º.pageSizeMm(page)
+    ˍ.panel_textareas = page.panels.map((panel, pIdx) => {
+        const pos = mmToPx(panel.x, panel.y, true, page_size)
+        const size = mmToPx(panel.w, panel.h, false, page_size)
+        const pad = 11// Math.max(size.xPx / 10, size.yPx / 10)
+        const textarea = html.div({
+            'class': 'page-editor-textarea',
+            'style': `left: ${pos.xPx + pad}px; top: ${pos.yPx + pad}px; width: ${size.xPx - (2 * pad)}px; height: ${size.yPx - (2 * pad)}px;`,
+            'onclick': () => ˍ.page_canvas.panelSelect(pIdx),
+            'ondblclick': (evt: Event) => {
+                const dom = ˍ.panel_textareas[pIdx].firstChild as HTMLElement
+                dom.setAttribute('contenteditable', 'true')
+                window.getSelection()?.selectAllChildren(evt.target as Node)
+            },
+        }, html.div({
+            'class': 'page-editor-textarea',
+            'onblur': (evt: Event) => {
+                const dom = evt.target as HTMLElement
+                panel.text = dom.innerText
+                dom.removeAttribute('contenteditable')
+                onUserModifiedPanel()
+            },
+        }, panel.text ?? ''))
+        return textarea
+    })
+    van.add(ˍ.main, ...ˍ.panel_textareas)
+
     if (!edgeBarsOnly)
         ˍ.panel_toolbar.refresh()
     for (const panel_bar of [ˍ.panelbar_left, ˍ.panelbar_right, ˍ.panelbar_upper, ˍ.panelbar_lower])
         panel_bar.refresh() // do this before the below, so we'll have a non-0 clientWidth
+
     if (ˍ.page_canvas.selPanelIdx !== undefined) { // positioning the panel bar right on its assigned panel edge
-        const page = º.pageFromPath(pagePath)!
         const panel = page.panels[ˍ.page_canvas.selPanelIdx]
-        const page_size = º.pageSizeMm(page)
         const panel_px_pos = mmToPx(panel.x, panel.y, true, page_size)
         const panel_px_size = mmToPx(panel.w, panel.h, false, page_size)
 
         ˍ.panelbar_upper.dom.style.left = ((panel_px_pos.xPx + (panel_px_size.xPx / 2)) - (ˍ.panelbar_upper.dom.clientWidth / 2)).toFixed(0) + 'px'
         ˍ.panelbar_lower.dom.style.left = ˍ.panelbar_upper.dom.style.left
-        ˍ.panelbar_upper.dom.style.top = (panel_px_pos.xPy - 12).toFixed(0) + 'px'
-        ˍ.panelbar_lower.dom.style.top = (panel_px_pos.xPy + panel_px_size.xPy).toFixed(0) + 'px'
+        ˍ.panelbar_upper.dom.style.top = (panel_px_pos.yPx - 12).toFixed(0) + 'px'
+        ˍ.panelbar_lower.dom.style.top = (panel_px_pos.yPx + panel_px_size.yPx).toFixed(0) + 'px'
 
-        ˍ.panelbar_left.dom.style.top = ((panel_px_pos.xPy + (panel_px_size.xPy / 2)) - (ˍ.panelbar_left.dom.clientHeight / 2)).toFixed(0) + 'px'
+        ˍ.panelbar_left.dom.style.top = ((panel_px_pos.yPx + (panel_px_size.yPx / 2)) - (ˍ.panelbar_left.dom.clientHeight / 2)).toFixed(0) + 'px'
         ˍ.panelbar_right.dom.style.top = ˍ.panelbar_left.dom.style.top
         ˍ.panelbar_left.dom.style.left = (panel_px_pos.xPx - 12).toFixed(0) + 'px'
         ˍ.panelbar_right.dom.style.left = (panel_px_pos.xPx + panel_px_size.xPx).toFixed(0) + 'px'
@@ -125,7 +155,7 @@ function reRenderPageCanvas() {
     const x = posX(), y = posY(), old_dom = ˍ.page_canvas.dom
     createPageCanvas(ˍ.page_canvas.selPanelIdx)
     old_dom!.replaceWith(ˍ.page_canvas.dom!)
-    refreshPanelBars()
+    refreshPanelControls()
     posX(x)
     posY(y)
 }
@@ -259,25 +289,25 @@ function mmFromPx(xPx: number, yPx: number, areUnzoomed: boolean, pageSize?: º.
     return { xPx: pageSize.wMm * xfac, yPx: pageSize.hMm * yfac }
 }
 
-function mmToPx(mmX: number, mmY: number, isPos: boolean, pageSize?: º.PageSize)/*: º.PageSize*/ {
+function mmToPx(mmX: number, mmY: number, isPos: boolean, pageSize?: º.PageSize) {
     if (!pageSize)
         pageSize = º.pageSizeMm(º.pageFromPath(pagePath)!)
-    const px_per_mm = ˍ.page_canvas.dom!.clientWidth / pageSize.wMm
+    const x_px_per_mm = ˍ.page_canvas.dom!.clientWidth / pageSize.wMm, y_px_per_mm = ˍ.page_canvas.dom!.clientHeight / pageSize.hMm
     const x_off = isPos ? posX() : 0, y_off = isPos ? posY() : 0
-    return { xPx: (px_per_mm * mmX) + x_off, xPy: (px_per_mm * mmY) + y_off }
+    return { xPx: (x_px_per_mm * mmX) + x_off, yPx: (y_px_per_mm * mmY) + y_off }
 }
 
 function posX(newX?: number): number {
     if (newX !== undefined) {
         ˍ.page_canvas.dom!.style.left = newX.toString() + 'px'
-        refreshPanelBars(true)
+        refreshPanelControls(true)
     }
     return parseInt(ˍ.page_canvas.dom!.style.left)
 }
 function posY(newY?: number): number {
     if (newY !== undefined) {
         ˍ.page_canvas.dom!.style.top = newY.toString() + 'px'
-        refreshPanelBars(true)
+        refreshPanelControls(true)
     }
     return parseInt(ˍ.page_canvas.dom!.style.top)
 }
@@ -311,5 +341,5 @@ function zoomSet(newZoom?: number, mouse?: { x: number, y: number }) {
     }
     ˍ.top_toolbar_zoom_input.value = newZoom.toString()
     ˍ.top_toolbar_zoom_text.innerText = newZoom.toFixed(1) + "%"
-    refreshPanelBars(true)
+    refreshPanelControls(true)
 }
