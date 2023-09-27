@@ -116,6 +116,7 @@ function onAppStateRefreshed(newAppState?: º.AppState) {
     const old_page = º.pageFromPath(pagePath)!
     const old_pageprops = º.pageProps(old_page) // has the coll-level and project-level prop vals where no page-level overrides
     const old_panelprops = º.panelProps(old_page) // dito as above
+    const old_balloonprops = º.balloonProps(old_page) // dito
 
     if (newAppState) {
         if (newAppState.config)
@@ -126,12 +127,13 @@ function onAppStateRefreshed(newAppState?: º.AppState) {
 
     const new_page = º.pageFromPath(pagePath) as º.Page
     const new_panelprops = º.panelProps(new_page) // dito as above
+    const new_balloonprops = º.balloonProps(new_page) // dito
     const new_pageprops = º.pageProps(new_page) // dito
     const page_changed = !º.deepEq(old_page, new_page)
     º.pageUpdate(pagePath, new_page)
     if (!ˍ.main)
         createGui()
-    else if (page_changed || (!º.deepEq(old_pageprops, new_pageprops)) || (!º.deepEq(old_panelprops, new_panelprops)))
+    else if (page_changed || (!º.deepEq(old_pageprops, new_pageprops)) || (!º.deepEq(old_panelprops, new_panelprops)) || (!º.deepEq(old_balloonprops, new_balloonprops)))
         reRenderPageCanvas()
     if (ˍ.props_dialog)
         ˍ.props_dialog.refresh()

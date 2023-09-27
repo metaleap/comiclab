@@ -204,7 +204,7 @@ body>div.page-editor-top-toolbar a {
 body>div#page_editor_top_toolbar {
     top: 0;
     background-color: var(--vscode-tab-activeBackground);
-    height: 2em;
+    height: 2.11em;
 }
 
 body>div.page-editor-top-toolbar>div.page-editor-top-toolbar-block {
@@ -213,8 +213,15 @@ body>div.page-editor-top-toolbar>div.page-editor-top-toolbar-block {
     overflow: hidden;
     vertical-align: middle;
     padding-left: 0.22em;
-    padding-right: 0.22em;
+    padding-right: 0.44em;
+    margin-right: 0.44em;
     margin-top: 0.22em;
+    border-right: 1px solid var(--vscode-tab-inactiveForeground);
+}
+
+body>div.page-editor-top-toolbar>div.page-editor-top-toolbar-block>* {
+    margin-bottom: 0.11em;
+    margin-top: 0.11em;
 }
 
 body>div.page-editor-top-toolbar>div.page-editor-top-toolbar-block>* {
@@ -234,7 +241,6 @@ body>#page_editor_top_toolbar>#page_editor_top_toolbar_dbg {
 
 body>div#page_editor_shape_toolbar {
     padding-top: 2.55em;
-    padding-bottom: 0.44em;
     background-color: var(--vscode-sideBar-background);
     height: 4.56em;
     font-size: 0.88em;
