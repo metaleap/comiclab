@@ -15,7 +15,7 @@ export type ShapeEdgeBar = {
 }
 
 export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, edge: º.Direction): ShapeEdgeBar {
-    const dom = html.div({ 'title': edge, 'id': domId, 'class': 'page-editor-shape-edgebar' })
+    const dom = html.div({ 'id': domId, 'class': 'page-editor-shape-edgebar' })
     const btn_snap_left = html.button({ 'class': 'btn', 'style': utils.codiconCss('triangle-left'), 'title': 'Snap leftwards', 'onclick': (evt: Event) => it.snapShapeTo(evt, it.edge, º.DirLeft) })
     const btn_snap_right = html.button({ 'class': 'btn', 'style': utils.codiconCss('triangle-right'), 'title': 'Snap rightwards', 'onclick': (evt: Event) => it.snapShapeTo(evt, it.edge, º.DirRight) })
     const btn_snap_up = html.button({ 'class': 'btn', 'style': utils.codiconCss('triangle-up'), 'title': 'Snap upwards', 'onclick': (evt: Event) => it.snapShapeTo(evt, it.edge, º.DirUp) })

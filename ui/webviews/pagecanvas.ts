@@ -66,13 +66,17 @@ export function create(domId: string, page: º.Page, onShapeSelection: () => voi
             return false
         },
         shapeSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean) => {
-            let shapes = (it.sel!.isBalloon ? page.balloons : page.panels) as º.Shape[]
-            const shape = shapes[it.sel!.idx]
+            const shape: º.Shape = (it.sel!.isBalloon ? page.balloons : page.panels)[it.sel!.idx]
             const edge_lr = (edge === º.DirLeft) || (edge === º.DirRight)
             let newx = shape.x, newy = shape.y, neww = shape.w, newh = shape.h
-            shapes = ((it.sel!.isBalloon ? page.panels : page.balloons) as º.Shape[]).concat(shapes.filter((sh, shIdx) => (shIdx !== it.sel!.idx) && ((edge_lr ? º.shapesOverlapV : º.shapesOverlapH)(sh, shape))))
+            const others = ([] as º.Shape[]).concat(page.panels, page.balloons)
+                .filter((_) => (_ !== shape) && ((edge_lr ? º.shapesOverlapV : º.shapesOverlapH)(_, shape)))
+                .flatMap((sh: º.Shape) => {
+                    if ((it.sel!.isBalloon) && ((sh as º.Panel).panelProps))
+                        sh = adjustedToMargins(page, sh as º.Panel)
+                    return edge_lr ? [sh.x, sh.x + sh.w] : [sh.y, sh.y + sh.h]
+                })
             if (edge_lr) {
-                const others = shapes.map((_) => { return _.x + _.w }).concat(shapes.map((_) => { return _.x }))
                 if (edge === º.DirLeft) {
                     if (snapDir === º.DirLeft)
                         newx = findSnap(shape.x, 0, true, others)
@@ -85,7 +89,6 @@ export function create(domId: string, page: º.Page, onShapeSelection: () => voi
                         neww = findSnap(shape.x + shape.w, page_size_mm.w, false, others) - shape.x
                 }
             } else {
-                const others = shapes.map((_) => _.y + _.h).concat(shapes.map((_) => _.y))
                 if (edge === º.DirUp) {
                     if (snapDir === º.DirUp)
                         newy = findSnap(shape.y, 0, true, others)
@@ -151,7 +154,7 @@ function findSnap(pos: number, initial: number, prev: boolean, maybes: number[])
 
 function renderShape(it: PageCanvas, page: º.Page, idx: number, isBalloon: boolean): Element {
     const shape: º.Shape = (isBalloon ? page.balloons : page.panels)[idx]
-    let sh: º.Shape = isBalloon ? { x: shape.x, y: shape.y, w: shape.w, h: shape.h } : adjustedToMargins(page, idx)
+    let sh: º.Shape = isBalloon ? { x: shape.x, y: shape.y, w: shape.w, h: shape.h } : adjustedToMargins(page, shape as º.Panel)
 
     let rx = 0, ry = 0
     const props: º.ShapeProps = (isBalloon ? º.balloonProps : º.panelProps)(page, idx)
@@ -197,10 +200,9 @@ function renderShape(it: PageCanvas, page: º.Page, idx: number, isBalloon: bool
     return rect
 }
 
-function adjustedToMargins(page: º.Page, panelIdx: number) {
+function adjustedToMargins(page: º.Page, panel: º.Panel) {
     const page_size_mm = º.pageSizeMm(page)
-    const panel = page.panels[panelIdx]
-    const props: º.PanelProps = º.panelProps(page, panelIdx)
+    const props: º.PanelProps = º.panelProps(page, undefined, panel)
     const ret: º.Shape = { x: panel.x, y: panel.y, w: panel.w, h: panel.h }
     if (props && (((props.outerMarginMm ?? 0) >= 0.1) || ((props.innerMarginMm ?? 0) >= 0.1))) {
         const mi = props.innerMarginMm ?? 0

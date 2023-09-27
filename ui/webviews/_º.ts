@@ -202,11 +202,11 @@ export function collProps(it: ProjOrCollOrPage): CollProps {
 export function pageProps(it: ProjOrCollOrPage): PageProps {
     return props<PageProps>(it, 'pageProps')
 }
-export function panelProps(it: ProjOrCollOrPage, panelIdx?: number): PanelProps {
+export function panelProps(it: ProjOrCollOrPage, panelIdx?: number, panel?: Panel): PanelProps {
     const ret = props<PanelProps>(it, 'panelProps')
     const is_page = (it.panels !== undefined)
-    if (is_page && panelIdx !== undefined) {
-        const props = (it as Page).panels[panelIdx].panelProps
+    if (is_page && (panel || (panelIdx !== undefined))) {
+        const props = (panel ?? ((it as Page).panels[panelIdx!])).panelProps
         for (const k in props)
             if ((props as any)[k] !== undefined)
                 (ret as any)[k] = (props as any)[k]
