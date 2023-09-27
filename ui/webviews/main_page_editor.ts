@@ -58,10 +58,11 @@ function onUserModifiedPanel(): º.Page {
 }
 
 function onPanelSelection() {
+    console.log("ops", ˍ.page_canvas.selPanelIdx)
     refreshPanelControls()
 }
 
-function refreshPanelControls(edgeBarsOnly?: boolean) {
+function refreshPanelControls(skipToolbar?: boolean) {
     for (const textarea of ˍ.panel_textareas)
         textarea.remove()
     const page = º.pageFromPath(pagePath)!
@@ -70,13 +71,14 @@ function refreshPanelControls(edgeBarsOnly?: boolean) {
         const px_pos = mmToPx(panel.x, panel.y, true, page_size)
         const px_size = mmToPx(panel.w, panel.h, false, page_size)
         const pad = 11
+        const visible = (ˍ.page_canvas.selPanelIdx === undefined) || (ˍ.page_canvas.selPanelIdx === pIdx)
         const textarea = html.div({
-            'class': 'page-editor-textarea',
-            'style': `left: ${px_pos.x + pad}px; top: ${px_pos.y + pad}px; width: ${px_size.x - (2 * pad)}px; height: ${px_size.y - (2 * pad)}px;`,
+            'class': 'page-editor-textarea', 'style':
+                `visibility: ${visible ? 'visible' : 'hidden'}; left: ${px_pos.x + pad}px; top: ${px_pos.y + pad}px; width: ${px_size.x - (2 * pad)}px; height: ${px_size.y - (2 * pad)}px;`,
             'onclick': (evt: UIEvent) => {
                 const dom = ˍ.panel_textareas[pIdx].firstChild as HTMLElement
                 if (!dom.hasAttribute('contenteditable'))
-                    ˍ.page_canvas.select(pIdx)
+                    ˍ.page_canvas.select(pIdx, undefined)
             },
         }, html.div({
             'class': 'page-editor-textarea',
@@ -91,7 +93,7 @@ function refreshPanelControls(edgeBarsOnly?: boolean) {
     })
     van.add(ˍ.main, ...ˍ.panel_textareas)
 
-    if (!edgeBarsOnly)
+    if (!skipToolbar)
         ˍ.panel_toolbar.refresh()
     for (const panel_bar of [ˍ.panelbar_left, ˍ.panelbar_right, ˍ.panelbar_upper, ˍ.panelbar_lower])
         panel_bar.refresh() // do this before the below, so we'll have a non-0 clientWidth
@@ -151,12 +153,13 @@ function onMessage(evt: MessageEvent) {
 }
 
 function reRenderPageCanvas() {
-    const x = posX(), y = posY(), old_dom = ˍ.page_canvas.dom
+    const old_x = posX(), old_y = posY(), old_dom = ˍ.page_canvas.dom, old_mouse_pos = ˍ.page_canvas.mousePosMm
     createPageCanvas(ˍ.page_canvas.selPanelIdx)
+    ˍ.page_canvas.mousePosMm = old_mouse_pos
     old_dom!.replaceWith(ˍ.page_canvas.dom!)
     refreshPanelControls()
-    posX(x)
-    posY(y)
+    posX(old_x)
+    posY(old_y)
 }
 
 function createPageCanvas(panelIdx?: number) {
@@ -203,11 +206,11 @@ function createGui() {
             ˍ.top_toolbar_mpos_text = html.span({}, " ")),
     )
     createPageCanvas()
-    ˍ.panel_toolbar = ctl_paneltoolbar.create('page_editor_panel_toolbar', ˍ.page_canvas, (() => º.pageFromPath(pagePath)!), onUserModifiedPanel)
-    ˍ.panelbar_left = ctl_paneledgebar.create('page_editor_panel_edgebar_left', ˍ.page_canvas, º.DirLeft)
-    ˍ.panelbar_right = ctl_paneledgebar.create('page_editor_panel_edgebar_right', ˍ.page_canvas, º.DirRight)
-    ˍ.panelbar_upper = ctl_paneledgebar.create('page_editor_panel_edgebar_upper', ˍ.page_canvas, º.DirUp)
-    ˍ.panelbar_lower = ctl_paneledgebar.create('page_editor_panel_edgebar_lower', ˍ.page_canvas, º.DirDown)
+    ˍ.panel_toolbar = ctl_paneltoolbar.create('page_editor_shape_toolbar', ˍ.page_canvas, (() => º.pageFromPath(pagePath)!), onUserModifiedPanel)
+    ˍ.panelbar_left = ctl_paneledgebar.create('page_editor_shape_edgebar_left', ˍ.page_canvas, º.DirLeft)
+    ˍ.panelbar_right = ctl_paneledgebar.create('page_editor_shape_edgebar_right', ˍ.page_canvas, º.DirRight)
+    ˍ.panelbar_upper = ctl_paneledgebar.create('page_editor_shape_edgebar_upper', ˍ.page_canvas, º.DirUp)
+    ˍ.panelbar_lower = ctl_paneledgebar.create('page_editor_shape_edgebar_lower', ˍ.page_canvas, º.DirDown)
     document.onkeydown = (evt: KeyboardEvent) => {
         switch (evt.key) {
             case 'Escape':
@@ -241,12 +244,13 @@ function createGui() {
             if (evt.button === 1) {
                 evt.preventDefault()
                 ˍ.page_canvas.dom?.focus()
-                ˍ.page_canvas.select()
+                ˍ.page_canvas.select(undefined, undefined)
             }
         },
-        'onclick': (evt: MouseEvent) => {
-            if (evt.target, evt.currentTarget, evt.target === evt.currentTarget)
-                ˍ.page_canvas.select()
+        'onclick': (evt: MouseEvent) => { // ensure canvas shape deselection when clicking outside the page
+            const at_mouse_pos = ˍ.page_canvas.whatsAt()
+            if ((at_mouse_pos.balloonIdx === undefined) && (at_mouse_pos.panelIdx === undefined))
+                ˍ.page_canvas.select(undefined, undefined)
         },
         'onauxclick': (evt: PointerEvent) => {
             if (evt.button === 1) // mid-click
@@ -276,7 +280,7 @@ function createGui() {
                 posX(posX() + (evt.deltaX * -0.1))
             }
         },
-        'onmouseout': (evt: Event) => {
+        'onmouseleave': (evt: Event) => {
             ˍ.page_canvas.mousePosMm = undefined
             ˍ.top_toolbar_mpos_text.innerHTML = 'Some mouse-out info text here?'
         },
