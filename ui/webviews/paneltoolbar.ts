@@ -15,14 +15,13 @@ export type PanelToolbar = {
     onUserModifiedSizeOrPosViaInputs: () => any
 }
 
-export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, curPage: () => º.Page, onUserModified: () => void): PanelToolbar {
+export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, curPage: () => º.Page, onUserModified: (_: boolean) => void): PanelToolbar {
     const ˍ = {
         label_panel_idx: html.b({}, 'Panel #? / ?'),
         input_width: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
         input_height: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
         input_pos_x: html.input({ 'type': 'number', 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
         input_pos_y: html.input({ 'type': 'number', 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
-        input_round: html.input({ 'type': 'number', 'step': 0.01, 'min': 0, 'max': 1, 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
         label_delete_prompt: html.span({ 'style': 'display:none' }, 'Sure to ', html.a({ 'onclick': () => it.deleteShape() }, ' delete '), ' this one?'),
         btn_move_first: html.button({ 'class': 'btn', 'title': `Send to back`, 'style': utils.codiconCss('fold-down'), 'data-movehow': º.DirStart, 'disabled': true, }),
         btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to front`, 'style': utils.codiconCss('fold-up'), 'data-movehow': º.DirEnd, 'disabled': true, }),
@@ -41,8 +40,6 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
                 ˍ.label_panel_idx,
                 ' — X,Y=', ˍ.input_pos_x, ',', ˍ.input_pos_y, 'cm — W,H=', ˍ.input_width, ',', ˍ.input_height, 'cm'
             ),
-            html.div({ 'class': 'page-editor-top-toolbar-block' },
-                ˍ.input_round,),
             html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
                 ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev, ˍ.btn_move_first,
             ),
@@ -52,7 +49,7 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
             page!.panels = page!.panels.filter((_: º.Panel, idx: number) => (idx !== it.canvas.sel!.idx))
             it.canvas.select(undefined, true)
             it.refresh()
-            onUserModified()
+            onUserModified(false)
         },
         toggleDeletePrompt: (visible: boolean) => {
             ˍ.label_delete_prompt.style.display = visible ? 'inline-block' : 'none'
@@ -62,15 +59,12 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
             const page = curPage()
             if (it.canvas.sel) { // accounts for the move-to-front/send-to-back/etc `page.panels` array reorderings
                 const shape: º.Shape = (it.canvas.sel.isBalloon ? page.balloons : page.panels)[it.canvas.sel.idx]
-                const props: º.ShapeProps = it.canvas.sel.isBalloon ? ((shape as º.Balloon).balloonProps) : ((shape as º.Panel).panelProps)
                 shape.w = ~~((parseFloat(ˍ.input_width.value) * 10))
                 shape.h = ~~((parseFloat(ˍ.input_height.value) * 10))
                 shape.x = ~~((parseFloat(ˍ.input_pos_x.value) * 10))
                 shape.y = ~~((parseFloat(ˍ.input_pos_y.value) * 10))
-                if (isNaN(props.roundness = parseFloat(ˍ.input_round.value)))
-                    props.roundness = undefined
             }
-            onUserModified()
+            onUserModified(true)
         },
         refresh: () => {
             it.toggleDeletePrompt(false)
@@ -84,7 +78,6 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
             const props: º.ShapeProps = it.canvas.sel.isBalloon ? ((shape as º.Balloon).balloonProps) : ((shape as º.Panel).panelProps)
 
             ˍ.label_panel_idx.textContent = `(${it.canvas.sel.isBalloon ? 'Balloon' : 'Panel'} #${1 + it.canvas.sel.idx} / ${shapes.length})`
-            ˍ.input_round.value = (props.roundness ?? 0).toFixed(2)
             for (const inputs of [{ 'x': ˍ.input_pos_x, 'y': ˍ.input_pos_y, 'w': ˍ.input_width, 'h': ˍ.input_height } as { [_: string]: HTMLInputElement }])
                 for (const prop_name in inputs) {
                     const input = inputs[prop_name] as HTMLInputElement

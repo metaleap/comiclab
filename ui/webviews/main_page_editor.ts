@@ -37,24 +37,19 @@ export function onInit(editorReuseKeyDerivedPagePath: string, vscode: { postMess
     window.addEventListener('message', onMessage)
 }
 
-function onUserModifiedPage(userModifiedPage: º.Page, reRender?: boolean): º.Page {
-    º.pageUpdate(pagePath, userModifiedPage)
-    utils.vs.postMessage({ ident: 'onPageModified', payload: userModifiedPage })
-    if (!reRender)
-        refreshShapeWidgets()
+function onUserModifiedPage(userModifiedPage?: º.Page, reRender?: boolean, preserveShapeToolbar?: boolean): º.Page {
+    if (userModifiedPage)
+        º.pageUpdate(pagePath, userModifiedPage)
     else
-        reRenderPageCanvas()
-    if (ˍ.page_canvas.sel)
+        userModifiedPage = º.pageFromPath(pagePath)!
+    if (reRender)
+        reRenderPageCanvas(preserveShapeToolbar)
+    else
+        refreshShapeWidgets(preserveShapeToolbar)
+    if (ˍ.page_canvas.sel && !preserveShapeToolbar)
         document.getElementById((ˍ.page_canvas.sel.isBalloon ? 'balloon_' : 'panel_') + ˍ.page_canvas.sel.idx)?.focus()
+    utils.vs.postMessage({ ident: 'onPageModified', payload: userModifiedPage })
     return userModifiedPage
-}
-function onUserModifiedPanel(): º.Page {
-    const page = º.pageFromPath(pagePath)!
-    º.pageUpdate(pagePath, page)
-    reRenderPageCanvas()
-    refreshShapeWidgets(true)
-    utils.vs.postMessage({ ident: 'onPageModified', payload: page })
-    return page
 }
 
 function onShapeSelection() {
@@ -83,9 +78,11 @@ function refreshShapeWidgets(skipToolbar?: boolean) {
             'class': 'page-editor-textarea',
             'onblur': (evt: Event) => {
                 const dom = evt.target as HTMLElement
-                panel.text = dom.innerText
                 dom.removeAttribute('contenteditable')
-                onUserModifiedPanel()
+                if (panel.text != dom.innerText) {
+                    panel.text = dom.innerText
+                    onUserModifiedPage(undefined, true)
+                }
             },
         }, panel.text ?? ''))
         return textarea
@@ -152,12 +149,12 @@ function onMessage(evt: MessageEvent) {
     }
 }
 
-function reRenderPageCanvas() {
+function reRenderPageCanvas(preserveShapeToolbar?: boolean) {
     const old_x = posX(), old_y = posY(), old_dom = ˍ.page_canvas.dom, old_mouse_pos = ˍ.page_canvas.mousePosMm
     createPageCanvas(ˍ.page_canvas.sel)
     ˍ.page_canvas.mousePosMm = old_mouse_pos
     old_dom!.replaceWith(ˍ.page_canvas.dom!)
-    refreshShapeWidgets()
+    refreshShapeWidgets(preserveShapeToolbar)
     posX(old_x)
     posY(old_y)
 }
@@ -206,7 +203,10 @@ function createGui() {
             ˍ.top_toolbar_mpos_text = html.span({}, " ")),
     )
     createPageCanvas()
-    ˍ.shape_toolbar = ctl_paneltoolbar.create('page_editor_shape_toolbar', ˍ.page_canvas, (() => º.pageFromPath(pagePath)!), onUserModifiedPanel)
+    ˍ.shape_toolbar = ctl_paneltoolbar.create('page_editor_shape_toolbar', ˍ.page_canvas, (() => º.pageFromPath(pagePath)!),
+        (preserveShapeToolbar: boolean) => {
+            onUserModifiedPage(undefined, true, preserveShapeToolbar)
+        })
     ˍ.shapebar_left = ctl_paneledgebar.create('page_editor_shape_edgebar_left', ˍ.page_canvas, º.DirLeft)
     ˍ.shapebar_right = ctl_paneledgebar.create('page_editor_shape_edgebar_right', ˍ.page_canvas, º.DirRight)
     ˍ.shapebar_upper = ctl_paneledgebar.create('page_editor_shape_edgebar_upper', ˍ.page_canvas, º.DirUp)
@@ -262,14 +262,14 @@ function createGui() {
                     () => { ˍ.props_dialog = undefined },
                     (userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps, userModifiedBalloonProps?: º.BalloonProps, sel?: º.ShapeRef) => {
                         const page = º.pageFromPath(pagePath)!
-                        if (userModifiedPageProps || userModifiedPanelProps) {
+                        if (userModifiedPageProps || userModifiedPanelProps || userModifiedBalloonProps) {
                             if (userModifiedPageProps)
                                 page.pageProps = userModifiedPageProps
                             if (userModifiedPanelProps)
                                 ((sel && !sel.isBalloon) ? page.panels[sel.idx] : page).panelProps = userModifiedPanelProps
                             if (userModifiedBalloonProps)
                                 ((sel?.isBalloon) ? page.balloons[sel.idx] : page).balloonProps = userModifiedBalloonProps
-                            onUserModifiedPanel()
+                            onUserModifiedPage(undefined, true)
                         }
                     })
         },
