@@ -2,8 +2,8 @@ import van from './vanjs/van-1.2.1.debug.js'
 import * as º from './_º.js'
 import * as utils from './utils.js'
 import * as ctl_pagecanvas from './pagecanvas.js'
-import * as ctl_paneltoolbar from './paneltoolbar.js'
-import * as ctl_paneledgebar from './paneledgebar.js'
+import * as ctl_shapetoolbar from './shapetoolbar.js'
+import * as ctl_shapeedgebar from './shapeedgebar.js'
 import * as dialog_props from './dialog_props.js'
 
 
@@ -17,15 +17,15 @@ let pagePath: string = ''
 let ˍ: {
     main: HTMLDivElement,
     page_canvas: ctl_pagecanvas.PageCanvas,
-    top_toolbar: HTMLDivElement, top_toolbar_dbg_text: HTMLSpanElement, top_toolbar_mpos_text: HTMLSpanElement,
+    top_toolbar: HTMLDivElement, top_toolbar_mpos_text: HTMLSpanElement,
     top_toolbar_zoom_text: HTMLSpanElement,
     top_toolbar_zoom_input: HTMLInputElement,
     top_toolbar_menu_addpanelgrid: HTMLSelectElement,
-    shape_toolbar: ctl_paneltoolbar.PanelToolbar,
-    shapebar_left: ctl_paneledgebar.PanelEdgeBar,
-    shapebar_right: ctl_paneledgebar.PanelEdgeBar,
-    shapebar_upper: ctl_paneledgebar.PanelEdgeBar,
-    shapebar_lower: ctl_paneledgebar.PanelEdgeBar,
+    shape_toolbar: ctl_shapetoolbar.ShapeToolbar,
+    shapebar_left: ctl_shapeedgebar.ShapeEdgeBar,
+    shapebar_right: ctl_shapeedgebar.ShapeEdgeBar,
+    shapebar_upper: ctl_shapeedgebar.ShapeEdgeBar,
+    shapebar_lower: ctl_shapeedgebar.ShapeEdgeBar,
     panel_textareas: HTMLDivElement[],
     props_dialog?: dialog_props.PropsDialog,
 } = { panel_textareas: [] } as any
@@ -65,7 +65,7 @@ function refreshShapeWidgets(skipToolbar?: boolean) {
         const px_pos = mmToPx(panel.x, panel.y, true, page_size)
         const px_size = mmToPx(panel.w, panel.h, false, page_size)
         const pad = 11
-        const visible = (!ˍ.page_canvas.sel) || ˍ.page_canvas.sel.isBalloon || (ˍ.page_canvas.sel.idx === pIdx)
+        const visible = (!ˍ.page_canvas.sel) || ((!ˍ.page_canvas.sel.isBalloon) && (ˍ.page_canvas.sel.idx === pIdx))
         const textarea = html.div({
             'class': 'page-editor-textarea', 'style':
                 `visibility: ${visible ? 'visible' : 'hidden'}; left: ${px_pos.x + pad}px; top: ${px_pos.y + pad}px; width: ${px_size.x - (2 * pad)}px; height: ${px_size.y - (2 * pad)}px;`,
@@ -199,20 +199,18 @@ function createGui() {
         html.div({ 'class': 'page-editor-top-toolbar-block', },
             ˍ.top_toolbar_menu_addpanelgrid,
         ),
-        html.div({ 'id': 'page_editor_top_toolbar_dbg', 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
-            ˍ.top_toolbar_dbg_text = html.span({}, "...")),
         html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
             ˍ.top_toolbar_mpos_text = html.span({}, " ")),
     )
     createPageCanvas()
-    ˍ.shape_toolbar = ctl_paneltoolbar.create('page_editor_shape_toolbar', ˍ.page_canvas, (() => º.pageFromPath(pagePath)!),
+    ˍ.shape_toolbar = ctl_shapetoolbar.create('page_editor_shape_toolbar', ˍ.page_canvas, (() => º.pageFromPath(pagePath)!),
         (preserveShapeToolbar: boolean) => {
             onUserModifiedPage(undefined, true, preserveShapeToolbar)
         })
-    ˍ.shapebar_left = ctl_paneledgebar.create('page_editor_shape_edgebar_left', ˍ.page_canvas, º.DirLeft)
-    ˍ.shapebar_right = ctl_paneledgebar.create('page_editor_shape_edgebar_right', ˍ.page_canvas, º.DirRight)
-    ˍ.shapebar_upper = ctl_paneledgebar.create('page_editor_shape_edgebar_upper', ˍ.page_canvas, º.DirUp)
-    ˍ.shapebar_lower = ctl_paneledgebar.create('page_editor_shape_edgebar_lower', ˍ.page_canvas, º.DirDown)
+    ˍ.shapebar_left = ctl_shapeedgebar.create('page_editor_shape_edgebar_left', ˍ.page_canvas, º.DirLeft)
+    ˍ.shapebar_right = ctl_shapeedgebar.create('page_editor_shape_edgebar_right', ˍ.page_canvas, º.DirRight)
+    ˍ.shapebar_upper = ctl_shapeedgebar.create('page_editor_shape_edgebar_upper', ˍ.page_canvas, º.DirUp)
+    ˍ.shapebar_lower = ctl_shapeedgebar.create('page_editor_shape_edgebar_lower', ˍ.page_canvas, º.DirDown)
     document.onkeydown = (evt: KeyboardEvent) => {
         switch (evt.key) {
             case 'Escape':

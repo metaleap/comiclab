@@ -235,10 +235,6 @@ body>div.page-editor-top-toolbar>div.page-editor-top-toolbar-block-right {
     float: right;
 }
 
-body>#page_editor_top_toolbar>#page_editor_top_toolbar_dbg {
-    background-color: #d0d0d0;
-}
-
 body>div#page_editor_shape_toolbar {
     padding-top: 2.55em;
     background-color: var(--vscode-sideBar-background);

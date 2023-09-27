@@ -70,7 +70,7 @@ export function create(domId: string, page: º.Page, onShapeSelection: () => voi
             const shape = shapes[it.sel!.idx]
             const edge_lr = (edge === º.DirLeft) || (edge === º.DirRight)
             let newx = shape.x, newy = shape.y, neww = shape.w, newh = shape.h
-            shapes = shapes.filter((pnl, pIdx) => (pIdx !== it.sel!.idx) && ((edge_lr ? º.shapesOverlapV : º.shapesOverlapH)(pnl, shape)))
+            shapes = ((it.sel!.isBalloon ? page.panels : page.balloons) as º.Shape[]).concat(shapes.filter((sh, shIdx) => (shIdx !== it.sel!.idx) && ((edge_lr ? º.shapesOverlapV : º.shapesOverlapH)(sh, shape))))
             if (edge_lr) {
                 const others = shapes.map((_) => _.x + _.w).concat(shapes.map((_) => _.x))
                 if (edge === º.DirLeft) {

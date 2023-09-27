@@ -5,7 +5,7 @@ import * as ctl_pagecanvas from './pagecanvas.js'
 
 const html = van.tags
 
-export type PanelToolbar = {
+export type ShapeToolbar = {
     canvas: ctl_pagecanvas.PageCanvas,
     dom: HTMLElement,
     curPage: () => º.Page
@@ -15,30 +15,30 @@ export type PanelToolbar = {
     onUserModifiedSizeOrPosViaInputs: () => any
 }
 
-export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, curPage: () => º.Page, onUserModified: (_: boolean) => void): PanelToolbar {
+export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, curPage: () => º.Page, onUserModified: (_: boolean) => void): ShapeToolbar {
     const ˍ = {
-        label_panel_idx: html.b({}, 'Panel #? / ?'),
+        label_shape_idx: html.b({}, 'Shape #? / ?'),
         input_width: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
         input_height: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
         input_pos_x: html.input({ 'type': 'number', 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
         input_pos_y: html.input({ 'type': 'number', 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
-        label_delete_prompt: html.span({ 'style': 'display:none' }, 'Sure to ', html.a({ 'onclick': () => it.deleteShape() }, ' delete '), ' this one?'),
+        label_delete_prompt: html.span({ 'style': 'display:none' }, 'Sure to ', html.a({ 'onclick': () => it.deleteShape() }, ' delete '), ' this shape?'),
         btn_move_first: html.button({ 'class': 'btn', 'title': `Send to back`, 'style': utils.codiconCss('fold-down'), 'data-movehow': º.DirStart, 'disabled': true, }),
         btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to front`, 'style': utils.codiconCss('fold-up'), 'data-movehow': º.DirEnd, 'disabled': true, }),
         btn_move_next: html.button({ 'class': 'btn', 'title': `Bring forward`, 'style': utils.codiconCss('chevron-up'), 'data-movehow': º.DirNext, 'disabled': true, }),
         btn_move_prev: html.button({ 'class': 'btn', 'title': `Send backward`, 'style': utils.codiconCss('chevron-down'), 'data-movehow': º.DirPrev, 'disabled': true, }),
     }
-    const it: PanelToolbar = {
+    const it: ShapeToolbar = {
         curPage: curPage,
         canvas: pageCanvas,
         dom: html.div({ 'id': domId, 'class': 'page-editor-top-toolbar', 'style': 'display:none' },
             html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
-                html.button({ 'class': 'btn', 'title': `Delete selected panel/balloon`, 'style': utils.codiconCss('trash'), 'onclick': () => it.toggleDeletePrompt(true) }),
+                html.button({ 'class': 'btn', 'title': `Delete selected shape`, 'style': utils.codiconCss('trash'), 'onclick': () => it.toggleDeletePrompt(true) }),
                 ˍ.label_delete_prompt,
             ),
             html.div({ 'class': 'page-editor-top-toolbar-block' },
-                ˍ.label_panel_idx,
-                ' — X,Y=', ˍ.input_pos_x, ',', ˍ.input_pos_y, 'cm — W,H=', ˍ.input_width, ',', ˍ.input_height, 'cm'
+                ˍ.label_shape_idx,
+                ' ', html.span(' — X,Y='), ˍ.input_pos_x, html.span(','), ˍ.input_pos_y, html.span('cm — W,H='), ˍ.input_width, html.span(','), ˍ.input_height, html.span('cm')
             ),
             html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
                 ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev, ˍ.btn_move_first,
@@ -46,7 +46,10 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
         ),
         deleteShape: () => {
             const page = curPage()
-            page!.panels = page!.panels.filter((_: º.Panel, idx: number) => (idx !== it.canvas.sel!.idx))
+            if (it.canvas.sel!.isBalloon)
+                page!.balloons = page!.balloons.filter((_: º.Balloon, idx: number) => (idx !== it.canvas.sel!.idx))
+            else
+                page!.panels = page!.panels.filter((_: º.Panel, idx: number) => (idx !== it.canvas.sel!.idx))
             it.canvas.select(undefined, true)
             it.refresh()
             onUserModified(false)
@@ -57,7 +60,7 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
         onUserModifiedSizeOrPosViaInputs: () => {
             it.toggleDeletePrompt(false)
             const page = curPage()
-            if (it.canvas.sel) { // accounts for the move-to-front/send-to-back/etc `page.panels` array reorderings
+            if (it.canvas.sel) { // not so right after move-to-front/send-to-back/etc actions
                 const shape: º.Shape = (it.canvas.sel.isBalloon ? page.balloons : page.panels)[it.canvas.sel.idx]
                 shape.w = ~~((parseFloat(ˍ.input_width.value) * 10))
                 shape.h = ~~((parseFloat(ˍ.input_height.value) * 10))
@@ -75,9 +78,8 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
             const page = curPage()
             const shapes: º.Shape[] = it.canvas.sel.isBalloon ? page.balloons : page.panels
             const shape: º.Shape = shapes[it.canvas.sel.idx]
-            const props: º.ShapeProps = it.canvas.sel.isBalloon ? ((shape as º.Balloon).balloonProps) : ((shape as º.Panel).panelProps)
 
-            ˍ.label_panel_idx.textContent = `(${it.canvas.sel.isBalloon ? 'Balloon' : 'Panel'} #${1 + it.canvas.sel.idx} / ${shapes.length})`
+            ˍ.label_shape_idx.textContent = `${it.canvas.sel.isBalloon ? 'Balloon' : 'Panel'} #${1 + it.canvas.sel.idx} / ${shapes.length} `
             for (const inputs of [{ 'x': ˍ.input_pos_x, 'y': ˍ.input_pos_y, 'w': ˍ.input_width, 'h': ˍ.input_height } as { [_: string]: HTMLInputElement }])
                 for (const prop_name in inputs) {
                     const input = inputs[prop_name] as HTMLInputElement
