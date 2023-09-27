@@ -248,7 +248,7 @@ body>div#page_editor_shape_toolbar>div.page-editor-top-toolbar-block>* {
     background-color: var(--vscode-sideBar-background);
 }
 
-body>div#page_editor_shape_toolbar>div.page-editor-top-toolbar-block>input {
+body>div#page_editor_shape_toolbar>div.page-editor-top-toolbar-block input {
     text-align: right;
     width: 3.22em;
     margin: 0;

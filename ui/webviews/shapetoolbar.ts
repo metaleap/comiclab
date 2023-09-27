@@ -22,12 +22,15 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
         input_height: html.input({ 'type': 'number', 'min': 1, 'max': 100, 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
         input_pos_x: html.input({ 'type': 'number', 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
         input_pos_y: html.input({ 'type': 'number', 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
+        input_tail_x: html.input({ 'type': 'number', 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
+        input_tail_y: html.input({ 'type': 'number', 'step': '0.1', 'onchange': () => it.onUserModifiedSizeOrPosViaInputs() }),
         label_delete_prompt: html.span({ 'style': 'display:none' }, 'Sure to ', html.a({ 'onclick': () => it.deleteShape() }, ' delete '), ' this shape?'),
         btn_move_first: html.button({ 'class': 'btn', 'title': `Send to back`, 'style': utils.codiconCss('fold-down'), 'data-movehow': º.DirStart, 'disabled': true, }),
         btn_move_last: html.button({ 'class': 'btn', 'title': `Bring to front`, 'style': utils.codiconCss('fold-up'), 'data-movehow': º.DirEnd, 'disabled': true, }),
         btn_move_next: html.button({ 'class': 'btn', 'title': `Bring forward`, 'style': utils.codiconCss('chevron-up'), 'data-movehow': º.DirNext, 'disabled': true, }),
         btn_move_prev: html.button({ 'class': 'btn', 'title': `Send backward`, 'style': utils.codiconCss('chevron-down'), 'data-movehow': º.DirPrev, 'disabled': true, }),
     }
+    let label_inputs_tail: HTMLElement
     const it: ShapeToolbar = {
         curPage: curPage,
         canvas: pageCanvas,
@@ -38,7 +41,8 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
             ),
             html.div({ 'class': 'page-editor-top-toolbar-block' },
                 ˍ.label_shape_idx,
-                ' ', html.span(' — X,Y='), ˍ.input_pos_x, html.span(','), ˍ.input_pos_y, html.span('cm — W,H='), ˍ.input_width, html.span(','), ˍ.input_height, html.span('cm')
+                ' ', html.span(' — X,Y='), ˍ.input_pos_x, html.span(','), ˍ.input_pos_y, html.span('cm — W,H='), ˍ.input_width, html.span(','), ˍ.input_height, html.span('cm'),
+                label_inputs_tail = html.span({ 'style': 'display:none' }, ' ', html.span(' — tail X,Y='), ˍ.input_tail_x, html.span(','), ˍ.input_tail_y, html.span('cm')),
             ),
             html.div({ 'class': 'page-editor-top-toolbar-block page-editor-top-toolbar-block-right' },
                 ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev, ˍ.btn_move_first,
@@ -66,6 +70,10 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
                 shape.h = ~~((parseFloat(ˍ.input_height.value) * 10))
                 shape.x = ~~((parseFloat(ˍ.input_pos_x.value) * 10))
                 shape.y = ~~((parseFloat(ˍ.input_pos_y.value) * 10))
+                if (it.canvas.sel.isBalloon) {
+                    (shape as º.Balloon).tailPoint = ((ˍ.input_tail_x.value === '') && (ˍ.input_tail_y.value === '')) ? undefined
+                        : { x: ~~((parseFloat(ˍ.input_tail_x.value) * 10)), y: ~~((parseFloat(ˍ.input_tail_y.value) * 10)) }
+                }
             }
             onUserModified(true)
         },
@@ -81,10 +89,13 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
 
             ˍ.label_shape_idx.textContent = `${it.canvas.sel.isBalloon ? 'Balloon' : 'Panel'} #${1 + it.canvas.sel.idx} / ${shapes.length} `
             for (const inputs of [{ 'x': ˍ.input_pos_x, 'y': ˍ.input_pos_y, 'w': ˍ.input_width, 'h': ˍ.input_height } as { [_: string]: HTMLInputElement }])
-                for (const prop_name in inputs) {
-                    const input = inputs[prop_name] as HTMLInputElement
-                    input.value = (shape[prop_name as 'x' | 'y' | 'w' | 'h'] * 0.1).toFixed(1).padStart(4, '0')
-                }
+                for (const prop_name in inputs)
+                    (inputs[prop_name] as HTMLInputElement).value = (shape[prop_name as 'x' | 'y' | 'w' | 'h'] * 0.1).toFixed(1).padStart(4, '0')
+            label_inputs_tail.style.display = it.canvas.sel.isBalloon ? 'inline' : 'none'
+            if (it.canvas.sel.isBalloon) {
+                ˍ.input_tail_x.value = ((shape as º.Balloon).tailPoint?.x.toFixed(1) ?? '')
+                ˍ.input_tail_y.value = ((shape as º.Balloon).tailPoint?.y.toFixed(1) ?? '')
+            }
             for (const btn of [ˍ.btn_move_first, ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev]) {
                 const dir: º.Direction = parseInt(btn.getAttribute('data-movehow') ?? '')
                 btn.disabled = !it.canvas.shapeRestack(dir, true)
