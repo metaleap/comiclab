@@ -7,12 +7,13 @@ const svg = van.tagsNS("http://www.w3.org/2000/svg")
 export type PageCanvas = {
     dom?: HTMLElement & SVGElement
     selPanelIdx?: number
+    selBalloonIdx?: number
     mousePosMm?: { x: number, y: number }
     notifyModified: (page: º.Page, pIdx?: number, reRender?: boolean) => void
     addNewPanel: () => void
     addNewPanelGrid: (numRows: number, numCols: number) => void
     select: (panelIdx: number | undefined, balloonIdx: number | undefined, dontRaiseEvent?: boolean) => void
-    panelReorder: (direction: º.Direction, dontDoIt?: boolean) => boolean
+    shapeRestack: (direction: º.Direction, dontDoIt?: boolean) => boolean
     panelSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean) => boolean
     whatsAt(pos?: { x: number, y: number }): { panelIdx?: number, balloonIdx?: number }
 }
@@ -25,8 +26,6 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
         selPanelIdx: selPanelIdx,
         select: (panelIdx: number | undefined, balloonIdx: number | undefined, dontRaiseEvent?: boolean) => {
             // even if no change in selPanelIdx, do not return early since we do want the below focus() call
-            if (it.selPanelIdx !== undefined && panelIdx === undefined)
-                throw it.selPanelIdx
             if (it.selPanelIdx !== undefined)
                 document.getElementById('panel_' + it.selPanelIdx)?.classList.remove('panel-selected', 'shape-selected')
             it.selPanelIdx = panelIdx
@@ -53,8 +52,8 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                     page.panels.push({ panelProps: {}, w: ~~wcols, h: ~~hrows, x: ~~(c * wcols), y: ~~(r * hrows) })
             it.notifyModified(page, undefined, true)
         },
-        panelReorder: (direction: º.Direction, dontDoIt?: boolean) => {
-            if (º.pageMovePanel(page, it.selPanelIdx!, direction, dontDoIt)) {
+        shapeRestack: (direction: º.Direction, dontDoIt?: boolean) => {
+            if (º.pageReorder(page, it.selPanelIdx!, undefined, direction, dontDoIt)) {
                 if (!dontDoIt)
                     it.notifyModified(page, undefined, true)
                 return true
@@ -65,7 +64,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
             const panel = page.panels[it.selPanelIdx!]
             const edge_lr = (edge === º.DirLeft) || (edge === º.DirRight)
             let newx = panel.x, newy = panel.y, neww = panel.w, newh = panel.h
-            const panels = page.panels.filter((pnl, pIdx) => (pIdx !== it.selPanelIdx) && ((edge_lr ? º.panelsOverlapV : º.panelsOverlapH)(pnl, panel)))
+            const panels = page.panels.filter((pnl, pIdx) => (pIdx !== it.selPanelIdx) && ((edge_lr ? º.shapesOverlapV : º.shapesOverlapH)(pnl, panel)))
             if (edge_lr) {
                 const others = panels.map((_) => _.x + _.w).concat(panels.map((_) => _.x))
                 if (edge === º.DirLeft) {

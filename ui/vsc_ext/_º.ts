@@ -257,19 +257,23 @@ export const DirRight = DirNext
 export const DirUp = DirStart
 export const DirDown = DirEnd
 
-export function pageMovePanel(page: Page, panelIdx: number, direction: Direction, dontDoIt?: boolean): boolean {
-    const idx_new = arrayCanMove(page.panels, panelIdx, direction)
+export function pageReorder(page: Page, panelIdx: number | undefined, balloonIdx: number | undefined, direction: Direction, dontDoIt?: boolean): boolean {
+    const idx_new = arrayCanMove(((panelIdx === undefined) ? page.balloons : page.panels) as Shape[], panelIdx ?? balloonIdx!, direction)
     const can_move = (idx_new !== undefined)
-    if (can_move && !dontDoIt)
-        page.panels = arrayMoveItem(page.panels, panelIdx, idx_new)
+    if (can_move && !dontDoIt) {
+        if (panelIdx === undefined)
+            page.balloons = arrayMoveItem(page.balloons, balloonIdx!, idx_new)
+        else
+            page.panels = arrayMoveItem(page.panels, panelIdx, idx_new)
+    }
     return can_move
 }
 
-export function panelsOverlapV(cur: Panel, other: Panel): boolean {
+export function shapesOverlapV(cur: Shape, other: Shape): boolean {
     return ((cur.y + cur.h) > other.y) && (cur.y < (other.y + other.h))
 }
 
-export function panelsOverlapH(cur: Panel, other: Panel): boolean {
+export function shapesOverlapH(cur: Shape, other: Shape): boolean {
     return (other.x < (cur.x + cur.w) && (other.x + other.w) > cur.x)
 }
 

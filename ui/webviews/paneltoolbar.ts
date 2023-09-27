@@ -89,9 +89,9 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
                 }
             for (const btn of [ˍ.btn_move_first, ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev]) {
                 const dir: º.Direction = parseInt(btn.getAttribute('data-movehow') ?? '')
-                btn.disabled = !it.canvas.panelReorder(dir, true)
+                btn.disabled = !it.canvas.shapeRestack(dir, true)
                 btn.onclick = () =>
-                    it.canvas.panelReorder(dir)
+                    it.canvas.shapeRestack(dir)
             }
 
             it.dom.style.display = 'block'

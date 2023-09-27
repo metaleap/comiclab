@@ -58,7 +58,6 @@ function onUserModifiedPanel(): º.Page {
 }
 
 function onPanelSelection() {
-    console.log("ops", ˍ.page_canvas.selPanelIdx)
     refreshPanelControls()
 }
 
