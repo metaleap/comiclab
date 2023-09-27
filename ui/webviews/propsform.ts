@@ -92,13 +92,15 @@ export function create(domId: string, collPath: string, pagePath: string, sel: ย
     // create balloonPropsForm (maybe)
     const balloonBorderWidthPlaceholder = van.state('')
     const balloonRoundnessPlaceholder = van.state('')
+    const balloonTailSizePlaceholder = van.state('')
     if (!for_panel) {
         const balloonBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Border width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: balloonBorderWidthPlaceholder }
         const balloonRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: balloonRoundnessPlaceholder }
-        balloonPropsForm = ctl_inputform.create(domId + '_balloonprops_form', [balloonBorderWidthField, balloonRoundnessField], undefined,
+        const balloonTailSizeField: ctl_inputform.Field = { id: 'tailSizeMm', title: 'Tail size (mm)', validators: [], num: { int: false, min: 0, max: 123, step: 0.1 }, placeholder: balloonTailSizePlaceholder }
+        balloonPropsForm = ctl_inputform.create(domId + '_balloonprops_form', [balloonBorderWidthField, balloonRoundnessField, balloonTailSizeField], undefined,
             (userModifiedRec: ctl_inputform.Rec) => {
                 const balloonProps: ยบ.BalloonProps = {}
-                for (const num_prop_name of ['borderWidthMm', 'roundness']) {
+                for (const num_prop_name of ['borderWidthMm', 'roundness', 'tailSizeMm']) {
                     const v = parseFloat(userModifiedRec[num_prop_name])
                     if ((v !== undefined) && !isNaN(v))
                         (balloonProps as any)[num_prop_name] = v
@@ -159,6 +161,9 @@ export function create(domId: string, collPath: string, pagePath: string, sel: ย
                     },
                     {
                         fill: (_) => { balloonRoundnessPlaceholder.val = _ }, from: (_) => (_.balloonProps?.roundness?.toFixed(2) ?? ''),
+                    },
+                    {
+                        fill: (_) => { balloonTailSizePlaceholder.val = _ }, from: (_) => (_.balloonProps?.tailSizeMm?.toFixed(2) ?? ''),
                     },
                     {
                         fill: (_) => { collAuthorFieldPlaceholder.val = _ }, from: (_) => (_.collProps?.authorId ?? ''),
@@ -226,5 +231,6 @@ function curBalloonPropsRec(coll?: ยบ.Collection, page?: ยบ.Page, balloonIdx?: n
     return {
         'borderWidthMm': props.borderWidthMm?.toFixed(1) ?? '',
         'roundness': props.roundness?.toFixed(2) ?? '',
+        'tailSizeMm': props.tailSizeMm?.toFixed(1) ?? '',
     }
 }

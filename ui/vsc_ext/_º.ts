@@ -67,6 +67,7 @@ export type Panel = Shape & {
 }
 
 export type Balloon = Shape & {
+    tailPoint?: Pos
     balloonProps: BalloonProps
 }
 
@@ -106,6 +107,7 @@ export type PanelProps = ShapeProps & {
 }
 
 export type BalloonProps = ShapeProps & {
+    tailSizeMm?: number
 }
 
 export function walkCollections<T>(perColl: (_: Collection[]) => any, parents?: Collection[]) {

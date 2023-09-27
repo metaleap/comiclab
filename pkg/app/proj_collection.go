@@ -19,11 +19,19 @@ type Page struct {
 	PanelProps   PanelProps   `json:"panelProps"`
 }
 
-type Shape struct {
-	X int `json:"x"`
-	Y int `json:"y"`
+type Size struct {
 	W int `json:"w"`
 	H int `json:"h"`
+}
+
+type Pos struct {
+	X int `json:"x"`
+	Y int `json:"y"`
+}
+
+type Shape struct {
+	Size
+	Pos
 }
 
 type Panel struct {
@@ -34,6 +42,7 @@ type Panel struct {
 
 type Balloon struct {
 	Shape
+	TailPoint    *Pos         `json:"tailPoint,omitempty"`
 	BalloonProps BalloonProps `json:"balloonProps"`
 }
 
@@ -59,4 +68,5 @@ type PanelProps struct {
 
 type BalloonProps struct {
 	ShapeProps
+	TailSizeMm *float64 `json:"tailSizeMm,omitempty"`
 }
