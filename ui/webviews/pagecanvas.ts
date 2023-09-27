@@ -72,7 +72,7 @@ export function create(domId: string, page: º.Page, onShapeSelection: () => voi
             let newx = shape.x, newy = shape.y, neww = shape.w, newh = shape.h
             shapes = ((it.sel!.isBalloon ? page.panels : page.balloons) as º.Shape[]).concat(shapes.filter((sh, shIdx) => (shIdx !== it.sel!.idx) && ((edge_lr ? º.shapesOverlapV : º.shapesOverlapH)(sh, shape))))
             if (edge_lr) {
-                const others = shapes.map((_) => _.x + _.w).concat(shapes.map((_) => _.x))
+                const others = shapes.map((_) => { return _.x + _.w }).concat(shapes.map((_) => { return _.x }))
                 if (edge === º.DirLeft) {
                     if (snapDir === º.DirLeft)
                         newx = findSnap(shape.x, 0, true, others)
@@ -126,9 +126,9 @@ export function create(domId: string, page: º.Page, onShapeSelection: () => voi
 
     const shape_rects: Element[] = []
     for (let idx = 0; idx < page.panels.length; idx++)
-        shape_rects.push(renderShape(it, page, page_size_mm, page.panels[idx], idx, false))
+        shape_rects.push(renderShape(it, page, idx, false))
     for (let idx = 0; idx < page.balloons.length; idx++)
-        shape_rects.push(renderShape(it, page, page_size_mm, page.balloons[idx], idx, true))
+        shape_rects.push(renderShape(it, page, idx, true))
 
     const dom_style = { 'width': `${page_size_mm.w}mm`, 'height': `${page_size_mm.h}mm`, 'background-color': '#fff' }
     it.dom = svg.svg({
@@ -149,35 +149,14 @@ function findSnap(pos: number, initial: number, prev: boolean, maybes: number[])
     return initial
 }
 
-function renderShape(it: PageCanvas, page: º.Page, pageSizeMm: º.Size, shape: º.Panel | º.Balloon, idx: number, isBalloon: boolean): Element {
-    let shx = shape.x, shy = shape.y, shw = shape.w, shh = shape.h
-    const props: º.ShapeProps = (isBalloon ? º.balloonProps : º.panelProps)(page, idx)
-
-    const pprops = isBalloon ? undefined : props as º.PanelProps
-    if (pprops && (((pprops.outerMarginMm ?? 0) >= 0.1) || ((pprops.innerMarginMm ?? 0) >= 0.1))) {
-        const mi = pprops.innerMarginMm ?? 0
-        const e_top = º.fEq(shy, 0), e_left = º.fEq(shx, 0), e_right = º.fEq((shx + shw), pageSizeMm.w), e_bottom = º.fEq((shy + shh), pageSizeMm.h)
-        shx += (e_left ? 0 : mi)
-        shy += (e_top ? 0 : mi)
-        const px2 = (shape.x + shw) - (e_right ? 0 : mi), py2 = (shape.y + shh) - (e_bottom ? 0 : mi)
-        shw = px2 - shx
-        shh = py2 - shy
-        if (pprops.outerMarginMm !== undefined) {
-            const mo = pprops.outerMarginMm!
-            if (e_left)
-                [shx, shw] = [shx + mo, shw - mo]
-            if (e_top)
-                [shy, shh] = [shy + mo, shh - mo]
-            if (e_right)
-                shw -= mo
-            if (e_bottom)
-                shh -= mo
-        }
-    }
+function renderShape(it: PageCanvas, page: º.Page, idx: number, isBalloon: boolean): Element {
+    const shape: º.Shape = (isBalloon ? page.balloons : page.panels)[idx]
+    let sh: º.Shape = isBalloon ? { x: shape.x, y: shape.y, w: shape.w, h: shape.h } : adjustedToMargins(page, idx)
 
     let rx = 0, ry = 0
+    const props: º.ShapeProps = (isBalloon ? º.balloonProps : º.panelProps)(page, idx)
     if ((props.roundness !== undefined) && (props.roundness >= 0.01)) {
-        rx = 0.5 * Math.max(shw, shh)
+        rx = 0.5 * Math.max(sh.w, sh.h)
         ry = rx
         if (props.roundness <= 0.99)
             [rx, ry] = [rx * props.roundness, ry * props.roundness]
@@ -187,7 +166,7 @@ function renderShape(it: PageCanvas, page: º.Page, pageSizeMm: º.Size, shape: 
     const rect = svg.rect({
         'id': shape_kind + '_' + idx, 'class': 'shape ' + shape_kind + (is_sel ? (' shape-selected ' + shape_kind + '-selected') : ''),
         'stroke-width': `${props.borderWidthMm ?? 0}mm`, 'tabindex': 2,
-        'x': `${shx}mm`, 'y': `${shy}mm`, 'width': `${shw}mm`, 'height': `${shh}mm`, 'rx': rx + 'mm', 'ry': ry + 'mm',
+        'x': `${sh.x}mm`, 'y': `${sh.y}mm`, 'width': `${sh.w}mm`, 'height': `${sh.h}mm`, 'rx': rx + 'mm', 'ry': ry + 'mm',
         'onfocus': (evt: Event) => { it.select({ isBalloon: isBalloon, idx: idx }) }, 'onclick': (evt: Event) => { evt.stopPropagation() },
         'onkeydown': (evt: KeyboardEvent) => {
             switch (evt.key) {
@@ -216,6 +195,34 @@ function renderShape(it: PageCanvas, page: º.Page, pageSizeMm: º.Size, shape: 
         }
     })
     return rect
+}
+
+function adjustedToMargins(page: º.Page, panelIdx: number) {
+    const page_size_mm = º.pageSizeMm(page)
+    const panel = page.panels[panelIdx]
+    const props: º.PanelProps = º.panelProps(page, panelIdx)
+    const ret: º.Shape = { x: panel.x, y: panel.y, w: panel.w, h: panel.h }
+    if (props && (((props.outerMarginMm ?? 0) >= 0.1) || ((props.innerMarginMm ?? 0) >= 0.1))) {
+        const mi = props.innerMarginMm ?? 0
+        const e_top = º.fEq(ret.y, 0), e_left = º.fEq(ret.x, 0), e_right = º.fEq((ret.x + ret.w), page_size_mm.w), e_bottom = º.fEq((ret.y + ret.h), page_size_mm.h)
+        ret.x += (e_left ? 0 : mi)
+        ret.y += (e_top ? 0 : mi)
+        const px2 = (panel.x + ret.w) - (e_right ? 0 : mi), py2 = (panel.y + ret.h) - (e_bottom ? 0 : mi)
+        ret.w = px2 - ret.x
+        ret.h = py2 - ret.y
+        if (props.outerMarginMm !== undefined) {
+            const mo = props.outerMarginMm!
+            if (e_left)
+                [ret.x, ret.w] = [ret.x + mo, ret.w - mo]
+            if (e_top)
+                [ret.y, ret.h] = [ret.y + mo, ret.h - mo]
+            if (e_right)
+                ret.w -= mo
+            if (e_bottom)
+                ret.h -= mo
+        }
+    }
+    return ret
 }
 
 export function selFrom(panelIdx?: number, balloonIdx?: number): º.ShapeRef | undefined {
