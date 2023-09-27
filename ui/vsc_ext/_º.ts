@@ -340,8 +340,8 @@ export function deepEq(val1: any, val2: any, ignoreArrayOrder?: boolean): boolea
     return false
 }
 
-export function isPosInShape(shape: Shape, pos: Pos) {
-
+export function isPosInShape(shape: Shape, pos: Pos): boolean {
+    return (pos.x > shape.x) && (pos.y > shape.y) && (pos.x < (shape.x + shape.w)) && (pos.y < (shape.y + shape.h))
 }
 
 export function dictMerge<TDict>(...dicts: { [_: string]: TDict }[]): { [_: string]: TDict } {

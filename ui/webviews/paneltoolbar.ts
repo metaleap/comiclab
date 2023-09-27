@@ -50,7 +50,7 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
         deletePanel: () => {
             const page = curPage()
             page!.panels = page!.panels.filter((_: º.Panel, idx: number) => (idx !== it.canvas.selPanelIdx))
-            it.canvas.panelSelect(undefined, true)
+            it.canvas.select(undefined, undefined, true)
             it.refresh()
             onUserModified()
         },

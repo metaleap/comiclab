@@ -22,8 +22,8 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
     const for_proj = (collPath === '') && (pagePath === ''),
         for_coll = (collPath !== ''),
         for_page = (pagePath !== '') && (panelIdx === undefined) && (balloonIdx === undefined),
-        for_panel = (pagePath !== '') && (panelIdx !== undefined),
-        for_balloon = (pagePath !== '') && (balloonIdx !== undefined)
+        for_balloon = (pagePath !== '') && (balloonIdx !== undefined),
+        for_panel = (pagePath !== '') && (balloonIdx === undefined) && (panelIdx !== undefined)
 
     let collPropsForm: ctl_inputform.InputForm = undefined as any
     let pagePropsForm: ctl_inputform.InputForm = undefined as any

@@ -76,7 +76,7 @@ function refreshPanelControls(edgeBarsOnly?: boolean) {
             'onclick': (evt: UIEvent) => {
                 const dom = ˍ.panel_textareas[pIdx].firstChild as HTMLElement
                 if (!dom.hasAttribute('contenteditable'))
-                    ˍ.page_canvas.panelSelect(pIdx)
+                    ˍ.page_canvas.select(pIdx)
             },
         }, html.div({
             'class': 'page-editor-textarea',
@@ -241,12 +241,12 @@ function createGui() {
             if (evt.button === 1) {
                 evt.preventDefault()
                 ˍ.page_canvas.dom?.focus()
-                ˍ.page_canvas.panelSelect()
+                ˍ.page_canvas.select()
             }
         },
         'onclick': (evt: MouseEvent) => {
             if (evt.target, evt.currentTarget, evt.target === evt.currentTarget)
-                ˍ.page_canvas.panelSelect()
+                ˍ.page_canvas.select()
         },
         'onauxclick': (evt: PointerEvent) => {
             if (evt.button === 1) // mid-click

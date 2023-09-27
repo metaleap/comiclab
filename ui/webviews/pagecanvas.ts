@@ -11,7 +11,7 @@ export type PageCanvas = {
     notifyModified: (page: º.Page, pIdx?: number, reRender?: boolean) => void
     addNewPanel: () => void
     addNewPanelGrid: (numRows: number, numCols: number) => void
-    panelSelect: (panelIdx?: number, dontRaiseEvent?: boolean) => void
+    select: (panelIdx?: number, balloonIdx?: number, dontRaiseEvent?: boolean) => void
     panelReorder: (direction: º.Direction, dontDoIt?: boolean) => boolean
     panelSnapTo: (edge: º.Direction, snapDir: º.Direction, dontDoIt?: boolean) => boolean
     whatsAt(pos?: { x: number, y: number }): { panelIdx?: number, balloonIdx?: number }
@@ -23,7 +23,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
         selPanelIdx = undefined
     const it: PageCanvas = {
         selPanelIdx: selPanelIdx,
-        panelSelect: (panelIdx?: number, dontRaiseEvent?: boolean) => {
+        select: (panelIdx?: number, balloonIdx?: number, dontRaiseEvent?: boolean) => {
             // even if no change in selPanelIdx, do not return early since we do want the below focus() call
             if (it.selPanelIdx !== undefined)
                 document.getElementById('panel_' + it.selPanelIdx)?.classList.remove('panel-selected')
@@ -37,7 +37,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
                 onPanelSelection()
         },
         notifyModified: (page: º.Page, panelIdx?: number, reRender?: boolean) => {
-            it.panelSelect(panelIdx, true)
+            it.select(panelIdx, undefined, true)
             onUserModified(page, reRender)
         },
         addNewPanel: () => {
@@ -107,10 +107,12 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
             const ret: { panelIdx?: number, balloonIdx?: number } = {}
             if (!pos)
                 pos = it.mousePosMm
-            for (let i = 0; i < page.panels.length; i++) {
-
-            }
-            if (pos) { }
+            for (let pidx = 0; pos && pidx < page.panels.length; pidx++)
+                if (º.isPosInShape(page.panels[pidx], pos))
+                    ret.panelIdx = pidx // dont break early tho, later overlappers are to take over that spot
+            for (let bidx = 0; pos && bidx < page.balloons.length; bidx++)
+                if (º.isPosInShape(page.balloons[bidx], pos))
+                    ret.balloonIdx = bidx // dito as above
             return ret
         },
     }
@@ -154,11 +156,11 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
             'id': 'panel_' + pidx, 'class': 'panel' + ((pidx === selPanelIdx) ? ' panel-selected' : ''),
             'stroke-width': `${panelBorderWidthMm}mm`, 'tabindex': 2, 'data-panelIdx': pidx,
             'x': `${px}mm`, 'y': `${py}mm`, 'width': `${pw}mm`, 'height': `${ph}mm`, 'rx': rx + 'mm', 'ry': ry + 'mm',
-            'onfocus': (evt: Event) => it.panelSelect(pidx), 'onclick': (evt: Event) => evt.stopPropagation(),
+            'onfocus': (evt: Event) => it.select(pidx), 'onclick': (evt: Event) => evt.stopPropagation(),
             'onkeydown': (evt: KeyboardEvent) => {
                 switch (evt.key) {
                     case 'Escape':
-                        it.panelSelect()
+                        it.select()
                         it.dom?.focus()
                         break
                     case 'ArrowLeft':
@@ -188,7 +190,7 @@ export function create(domId: string, page: º.Page, onPanelSelection: () => voi
     it.dom = svg.svg({
         'id': domId, 'tabindex': 1, 'width': `${page_size_mm.w}mm`, 'height': `${page_size_mm.h}mm`,
         'style': utils.dictToArr(dom_style, (k, v) => k + ':' + v).join(';'),
-        'onfocus': (evt) => it.panelSelect(),
+        'onfocus': (evt) => it.select(),
     }, ...panels) as any
     return it
 }
