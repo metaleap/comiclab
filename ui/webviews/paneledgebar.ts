@@ -27,19 +27,19 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, edg
         edge: edge,
         buttons: buttons,
         refresh() {
-            if (it.canvas.selPanelIdx === undefined) {
+            if (!it.canvas.sel) {
                 it.dom.style.display = 'none'
                 return
             }
-            btn_snap_left.disabled = !it.canvas.panelSnapTo(it.edge, º.DirLeft, true)
-            btn_snap_right.disabled = !it.canvas.panelSnapTo(it.edge, º.DirRight, true)
-            btn_snap_up.disabled = !it.canvas.panelSnapTo(it.edge, º.DirUp, true)
-            btn_snap_down.disabled = !it.canvas.panelSnapTo(it.edge, º.DirDown, true)
+            btn_snap_left.disabled = !it.canvas.shapeSnapTo(it.edge, º.DirLeft, true)
+            btn_snap_right.disabled = !it.canvas.shapeSnapTo(it.edge, º.DirRight, true)
+            btn_snap_up.disabled = !it.canvas.shapeSnapTo(it.edge, º.DirUp, true)
+            btn_snap_down.disabled = !it.canvas.shapeSnapTo(it.edge, º.DirDown, true)
 
             it.dom.style.display = 'inline-block'
         },
         snapPanelTo: (evt: Event, edge: º.Direction, snapDir: º.Direction) => {
-            it.canvas.panelSnapTo(edge, snapDir)
+            it.canvas.shapeSnapTo(edge, snapDir)
         }
     }
     van.add(it.dom, ...it.buttons)

@@ -11,13 +11,12 @@ export type PropsDialog = {
     refresh: () => void
 }
 
-export function show(domId: string, page: º.Page, canvas: ctl_pagecanvas.PageCanvas, onRemovingFromDom: () => void, onUserModified: (pg?: º.PageProps, pnl?: º.PanelProps, bln?: º.BalloonProps, pidx?: number, bidx?: number) => void): PropsDialog {
+export function show(domId: string, page: º.Page, canvas: ctl_pagecanvas.PageCanvas, onRemovingFromDom: () => void, onUserModified: (pg?: º.PageProps, pnl?: º.PanelProps, bln?: º.BalloonProps, sel?: º.ShapeRef) => void): PropsDialog {
     const at_mouse_pos = canvas.whatsAt()
-    if ((at_mouse_pos.panelIdx !== undefined) || (at_mouse_pos.balloonIdx !== undefined))
-        canvas.select((at_mouse_pos.balloonIdx === undefined) ? at_mouse_pos.panelIdx : undefined, at_mouse_pos.balloonIdx)
-    const props_form = ctl_propsform.create(domId, '', º.pageToPath(page), at_mouse_pos.panelIdx, at_mouse_pos.balloonIdx,
+    canvas.select(at_mouse_pos)
+    const props_form = ctl_propsform.create(domId, '', º.pageToPath(page), at_mouse_pos,
         (_?: º.CollProps, userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps, userModifiedBalloonProps?: º.BalloonProps) => {
-            onUserModified(userModifiedPageProps, userModifiedPanelProps, userModifiedBalloonProps, at_mouse_pos.panelIdx, at_mouse_pos.balloonIdx)
+            onUserModified(userModifiedPageProps, userModifiedPanelProps, userModifiedBalloonProps, at_mouse_pos)
         })
     const dialog = html.dialog({ 'class': 'page-editor-props-dialog' }, props_form.dom)
     dialog.onclose = () => {

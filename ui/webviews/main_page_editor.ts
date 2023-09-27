@@ -21,11 +21,11 @@ let ˍ: {
     top_toolbar_zoom_text: HTMLSpanElement,
     top_toolbar_zoom_input: HTMLInputElement,
     top_toolbar_menu_addpanelgrid: HTMLSelectElement,
-    panel_toolbar: ctl_paneltoolbar.PanelToolbar,
-    panelbar_left: ctl_paneledgebar.PanelEdgeBar,
-    panelbar_right: ctl_paneledgebar.PanelEdgeBar,
-    panelbar_upper: ctl_paneledgebar.PanelEdgeBar,
-    panelbar_lower: ctl_paneledgebar.PanelEdgeBar,
+    shape_toolbar: ctl_paneltoolbar.PanelToolbar,
+    shapebar_left: ctl_paneledgebar.PanelEdgeBar,
+    shapebar_right: ctl_paneledgebar.PanelEdgeBar,
+    shapebar_upper: ctl_paneledgebar.PanelEdgeBar,
+    shapebar_lower: ctl_paneledgebar.PanelEdgeBar,
     panel_textareas: HTMLDivElement[],
     props_dialog?: dialog_props.PropsDialog,
 } = { panel_textareas: [] } as any
@@ -41,27 +41,27 @@ function onUserModifiedPage(userModifiedPage: º.Page, reRender?: boolean): º.P
     º.pageUpdate(pagePath, userModifiedPage)
     utils.vs.postMessage({ ident: 'onPageModified', payload: userModifiedPage })
     if (!reRender)
-        refreshPanelControls()
+        refreshShapeWidgets()
     else
         reRenderPageCanvas()
-    if (ˍ.page_canvas.selPanelIdx !== undefined)
-        document.getElementById('panel_' + ˍ.page_canvas.selPanelIdx)?.focus()
+    if (ˍ.page_canvas.sel)
+        document.getElementById((ˍ.page_canvas.sel.balloon ? 'balloon_' : 'panel_') + ˍ.page_canvas.sel.idx)?.focus()
     return userModifiedPage
 }
 function onUserModifiedPanel(): º.Page {
     const page = º.pageFromPath(pagePath)!
     º.pageUpdate(pagePath, page)
     reRenderPageCanvas()
-    refreshPanelControls(true)
+    refreshShapeWidgets(true)
     utils.vs.postMessage({ ident: 'onPageModified', payload: page })
     return page
 }
 
-function onPanelSelection() {
-    refreshPanelControls()
+function onShapeSelection() {
+    refreshShapeWidgets()
 }
 
-function refreshPanelControls(skipToolbar?: boolean) {
+function refreshShapeWidgets(skipToolbar?: boolean) {
     for (const textarea of ˍ.panel_textareas)
         textarea.remove()
     const page = º.pageFromPath(pagePath)!
@@ -70,14 +70,14 @@ function refreshPanelControls(skipToolbar?: boolean) {
         const px_pos = mmToPx(panel.x, panel.y, true, page_size)
         const px_size = mmToPx(panel.w, panel.h, false, page_size)
         const pad = 11
-        const visible = (ˍ.page_canvas.selPanelIdx === undefined) || (ˍ.page_canvas.selPanelIdx === pIdx)
+        const visible = (!ˍ.page_canvas.sel) || ((!ˍ.page_canvas.sel.balloon) && (ˍ.page_canvas.sel.idx === pIdx))
         const textarea = html.div({
             'class': 'page-editor-textarea', 'style':
                 `visibility: ${visible ? 'visible' : 'hidden'}; left: ${px_pos.x + pad}px; top: ${px_pos.y + pad}px; width: ${px_size.x - (2 * pad)}px; height: ${px_size.y - (2 * pad)}px;`,
             'onclick': (evt: UIEvent) => {
                 const dom = ˍ.panel_textareas[pIdx].firstChild as HTMLElement
                 if (!dom.hasAttribute('contenteditable'))
-                    ˍ.page_canvas.select(pIdx, undefined)
+                    ˍ.page_canvas.select({ idx: pIdx, balloon: false })
             },
         }, html.div({
             'class': 'page-editor-textarea',
@@ -93,24 +93,25 @@ function refreshPanelControls(skipToolbar?: boolean) {
     van.add(ˍ.main, ...ˍ.panel_textareas)
 
     if (!skipToolbar)
-        ˍ.panel_toolbar.refresh()
-    for (const panel_bar of [ˍ.panelbar_left, ˍ.panelbar_right, ˍ.panelbar_upper, ˍ.panelbar_lower])
+        ˍ.shape_toolbar.refresh()
+    for (const panel_bar of [ˍ.shapebar_left, ˍ.shapebar_right, ˍ.shapebar_upper, ˍ.shapebar_lower])
         panel_bar.refresh() // do this before the below, so we'll have a non-0 clientWidth
 
-    if (ˍ.page_canvas.selPanelIdx !== undefined) { // positioning the panel bar right on its assigned panel edge
-        const panel = page.panels[ˍ.page_canvas.selPanelIdx]
-        const panel_px_pos = mmToPx(panel.x, panel.y, true, page_size)
-        const panel_px_size = mmToPx(panel.w, panel.h, false, page_size)
+    if (ˍ.page_canvas.sel) { // positioning the panel bar right on its assigned panel edge
+        const shapes: º.Shape[] = (ˍ.page_canvas.sel.balloon) ? page.balloons : page.panels
+        const shape: º.Shape = shapes[ˍ.page_canvas.sel.idx]
+        const shape_px_pos = mmToPx(shape.x, shape.y, true, page_size)
+        const shape_px_size = mmToPx(shape.w, shape.h, false, page_size)
 
-        ˍ.panelbar_upper.dom.style.left = ((panel_px_pos.x + (panel_px_size.x / 2)) - (ˍ.panelbar_upper.dom.clientWidth / 2)).toFixed(0) + 'px'
-        ˍ.panelbar_lower.dom.style.left = ˍ.panelbar_upper.dom.style.left
-        ˍ.panelbar_upper.dom.style.top = (panel_px_pos.y - 12).toFixed(0) + 'px'
-        ˍ.panelbar_lower.dom.style.top = (panel_px_pos.y + panel_px_size.y).toFixed(0) + 'px'
+        ˍ.shapebar_upper.dom.style.left = ((shape_px_pos.x + (shape_px_size.x / 2)) - (ˍ.shapebar_upper.dom.clientWidth / 2)).toFixed(0) + 'px'
+        ˍ.shapebar_lower.dom.style.left = ˍ.shapebar_upper.dom.style.left
+        ˍ.shapebar_upper.dom.style.top = (shape_px_pos.y - 12).toFixed(0) + 'px'
+        ˍ.shapebar_lower.dom.style.top = (shape_px_pos.y + shape_px_size.y).toFixed(0) + 'px'
 
-        ˍ.panelbar_left.dom.style.top = ((panel_px_pos.y + (panel_px_size.y / 2)) - (ˍ.panelbar_left.dom.clientHeight / 2)).toFixed(0) + 'px'
-        ˍ.panelbar_right.dom.style.top = ˍ.panelbar_left.dom.style.top
-        ˍ.panelbar_left.dom.style.left = (panel_px_pos.x - 12).toFixed(0) + 'px'
-        ˍ.panelbar_right.dom.style.left = (panel_px_pos.x + panel_px_size.x).toFixed(0) + 'px'
+        ˍ.shapebar_left.dom.style.top = ((shape_px_pos.y + (shape_px_size.y / 2)) - (ˍ.shapebar_left.dom.clientHeight / 2)).toFixed(0) + 'px'
+        ˍ.shapebar_right.dom.style.top = ˍ.shapebar_left.dom.style.top
+        ˍ.shapebar_left.dom.style.left = (shape_px_pos.x - 12).toFixed(0) + 'px'
+        ˍ.shapebar_right.dom.style.left = (shape_px_pos.x + shape_px_size.x).toFixed(0) + 'px'
     }
 }
 
@@ -153,18 +154,18 @@ function onMessage(evt: MessageEvent) {
 
 function reRenderPageCanvas() {
     const old_x = posX(), old_y = posY(), old_dom = ˍ.page_canvas.dom, old_mouse_pos = ˍ.page_canvas.mousePosMm
-    createPageCanvas(ˍ.page_canvas.selPanelIdx)
+    createPageCanvas(ˍ.page_canvas.sel)
     ˍ.page_canvas.mousePosMm = old_mouse_pos
     old_dom!.replaceWith(ˍ.page_canvas.dom!)
-    refreshPanelControls()
+    refreshShapeWidgets()
     posX(old_x)
     posY(old_y)
 }
 
-function createPageCanvas(panelIdx?: number) {
+function createPageCanvas(sel?: º.ShapeRef) {
     const page = º.pageFromPath(pagePath)!
-    ˍ.page_canvas = ctl_pagecanvas.create('page_editor_canvas', page, onPanelSelection, panelIdx, onUserModifiedPage)
-    for (const panelbar of [ˍ.panel_toolbar, ˍ.panelbar_left, ˍ.panelbar_right, ˍ.panelbar_upper, ˍ.panelbar_lower])
+    ˍ.page_canvas = ctl_pagecanvas.create('page_editor_canvas', page, onShapeSelection, sel, onUserModifiedPage)
+    for (const panelbar of [ˍ.shape_toolbar, ˍ.shapebar_left, ˍ.shapebar_right, ˍ.shapebar_upper, ˍ.shapebar_lower])
         if (panelbar)
             panelbar.canvas = ˍ.page_canvas
 }
@@ -205,17 +206,17 @@ function createGui() {
             ˍ.top_toolbar_mpos_text = html.span({}, " ")),
     )
     createPageCanvas()
-    ˍ.panel_toolbar = ctl_paneltoolbar.create('page_editor_shape_toolbar', ˍ.page_canvas, (() => º.pageFromPath(pagePath)!), onUserModifiedPanel)
-    ˍ.panelbar_left = ctl_paneledgebar.create('page_editor_shape_edgebar_left', ˍ.page_canvas, º.DirLeft)
-    ˍ.panelbar_right = ctl_paneledgebar.create('page_editor_shape_edgebar_right', ˍ.page_canvas, º.DirRight)
-    ˍ.panelbar_upper = ctl_paneledgebar.create('page_editor_shape_edgebar_upper', ˍ.page_canvas, º.DirUp)
-    ˍ.panelbar_lower = ctl_paneledgebar.create('page_editor_shape_edgebar_lower', ˍ.page_canvas, º.DirDown)
+    ˍ.shape_toolbar = ctl_paneltoolbar.create('page_editor_shape_toolbar', ˍ.page_canvas, (() => º.pageFromPath(pagePath)!), onUserModifiedPanel)
+    ˍ.shapebar_left = ctl_paneledgebar.create('page_editor_shape_edgebar_left', ˍ.page_canvas, º.DirLeft)
+    ˍ.shapebar_right = ctl_paneledgebar.create('page_editor_shape_edgebar_right', ˍ.page_canvas, º.DirRight)
+    ˍ.shapebar_upper = ctl_paneledgebar.create('page_editor_shape_edgebar_upper', ˍ.page_canvas, º.DirUp)
+    ˍ.shapebar_lower = ctl_paneledgebar.create('page_editor_shape_edgebar_lower', ˍ.page_canvas, º.DirDown)
     document.onkeydown = (evt: KeyboardEvent) => {
         switch (evt.key) {
             case 'Escape':
-                ˍ.panel_toolbar.toggleDeletePrompt(false)
-                if (ˍ.page_canvas.selPanelIdx !== undefined) {
-                    const dom = ˍ.panel_textareas[ˍ.page_canvas.selPanelIdx].firstChild as HTMLElement
+                ˍ.shape_toolbar.toggleDeletePrompt(false)
+                if (ˍ.page_canvas.sel && !ˍ.page_canvas.sel.balloon) {
+                    const dom = ˍ.panel_textareas[ˍ.page_canvas.sel.idx].firstChild as HTMLElement
                     dom.blur()
                 }
                 break
@@ -227,8 +228,8 @@ function createGui() {
                 }
                 break
             case 'F2':
-                if (ˍ.page_canvas.selPanelIdx !== undefined) {
-                    const dom = ˍ.panel_textareas[ˍ.page_canvas.selPanelIdx].firstChild as HTMLElement
+                if (ˍ.page_canvas.sel && !ˍ.page_canvas.sel.balloon) {
+                    const dom = ˍ.panel_textareas[ˍ.page_canvas.sel.idx].firstChild as HTMLElement
                     if (!dom.hasAttribute('contenteditable')) {
                         dom.setAttribute('contenteditable', 'true')
                         window.getSelection()?.selectAllChildren(dom)
@@ -248,8 +249,8 @@ function createGui() {
         },
         'onclick': (evt: MouseEvent) => { // ensure canvas shape deselection when clicking outside the page
             const at_mouse_pos = ˍ.page_canvas.whatsAt()
-            if ((at_mouse_pos.balloonIdx === undefined) && (at_mouse_pos.panelIdx === undefined))
-                ˍ.page_canvas.select(undefined, undefined)
+            if (!at_mouse_pos)
+                ˍ.page_canvas.select(undefined)
         },
         'onauxclick': (evt: PointerEvent) => {
             if (evt.button === 1) // mid-click
@@ -257,15 +258,15 @@ function createGui() {
             else if (evt.button === 2) // right-click
                 ˍ.props_dialog = dialog_props.show('page_editor_props_dialog', º.pageFromPath(pagePath)!, ˍ.page_canvas,
                     () => { ˍ.props_dialog = undefined },
-                    (userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps, userModifiedBalloonProps?: º.BalloonProps, panelIdx?: number, balloonIdx?: number) => {
+                    (userModifiedPageProps?: º.PageProps, userModifiedPanelProps?: º.PanelProps, userModifiedBalloonProps?: º.BalloonProps, sel?: º.ShapeRef) => {
                         const page = º.pageFromPath(pagePath)!
                         if (userModifiedPageProps || userModifiedPanelProps) {
                             if (userModifiedPageProps)
                                 page.pageProps = userModifiedPageProps
                             if (userModifiedPanelProps)
-                                ((panelIdx === undefined) ? page : page.panels[panelIdx]).panelProps = userModifiedPanelProps
+                                ((sel && !sel.balloon) ? page.panels[sel.idx] : page).panelProps = userModifiedPanelProps
                             if (userModifiedBalloonProps)
-                                ((balloonIdx === undefined) ? page : page.balloons[balloonIdx]).balloonProps = userModifiedBalloonProps
+                                ((sel?.balloon) ? page.balloons[sel.idx] : page).balloonProps = userModifiedBalloonProps
                             onUserModifiedPanel()
                         }
                     })
@@ -287,8 +288,8 @@ function createGui() {
             ˍ.page_canvas.mousePosMm = mmFromPx(evt.clientX, evt.clientY, true, page_size_mm)
             ˍ.top_toolbar_mpos_text.innerText = `X: ${(ˍ.page_canvas.mousePosMm.x * 0.1).toFixed(1)}cm , Y:${(ˍ.page_canvas.mousePosMm.y * 0.1).toFixed(1)}cm`
         },
-    }, ˍ.page_canvas.dom, ˍ.panelbar_left.dom, ˍ.panelbar_right.dom, ˍ.panelbar_upper.dom, ˍ.panelbar_lower.dom)
-    van.add(document.body, ˍ.main, ˍ.panel_toolbar.dom, ˍ.top_toolbar)
+    }, ˍ.page_canvas.dom, ˍ.shapebar_left.dom, ˍ.shapebar_right.dom, ˍ.shapebar_upper.dom, ˍ.shapebar_lower.dom)
+    van.add(document.body, ˍ.main, ˍ.shape_toolbar.dom, ˍ.top_toolbar)
     zoomSet()
 }
 
@@ -313,14 +314,14 @@ function mmToPx(mmX: number, mmY: number, isPos: boolean, pageSizeMm?: º.Size) 
 function posX(newX?: number): number {
     if (newX !== undefined) {
         ˍ.page_canvas.dom!.style.left = newX.toString() + 'px'
-        refreshPanelControls(true)
+        refreshShapeWidgets(true)
     }
     return parseInt(ˍ.page_canvas.dom!.style.left)
 }
 function posY(newY?: number): number {
     if (newY !== undefined) {
         ˍ.page_canvas.dom!.style.top = newY.toString() + 'px'
-        refreshPanelControls(true)
+        refreshShapeWidgets(true)
     }
     return parseInt(ˍ.page_canvas.dom!.style.top)
 }
@@ -354,5 +355,5 @@ function zoomSet(newZoom?: number, mouse?: { x: number, y: number }) {
     }
     ˍ.top_toolbar_zoom_input.value = newZoom.toString()
     ˍ.top_toolbar_zoom_text.innerText = newZoom.toFixed(1) + "%"
-    refreshPanelControls(true)
+    refreshShapeWidgets(true)
 }

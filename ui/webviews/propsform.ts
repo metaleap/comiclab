@@ -14,16 +14,12 @@ export type PropsForm = {
     refresh: () => void,
 }
 
-export function create(domId: string, collPath: string, pagePath: string, panelIdx: number | undefined, balloonIdx: number | undefined, onUserModified: (c?: º.CollProps, pg?: º.PageProps, pnl?: º.PanelProps, bln?: º.BalloonProps) => void): PropsForm {
-    if ((panelIdx !== undefined) && isNaN(panelIdx))
-        panelIdx = undefined
-    if ((balloonIdx !== undefined) && isNaN(balloonIdx))
-        balloonIdx = undefined
+export function create(domId: string, collPath: string, pagePath: string, sel: º.ShapeRef | undefined, onUserModified: (c?: º.CollProps, pg?: º.PageProps, pnl?: º.PanelProps, bln?: º.BalloonProps) => void): PropsForm {
     const for_proj = (collPath === '') && (pagePath === ''),
         for_coll = (collPath !== ''),
-        for_page = (pagePath !== '') && (panelIdx === undefined) && (balloonIdx === undefined),
-        for_balloon = (pagePath !== '') && (balloonIdx !== undefined),
-        for_panel = (pagePath !== '') && (balloonIdx === undefined) && (panelIdx !== undefined)
+        for_page = (pagePath !== '') && !sel,
+        for_balloon = (pagePath !== '') && (sel ? true : false) && sel!.balloon,
+        for_panel = (pagePath !== '') && (sel ? true : false) && !(sel!.balloon)
 
     let collPropsForm: ctl_inputform.InputForm = undefined as any
     let pagePropsForm: ctl_inputform.InputForm = undefined as any
@@ -177,8 +173,8 @@ export function create(domId: string, collPath: string, pagePath: string, panelI
             // populate form input fields
             collPropsForm?.onDataChangedAtSource(curCollPropsRec(coll))
             pagePropsForm?.onDataChangedAtSource(curPagePropsRec(coll, page))
-            panelPropsForm?.onDataChangedAtSource(curPanelPropsRec(coll, page, panelIdx))
-            balloonPropsForm?.onDataChangedAtSource(curBalloonPropsRec(coll, page, balloonIdx))
+            panelPropsForm?.onDataChangedAtSource(curPanelPropsRec(coll, page, (sel?.balloon) ? undefined : sel?.idx))
+            balloonPropsForm?.onDataChangedAtSource(curBalloonPropsRec(coll, page, (sel?.balloon) ? sel.idx : undefined))
         },
     }
 }

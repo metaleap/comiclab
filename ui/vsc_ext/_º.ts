@@ -70,6 +70,11 @@ export type Balloon = Shape & {
     balloonProps: BalloonProps
 }
 
+export type ShapeRef = {
+    idx: number
+    balloon: boolean
+}
+
 export type ProjOrColl = (Proj | Collection) & { name?: string }
 
 export type ProjOrCollOrPage = {
