@@ -93,8 +93,8 @@ export function create(domId: string, pageCanvas: ctl_pagecanvas.PageCanvas, cur
                     (inputs[prop_name] as HTMLInputElement).value = (shape[prop_name as 'x' | 'y' | 'w' | 'h'] * 0.1).toFixed(1).padStart(4, '0')
             label_inputs_tail.style.display = it.canvas.sel.isBalloon ? 'inline' : 'none'
             if (it.canvas.sel.isBalloon) {
-                ˍ.input_tail_x.value = ((shape as º.Balloon).tailPoint?.x.toFixed(1) ?? '')
-                ˍ.input_tail_y.value = ((shape as º.Balloon).tailPoint?.y.toFixed(1) ?? '')
+                ˍ.input_tail_x.value = ((((shape as º.Balloon).tailPoint?.x ?? 0) * 0.1).toFixed(1).padStart(4, '0') ?? '')
+                ˍ.input_tail_y.value = ((((shape as º.Balloon).tailPoint?.y ?? 0) * 0.1).toFixed(1).padStart(4, '0') ?? '')
             }
             for (const btn of [ˍ.btn_move_first, ˍ.btn_move_last, ˍ.btn_move_next, ˍ.btn_move_prev]) {
                 const dir: º.Direction = parseInt(btn.getAttribute('data-movehow') ?? '')
