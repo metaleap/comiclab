@@ -170,9 +170,9 @@ function renderShape(it: PageCanvas, page: º.Page, idx: number, isBalloon: bool
     if (isBalloon && (shape as º.Balloon).tailPoint && (props as º.BalloonProps).tailSizeMm) {
         const mm = 3.543307 // as per SVG spec, "user units" per millimeter
         const tp = (shape as º.Balloon).tailPoint!, ts = (props as º.BalloonProps).tailSizeMm!
-        const start = { x: mm * ((sh.x + (sh.w / 2)) - ts), y: mm * ((sh.y + (sh.h / 2)) - ts) }
+        const start = { x: mm * ((sh.x + (sh.w / 2)) - ts), y: mm * ((sh.y + (sh.h / 2)) + ts) }
         const dst = { x: mm * tp.x, y: mm * tp.y }
-        const end = { x: mm * ((sh.x + (sh.w / 2)) + ts), y: mm * ((sh.y + (sh.h / 2)) + ts) }
+        const end = { x: mm * ((sh.x + (sh.w / 2)) + ts), y: mm * ((sh.y + (sh.h / 2)) - ts) }
         tail = svg.path({
             'fill': 'gold', 'stroke-width': '1mm', 'stroke': 'blue', 'd': `
                 M ${start.x},${start.y} T ${dst.x},${dst.y} T ${end.x},${end.y} M ${start.x},${start.y}

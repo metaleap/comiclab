@@ -330,6 +330,14 @@ body>dialog.page-editor-props-dialog div.inputform div.inputform-field>div.input
     width: 7em;
 }
 
+body>dialog.page-editor-props-dialog>.page-editor-props-dialog-buttons {
+    text-align: center;
+}
+
+body>dialog.page-editor-props-dialog>div.page-editor-props-dialog-buttons>button.btn {
+    margin: 0;
+}
+
 body>div#page_editor_main>div.page-editor-textarea {
     position: absolute;
     text-align: center;
