@@ -96,7 +96,7 @@ export function create(domId: string, collPath: string, pagePath: string, sel: �
     if (!for_panel) {
         const balloonBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Border width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: balloonBorderWidthPlaceholder }
         const balloonRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: balloonRoundnessPlaceholder }
-        const balloonTailSizeField: ctl_inputform.Field = { id: 'tailSizeMm', title: 'Tail size (mm)', validators: [], num: { int: false, min: 0, max: 123, step: 0.1 }, placeholder: balloonTailSizePlaceholder }
+        const balloonTailSizeField: ctl_inputform.Field = { id: 'tailSizeMm', title: 'Tail breadth (mm)', validators: [], num: { int: false, min: 0, max: 123, step: 0.1 }, placeholder: balloonTailSizePlaceholder }
         balloonPropsForm = ctl_inputform.create(domId + '_balloonprops_form', [balloonBorderWidthField, balloonRoundnessField, balloonTailSizeField], undefined,
             (userModifiedRec: ctl_inputform.Rec) => {
                 const balloonProps: º.BalloonProps = {}
@@ -142,38 +142,37 @@ export function create(domId: string, collPath: string, pagePath: string, sel: �
             const coll = for_coll ? º.collFromPath(collPath) : (page ? º.pageParent(page) : undefined)
 
             // placeholders
-            if (coll)
-                updatePlaceholders(coll, page, for_panel || for_balloon, [
-                    {
-                        fill: (_) => { balloonBorderWidthPlaceholder.val = _ }, from: (_) => (_.balloonProps?.borderWidthMm?.toFixed(1) ?? ''),
-                    },
-                    {
-                        fill: (_) => { panelBorderWidthPlaceholder.val = _ }, from: (_) => (_.panelProps?.borderWidthMm?.toFixed(1) ?? ''),
-                    },
-                    {
-                        fill: (_) => { panelInnerMarginPlaceholder.val = _ }, from: (_) => (_.panelProps?.innerMarginMm?.toFixed(1) ?? ''),
-                    },
-                    {
-                        fill: (_) => { panelOuterMarginPlaceholder.val = _ }, from: (_) => (_.panelProps?.outerMarginMm?.toFixed(1) ?? ''),
-                    },
-                    {
-                        fill: (_) => { panelRoundnessPlaceholder.val = _ }, from: (_) => (_.panelProps?.roundness?.toFixed(2) ?? ''),
-                    },
-                    {
-                        fill: (_) => { balloonRoundnessPlaceholder.val = _ }, from: (_) => (_.balloonProps?.roundness?.toFixed(2) ?? ''),
-                    },
-                    {
-                        fill: (_) => { balloonTailSizePlaceholder.val = _ }, from: (_) => (_.balloonProps?.tailSizeMm?.toFixed(2) ?? ''),
-                    },
-                    {
-                        fill: (_) => { collAuthorFieldPlaceholder.val = _ }, from: (_) => (_.collProps?.authorId ?? ''),
-                        display: (_) => (º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[_] ?? '') : ''),
-                    },
-                    {
-                        fill: (_) => { pagePaperFormatFieldPlaceholder.val = _ }, from: (_) => (_.pageProps?.paperFormatId ?? ''),
-                        display: (_) => (º.appState.config.contentAuthoring.paperFormats ? º.strPaperFormat(º.appState.config.contentAuthoring.paperFormats[_]) : ''),
-                    },
-                ])
+            updatePlaceholders(coll, page, for_panel || for_balloon, [
+                {
+                    fill: (_) => { balloonBorderWidthPlaceholder.val = _ }, from: (_) => (_.balloonProps?.borderWidthMm?.toFixed(1) ?? ''), finalDefault: '0',
+                },
+                {
+                    fill: (_) => { panelBorderWidthPlaceholder.val = _ }, from: (_) => (_.panelProps?.borderWidthMm?.toFixed(1) ?? ''), finalDefault: '0',
+                },
+                {
+                    fill: (_) => { panelInnerMarginPlaceholder.val = _ }, from: (_) => (_.panelProps?.innerMarginMm?.toFixed(1) ?? ''), finalDefault: '0',
+                },
+                {
+                    fill: (_) => { panelOuterMarginPlaceholder.val = _ }, from: (_) => (_.panelProps?.outerMarginMm?.toFixed(1) ?? ''), finalDefault: '0',
+                },
+                {
+                    fill: (_) => { panelRoundnessPlaceholder.val = _ }, from: (_) => (_.panelProps?.roundness?.toFixed(2) ?? ''), finalDefault: '0',
+                },
+                {
+                    fill: (_) => { balloonRoundnessPlaceholder.val = _ }, from: (_) => (_.balloonProps?.roundness?.toFixed(2) ?? ''), finalDefault: '0',
+                },
+                {
+                    fill: (_) => { balloonTailSizePlaceholder.val = _ }, from: (_) => (_.balloonProps?.tailSizeMm?.toFixed(2) ?? ''), finalDefault: '0',
+                },
+                {
+                    fill: (_) => { collAuthorFieldPlaceholder.val = _ }, from: (_) => (_.collProps?.authorId ?? ''),
+                    display: (_) => (º.appState.config.contentAuthoring.authors ? (º.appState.config.contentAuthoring.authors[_] ?? '') : ''),
+                },
+                {
+                    fill: (_) => { pagePaperFormatFieldPlaceholder.val = _ }, from: (_) => (_.pageProps?.paperFormatId ?? ''),
+                    display: (_) => (º.appState.config.contentAuthoring.paperFormats ? º.strPaperFormat(º.appState.config.contentAuthoring.paperFormats[_]) : ''),
+                },
+            ])
 
             // populate form input fields
             collPropsForm?.onDataChangedAtSource(curCollPropsRec(coll))
@@ -184,15 +183,18 @@ export function create(domId: string, collPath: string, pagePath: string, sel: �
     }
 }
 
-function updatePlaceholders(coll: º.Collection, page: º.Page | undefined, forPanelOrBalloon: boolean, placeholders: { fill: (_: string) => void, from: (_: º.ProjOrCollOrPage) => string | undefined, display?: (_: string) => string }[]) {
-    const parents = (page ? [coll] : []).concat(º.collParents(coll))
+function updatePlaceholders(coll: º.Collection | undefined, page: º.Page | undefined, forPanelOrBalloon: boolean, placeholders: { fill: (_: string) => void, from: (_: º.ProjOrCollOrPage) => string | undefined, display?: (_: string) => string, finalDefault?: string }[]) {
+    const parents = coll ? ((page ? [coll] : []).concat(º.collParents(coll))) : []
     for (const placeholder of placeholders) {
         let placeholder_val = (forPanelOrBalloon && page) ? (placeholder.from(page) ?? '') : ''
-        if (placeholder_val === '') for (const parent of parents)
-            if ((placeholder_val = placeholder.from(parent) ?? '') !== '')
-                break
         if (placeholder_val === '')
+            for (const parent of parents)
+                if ((placeholder_val = placeholder.from(parent) ?? '') !== '')
+                    break
+        if ((placeholder_val === '') && coll)
             placeholder_val = placeholder.from(º.appState.proj) ?? ''
+        if ((placeholder_val === '') && placeholder.finalDefault)
+            placeholder_val = placeholder.finalDefault
         const display_text = placeholder.display ? placeholder.display(placeholder_val) : placeholder_val
         placeholder.fill((display_text && display_text !== '') ? display_text : placeholder_val)
     }
