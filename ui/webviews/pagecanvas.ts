@@ -129,9 +129,9 @@ export function create(domId: string, page: º.Page, onShapeSelection: () => voi
 
     const shape_rects: Element[] = []
     for (let idx = 0; idx < page.panels.length; idx++)
-        shape_rects.push(renderShape(it, page, idx, false))
+        shape_rects.push(...renderShape(it, page, idx, false))
     for (let idx = 0; idx < page.balloons.length; idx++)
-        shape_rects.push(renderShape(it, page, idx, true))
+        shape_rects.push(...renderShape(it, page, idx, true))
 
     const dom_style = { 'width': `${page_size_mm.w}mm`, 'height': `${page_size_mm.h}mm`, 'background-color': '#fff' }
     it.dom = svg.svg({
@@ -152,7 +152,7 @@ function findSnap(pos: number, initial: number, prev: boolean, maybes: number[])
     return initial
 }
 
-function renderShape(it: PageCanvas, page: º.Page, idx: number, isBalloon: boolean): Element {
+function renderShape(it: PageCanvas, page: º.Page, idx: number, isBalloon: boolean): Element[] {
     const shape: º.Shape = (isBalloon ? page.balloons : page.panels)[idx]
     let sh: º.Shape = isBalloon ? { x: shape.x, y: shape.y, w: shape.w, h: shape.h } : adjustedToMargins(page, shape as º.Panel)
 
@@ -166,6 +166,18 @@ function renderShape(it: PageCanvas, page: º.Page, idx: number, isBalloon: bool
     }
     const is_sel = it.sel && (idx === it.sel.idx) && (isBalloon === it.sel.isBalloon)
     const shape_kind = isBalloon ? 'balloon' : 'panel'
+    let tail: Element | undefined = undefined
+    if (isBalloon && (shape as º.Balloon).tailPoint && (props as º.BalloonProps).tailSizeMm) {
+        const mm = 3.543307 // as per SVG spec, "user units" per millimeter
+        const tp = (shape as º.Balloon).tailPoint!, ts = (props as º.BalloonProps).tailSizeMm!
+        const start = { x: mm * ((sh.x + (sh.w / 2)) - ts), y: mm * ((sh.y + (sh.h / 2)) - ts) }
+        const dst = { x: mm * tp.x, y: mm * tp.y }
+        const end = { x: mm * ((sh.x + (sh.w / 2)) + ts), y: mm * ((sh.y + (sh.h / 2)) + ts) }
+        tail = svg.path({
+            'fill': 'gold', 'stroke-width': '1mm', 'stroke': 'blue', 'd': `
+                M ${start.x},${start.y} T ${dst.x},${dst.y} T ${end.x},${end.y} M ${start.x},${start.y}
+            `})
+    }
     const rect = svg.rect({
         'id': shape_kind + '_' + idx, 'class': 'shape ' + shape_kind + (is_sel ? (' shape-selected ' + shape_kind + '-selected') : ''),
         'stroke-width': `${props.borderWidthMm ?? 0}mm`, 'tabindex': 2,
@@ -197,7 +209,7 @@ function renderShape(it: PageCanvas, page: º.Page, idx: number, isBalloon: bool
             }
         }
     })
-    return rect
+    return tail ? [tail, rect] : [rect]
 }
 
 function adjustedToMargins(page: º.Page, panel: º.Panel) {
