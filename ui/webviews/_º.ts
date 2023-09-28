@@ -108,6 +108,7 @@ export type PanelProps = ShapeProps & {
 
 export type BalloonProps = ShapeProps & {
     tailSizeMm?: number
+    tailCurving?: number
 }
 
 export function walkCollections<T>(perColl: (_: Collection[]) => any, parents?: Collection[]) {

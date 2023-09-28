@@ -68,5 +68,6 @@ type PanelProps struct {
 
 type BalloonProps struct {
 	ShapeProps
-	TailSizeMm *float64 `json:"tailSizeMm,omitempty"`
+	TailSizeMm  *float64 `json:"tailSizeMm,omitempty"`
+	TailCurving *float64 `json:"tailCurving,omitempty"`
 }

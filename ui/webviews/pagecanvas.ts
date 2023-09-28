@@ -169,13 +169,19 @@ function renderShape(it: PageCanvas, page: º.Page, idx: number, isBalloon: bool
     let tail: Element | undefined = undefined
     if (isBalloon && (shape as º.Balloon).tailPoint && (props as º.BalloonProps).tailSizeMm) {
         const mm = 3.543307 // as per SVG spec, "user units" per millimeter
-        const tp = (shape as º.Balloon).tailPoint!, ts = (props as º.BalloonProps).tailSizeMm!
-        const start = { x: mm * ((sh.x + (sh.w / 2)) - ts), y: mm * ((sh.y + (sh.h / 2)) + ts) }
-        const dst = { x: mm * tp.x, y: mm * tp.y }
-        const end = { x: mm * ((sh.x + (sh.w / 2)) + ts), y: mm * ((sh.y + (sh.h / 2)) - ts) }
+        const dst = { x: (shape as º.Balloon).tailPoint!.x * mm, y: (shape as º.Balloon).tailPoint!.y * mm }
+        const tail_size = (props as º.BalloonProps).tailSizeMm ?? 0
+        const box = { x: Math.min(sh.x, dst.x), y: Math.min(dst.y, sh.y), w: Math.max(sh.w, dst.x - sh.x), h: Math.max(sh.h, dst.y - sh.y) }
+        const mid = { x: (sh.x + (sh.w / 2)) * mm, y: (sh.y + (sh.h / 2)) * mm }
+        const fx = ((dst.x > mid.x) ? 1 : -1) * ((props as º.BalloonProps).tailCurving ?? 0), fy = ((dst.y > mid.y) ? -1 : 1) * ((props as º.BalloonProps).tailCurving ?? 0)
+        const ctl1 = { x: (mid.x + (fx * box.w)) - tail_size, y: (mid.y + (fy * box.h)) - tail_size }
+        const ctl2 = { x: (mid.x + (fx * box.w)) + tail_size, y: (mid.y + (fy * box.h)) + tail_size }
         tail = svg.path({
             'fill': 'gold', 'stroke-width': '1mm', 'stroke': 'blue', 'd': `
-                M ${start.x},${start.y} T ${dst.x},${dst.y} T ${end.x},${end.y} M ${start.x},${start.y}
+                M ${mid.x} ${mid.y}
+                Q ${ctl1.x} ${ctl1.y} ${dst.x} ${dst.y}
+                Q ${ctl2.x} ${ctl2.y} ${mid.x} ${mid.y}
+                M ${mid.x} ${mid.y}
             `})
     }
     const rect = svg.rect({

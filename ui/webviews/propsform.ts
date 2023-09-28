@@ -93,14 +93,16 @@ export function create(domId: string, collPath: string, pagePath: string, sel: ย
     const balloonBorderWidthPlaceholder = van.state('')
     const balloonRoundnessPlaceholder = van.state('')
     const balloonTailSizePlaceholder = van.state('')
+    const balloonTailCurvingPlaceholder = van.state('')
     if (!for_panel) {
         const balloonBorderWidthField: ctl_inputform.Field = { id: 'borderWidthMm', title: "Border width (mm)", validators: [], num: { int: false, min: 0, max: 10, step: 0.1 }, placeholder: balloonBorderWidthPlaceholder }
         const balloonRoundnessField: ctl_inputform.Field = { id: 'roundness', title: "Roundness", validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: balloonRoundnessPlaceholder }
-        const balloonTailSizeField: ctl_inputform.Field = { id: 'tailSizeMm', title: 'Tail breadth (mm)', validators: [], num: { int: false, min: 0, max: 123, step: 0.1 }, placeholder: balloonTailSizePlaceholder }
-        balloonPropsForm = ctl_inputform.create(domId + '_balloonprops_form', [balloonBorderWidthField, balloonRoundnessField, balloonTailSizeField], undefined,
+        const balloonTailSizeField: ctl_inputform.Field = { id: 'tailSizeMm', title: 'Tail thickness', validators: [], num: { int: false, min: 0, max: 123, step: 0.1 }, placeholder: balloonTailSizePlaceholder }
+        const balloonTailCurvingField: ctl_inputform.Field = { id: 'tailCurving', title: 'Tail curving', validators: [], num: { int: false, min: 0, max: 1, step: 0.01 }, placeholder: balloonTailCurvingPlaceholder }
+        balloonPropsForm = ctl_inputform.create(domId + '_balloonprops_form', [balloonBorderWidthField, balloonRoundnessField, balloonTailSizeField, balloonTailCurvingField], undefined,
             (userModifiedRec: ctl_inputform.Rec) => {
                 const balloonProps: ยบ.BalloonProps = {}
-                for (const num_prop_name of ['borderWidthMm', 'roundness', 'tailSizeMm']) {
+                for (const num_prop_name of ['borderWidthMm', 'roundness', 'tailSizeMm', 'tailCurving']) {
                     const v = parseFloat(userModifiedRec[num_prop_name])
                     if ((v !== undefined) && !isNaN(v))
                         (balloonProps as any)[num_prop_name] = v
@@ -162,7 +164,10 @@ export function create(domId: string, collPath: string, pagePath: string, sel: ย
                     fill: (_) => { balloonRoundnessPlaceholder.val = _ }, from: (_) => (_.balloonProps?.roundness?.toFixed(2) ?? ''), finalDefault: '0',
                 },
                 {
-                    fill: (_) => { balloonTailSizePlaceholder.val = _ }, from: (_) => (_.balloonProps?.tailSizeMm?.toFixed(2) ?? ''), finalDefault: '0',
+                    fill: (_) => { balloonTailSizePlaceholder.val = _ }, from: (_) => (_.balloonProps?.tailSizeMm?.toFixed(1) ?? ''), finalDefault: '0',
+                },
+                {
+                    fill: (_) => { balloonTailCurvingPlaceholder.val = _ }, from: (_) => (_.balloonProps?.tailCurving?.toFixed(2) ?? ''), finalDefault: '0',
                 },
                 {
                     fill: (_) => { collAuthorFieldPlaceholder.val = _ }, from: (_) => (_.collProps?.authorId ?? ''),
@@ -234,5 +239,6 @@ function curBalloonPropsRec(coll?: ยบ.Collection, page?: ยบ.Page, balloonIdx?: n
         'borderWidthMm': props.borderWidthMm?.toFixed(1) ?? '',
         'roundness': props.roundness?.toFixed(2) ?? '',
         'tailSizeMm': props.tailSizeMm?.toFixed(1) ?? '',
+        'tailCurving': props.tailCurving?.toFixed(2) ?? '',
     }
 }
